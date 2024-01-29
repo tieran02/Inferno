@@ -11,6 +11,7 @@ namespace Inferno
         public GraphicsLib() : base("graphics")
         {
             SourceRootPath = Defines.Paths.INFERNO_GRAPHICS_SRC;
+            AdditionalSourceRootPaths.Add(Defines.Paths.INFERNO_GRAPHICS_INC);
         }
     }
 }

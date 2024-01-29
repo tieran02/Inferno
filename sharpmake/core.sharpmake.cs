@@ -1,6 +1,7 @@
 using System.IO; // For Path.Combine
 using System;
 using Sharpmake; // Contains the entire Sharpmake object library.
+using System.Collections.Generic;
 
 namespace Inferno
 {
@@ -12,7 +13,7 @@ namespace Inferno
         public CoreLib() : base("core")
         {
             SourceRootPath = Defines.Paths.INFERNO_CORE_SRC;
-           
+            AdditionalSourceRootPaths.Add(Defines.Paths.INFERNO_CORE_INC);
         }
 
          public override void ConfigureAll(Project.Configuration conf, Target target)

@@ -3,16 +3,26 @@
 #include "core/Log.h"
 #include <format>
 #include "core/Assert.h"
+#include "window/IWindow.h"
+#include <memory>
 
-using namespace Inferno;
+using namespace INF;
 
-int main(int argc, char** argv)
+int main()
 {
-	Log::Trace(std::format("Hello, {0}!", "Sharpmake"));
-	Log::Info(std::format("Hello, {0}!", "Sharpmake"));
-	Log::Warning(std::format("Hello, {0}!", "Sharpmake"));
+	Log::Info("Starting editor");
+	std::unique_ptr<IWindow> window = IWindow::Create("Hello Window", 1280, 720);
 
-	INF_ASSERT(false, "Test Assert");
+	int shouldClose = false;
+	window->SetCloseCallBack([&shouldClose]
+	{
+		shouldClose = true;
+	});
 
-	Log::Error(std::format("Hello, {0}!", "Sharpmake"));
+	while (!shouldClose)
+	{
+		window->PollEvents();
+	}
+	Log::Info("Closing editor");
+
 }

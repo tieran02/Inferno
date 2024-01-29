@@ -2,7 +2,7 @@
 
 #include "spdlog/spdlog.h"
 
-using namespace Inferno;
+using namespace INF;
 
 void Log::Trace(std::string_view msg)
 {

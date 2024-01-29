@@ -1,7 +1,7 @@
 #pragma once
 #include <string_view>
 
-namespace Inferno
+namespace INF
 {
 	class Log
 	{

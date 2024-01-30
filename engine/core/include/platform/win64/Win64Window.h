@@ -21,11 +21,16 @@ namespace INF
 		void Close() override;
 		void SetCloseCallBack(WindowCloseCallback callback) override;
 
+		void SetInputKeyRegisterCallback(InputRegisterKeyFn inputRegisterKeyFn) override;
+
 	private:
 		std::string m_title;
 		uint32_t m_width, m_height;
 		WindowResizeCallback m_resizeCallback;
 		WindowCloseCallback m_closeCallback;
+
+		InputRegisterKeyFn m_inputRegisterKeyFn;
+
 		GLFWwindow* m_window;
 	};
 }

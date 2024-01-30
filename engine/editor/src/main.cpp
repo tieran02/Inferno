@@ -5,6 +5,7 @@
 #include "core/Assert.h"
 #include "window/IWindow.h"
 #include <memory>
+#include <functional>
 
 using namespace INF;
 
@@ -12,6 +13,8 @@ int main()
 {
 	Log::Info("Starting editor");
 	std::unique_ptr<IWindow> window = IWindow::Create("Hello Window", 1280, 720);
+	Input input;
+	window->SetInputKeyRegisterCallback(input.GetRegisterKeyFn());
 
 	int shouldClose = false;
 	window->SetCloseCallBack([&shouldClose]

@@ -2,9 +2,11 @@
 #include <string>
 #include <functional>
 #include <memory>
+#include "input/input.h"
 
 namespace INF 
 {
+
 	using WindowResizeCallback = std::function<void(uint32_t width, uint32_t height)>;
 	using WindowCloseCallback = std::function<void()>;
 
@@ -33,5 +35,7 @@ namespace INF
 
 		virtual void Close() = 0;
 		virtual void SetCloseCallBack(WindowCloseCallback callback) = 0;
+
+		virtual void SetInputKeyRegisterCallback(InputRegisterKeyFn inputRegisterKeyFn) = 0;
 	};
 }

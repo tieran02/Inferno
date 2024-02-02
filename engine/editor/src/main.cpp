@@ -25,6 +25,18 @@ int main()
 	while (!shouldClose)
 	{
 		window->PollEvents();
+		input.Update();
+
+		if (input.IsKeyPress(KeyCode::A))
+			Log::Info("A key pressed");
+		if (input.IsKeyRelease(KeyCode::A))
+			Log::Info("A key release");
+
+		if (input.IsKeyDown(KeyCode::S))
+			Log::Info("S key down");
+
+		if (input.IsKeyRelease(KeyCode::Escape))
+			shouldClose = true;
 	}
 	Log::Info("Closing editor");
 

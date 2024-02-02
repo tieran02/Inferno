@@ -1,17 +1,26 @@
 #pragma once
 #include <functional>
+#include <array>
 
 namespace INF
 {
 	enum class KeyAction : uint8_t;
 	enum class KeyModifier : uint8_t;
-	enum class KeyCode;
+	enum class KeyCode : uint8_t;
 
-	using InputRegisterKeyFn = std::function<void(INF::KeyCode key, int scancode, INF::KeyAction action, int mods)>;
+	using InputRegisterKeyFn = std::function<void(KeyCode key, int scancode, INF::KeyAction action, int mods)>;
 
 	class Input
 	{
 	public:
+		Input();
+
+		void Update();
+
+		bool IsKeyPress(KeyCode key);
+		bool IsKeyRelease(KeyCode key);
+		bool IsKeyDown(KeyCode key);
+
 		inline InputRegisterKeyFn GetRegisterKeyFn()
 		{
 			return std::bind(&Input::RegisterKey, this, std::placeholders::_1, std::placeholders::_2, std::placeholders::_3, std::placeholders::_4);
@@ -19,13 +28,17 @@ namespace INF
 
 	private:
 		void RegisterKey(KeyCode key, int scancode, KeyAction action, int mods);
+		
+		std::array<KeyAction, 255> m_keyStates;
+		std::array<KeyAction, 255> m_previousKeyStates;
 	};
 
 	enum class KeyAction : uint8_t
 	{
-		PRESS,
 		RELEASE,
-		REPEAT
+		PRESS,
+		REPEAT,
+		NONE
 	};
 
 	enum class KeyModifier : uint8_t
@@ -43,8 +56,9 @@ namespace INF
 			static_cast<std::underlying_type_t<KeyModifier>>(Rhs));
 	}
 
-	enum class Key
+	enum class KeyCode : uint8_t
 	{
+		Unkown = 0x00,
 		Backspace = 0x08,
 		Tab = 0x09,
 		Clear = 0x0C,

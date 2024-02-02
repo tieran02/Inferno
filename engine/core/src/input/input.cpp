@@ -12,12 +12,14 @@ Input::Input()
 
 void Input::RegisterKey(KeyCode key, int scancode, KeyAction action, int mods)
 {
-	m_keyStates[static_cast<std::underlying_type_t<KeyCode>>(key)] = action;
+	if(action == KeyAction::PRESS)
+		m_keyStates[static_cast<std::underlying_type_t<KeyCode>>(key)] = action;
 }
 
 void Input::RegisterMouseButton(MouseButton button, KeyAction action, int mods)
 {
-	m_mouseButtonStates[static_cast<std::underlying_type_t<MouseButton>>(button)] = action;
+	if (action == KeyAction::PRESS)
+		m_mouseButtonStates[static_cast<std::underlying_type_t<MouseButton>>(button)] = action;
 }
 
 bool Input::IsKeyPress(KeyCode key)

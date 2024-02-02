@@ -4,35 +4,6 @@
 
 namespace INF
 {
-	enum class KeyAction : uint8_t;
-	enum class KeyModifier : uint8_t;
-	enum class KeyCode : uint8_t;
-
-	using InputRegisterKeyFn = std::function<void(KeyCode key, int scancode, INF::KeyAction action, int mods)>;
-
-	class Input
-	{
-	public:
-		Input();
-
-		void Update();
-
-		bool IsKeyPress(KeyCode key);
-		bool IsKeyRelease(KeyCode key);
-		bool IsKeyDown(KeyCode key);
-
-		inline InputRegisterKeyFn GetRegisterKeyFn()
-		{
-			return std::bind(&Input::RegisterKey, this, std::placeholders::_1, std::placeholders::_2, std::placeholders::_3, std::placeholders::_4);
-		}
-
-	private:
-		void RegisterKey(KeyCode key, int scancode, KeyAction action, int mods);
-		
-		std::array<KeyAction, 255> m_keyStates;
-		std::array<KeyAction, 255> m_previousKeyStates;
-	};
-
 	enum class KeyAction : uint8_t
 	{
 		RELEASE,
@@ -52,9 +23,17 @@ namespace INF
 	};
 	inline constexpr KeyModifier operator|(KeyModifier Lhs, KeyModifier Rhs)
 	{
-		return static_cast<KeyModifier>(static_cast<std::underlying_type_t<KeyModifier>>(Lhs) | 
+		return static_cast<KeyModifier>(static_cast<std::underlying_type_t<KeyModifier>>(Lhs) |
 			static_cast<std::underlying_type_t<KeyModifier>>(Rhs));
 	}
+
+	enum class MouseButton : uint8_t
+	{
+		Left,
+		Right,
+		Middle,
+		COUNT
+	};
 
 	enum class KeyCode : uint8_t
 	{
@@ -213,6 +192,46 @@ namespace INF
 		Play = 0xFA,
 		Zoom = 0xFB,
 		PA1 = 0xFD,
-		OEMClear = 0xFE
+		OEMClear = 0xFE,
+		COUNT
+	};
+
+	using InputRegisterKeyFn = std::function<void(KeyCode key, int scancode, INF::KeyAction action, int mods)>;
+	using InputRegisterMousebuttonFn = std::function<void(MouseButton button,INF::KeyAction action, int mods)>;
+
+	class Input
+	{
+	public:
+		Input();
+
+		void Update();
+
+		bool IsKeyPress(KeyCode key);
+		bool IsKeyRelease(KeyCode key);
+		bool IsKeyDown(KeyCode key);
+
+		bool IsMouseButtonPress(MouseButton button);
+		bool IsMouseButtonRelease(MouseButton button);
+		bool IsMouseButtonDown(MouseButton button);
+
+		inline InputRegisterKeyFn GetRegisterKeyFn()
+		{
+			return std::bind(&Input::RegisterKey, this, std::placeholders::_1, std::placeholders::_2, std::placeholders::_3, std::placeholders::_4);
+		}
+
+		inline InputRegisterMousebuttonFn GetRegisterMouseButtonFn()
+		{
+			return std::bind(&Input::RegisterMouseButton, this, std::placeholders::_1, std::placeholders::_2, std::placeholders::_3);
+		}
+
+	private:
+		void RegisterKey(KeyCode key, int scancode, KeyAction action, int mods);
+		void RegisterMouseButton(MouseButton button, KeyAction action, int mods);
+		
+		std::array<KeyAction, std::underlying_type_t<KeyCode>(KeyCode::COUNT)> m_keyStates;
+		std::array<KeyAction, std::underlying_type_t<KeyCode>(KeyCode::COUNT)> m_previousKeyStates;
+
+		std::array<KeyAction, std::underlying_type_t<KeyCode>(MouseButton::COUNT)> m_mouseButtonStates;
+		std::array<KeyAction, std::underlying_type_t<KeyCode>(MouseButton::COUNT)> m_previousMouseButtonStates;
 	};
 }

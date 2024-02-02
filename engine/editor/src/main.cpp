@@ -15,6 +15,7 @@ int main()
 	std::unique_ptr<IWindow> window = IWindow::Create("Hello Window", 1280, 720);
 	Input input;
 	window->SetInputKeyRegisterCallback(input.GetRegisterKeyFn());
+	window->SetInputMouseButtonRegisterCallback(input.GetRegisterMouseButtonFn());
 
 	int shouldClose = false;
 	window->SetCloseCallBack([&shouldClose]
@@ -32,8 +33,12 @@ int main()
 		if (input.IsKeyRelease(KeyCode::A))
 			Log::Info("A key release");
 
-		if (input.IsKeyDown(KeyCode::S))
-			Log::Info("S key down");
+		if (input.IsMouseButtonPress(MouseButton::Left))
+			Log::Info("Left Click");
+		if (input.IsMouseButtonPress(MouseButton::Right))
+			Log::Info("Right Click");
+		if (input.IsMouseButtonPress(MouseButton::Middle))
+			Log::Info("Middle Click");
 
 		if (input.IsKeyRelease(KeyCode::Escape))
 			shouldClose = true;

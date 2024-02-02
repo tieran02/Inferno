@@ -37,5 +37,6 @@ namespace INF
 		virtual void SetCloseCallBack(WindowCloseCallback callback) = 0;
 
 		virtual void SetInputKeyRegisterCallback(InputRegisterKeyFn inputRegisterKeyFn) = 0;
+		virtual void SetInputMouseButtonRegisterCallback(InputRegisterMousebuttonFn inputRegisterMouseButtonFn) = 0;
 	};
 }

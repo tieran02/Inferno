@@ -15,6 +15,11 @@ void Input::RegisterKey(KeyCode key, int scancode, KeyAction action, int mods)
 	m_keyStates[static_cast<std::underlying_type_t<KeyCode>>(key)] = action;
 }
 
+void Input::RegisterMouseButton(MouseButton button, KeyAction action, int mods)
+{
+	m_mouseButtonStates[static_cast<std::underlying_type_t<MouseButton>>(button)] = action;
+}
+
 bool Input::IsKeyPress(KeyCode key)
 {
 	return m_keyStates[static_cast<std::underlying_type_t<KeyCode>>(key)] == KeyAction::PRESS;
@@ -31,6 +36,24 @@ bool Input::IsKeyDown(KeyCode key)
 		m_keyStates[static_cast<std::underlying_type_t<KeyCode>>(key)] == KeyAction::REPEAT;
 }
 
+bool Input::IsMouseButtonPress(MouseButton button)
+{
+	return m_mouseButtonStates[static_cast<std::underlying_type_t<MouseButton>>(button)] == KeyAction::PRESS;
+}
+
+bool Input::IsMouseButtonRelease(MouseButton button)
+{
+	return m_mouseButtonStates[static_cast<std::underlying_type_t<MouseButton>>(button)] == KeyAction::RELEASE;
+
+}
+
+bool Input::IsMouseButtonDown(MouseButton button)
+{
+	return m_mouseButtonStates[static_cast<std::underlying_type_t<MouseButton>>(button)] == KeyAction::PRESS ||
+		m_mouseButtonStates[static_cast<std::underlying_type_t<MouseButton>>(button)] == KeyAction::REPEAT;
+}
+
+
 void Input::Update()
 {
 	for (int i = 0; i < m_keyStates.size(); ++i)
@@ -42,5 +65,16 @@ void Input::Update()
 
 		m_previousKeyStates[i] = m_keyStates[i];
 	}
+
+	for (int i = 0; i < m_mouseButtonStates.size(); ++i)
+	{
+		if (m_previousMouseButtonStates[i] == KeyAction::PRESS)
+			m_mouseButtonStates[i] = KeyAction::REPEAT;
+		else if (m_previousMouseButtonStates[i] == KeyAction::RELEASE)
+			m_mouseButtonStates[i] = KeyAction::NONE;
+
+		m_previousMouseButtonStates[i] = m_mouseButtonStates[i];
+	}
 }
+
 

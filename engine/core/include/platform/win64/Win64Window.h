@@ -22,7 +22,7 @@ namespace INF
 		void SetCloseCallBack(WindowCloseCallback callback) override;
 
 		void SetInputKeyRegisterCallback(InputRegisterKeyFn inputRegisterKeyFn) override;
-
+		void SetInputMouseButtonRegisterCallback(InputRegisterMousebuttonFn inputRegisterMouseButtonFn) override;
 	private:
 		std::string m_title;
 		uint32_t m_width, m_height;
@@ -30,6 +30,7 @@ namespace INF
 		WindowCloseCallback m_closeCallback;
 
 		InputRegisterKeyFn m_inputRegisterKeyFn;
+		InputRegisterMousebuttonFn m_inputRegisterMouseButtonFn;
 
 		GLFWwindow* m_window;
 	};

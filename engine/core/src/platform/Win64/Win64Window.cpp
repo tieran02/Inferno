@@ -5,6 +5,7 @@
 using namespace INF;
 
 extern std::unordered_map<int, KeyCode> g_glfwKeyCodeMap;
+extern std::unordered_map<int, MouseButton> g_glfwMouseButtonCodeMap;
 
 Win64Window::Win64Window(std::string_view title, uint32_t width, uint32_t height) :
 	m_title(title),
@@ -88,6 +89,7 @@ void Win64Window::SetInputKeyRegisterCallback(InputRegisterKeyFn inputRegisterKe
 	m_inputRegisterKeyFn = inputRegisterKeyFn;
 	glfwSetKeyCallback(m_window, [](GLFWwindow* window, int key, int scancode, int action, int mods)
 	{
+		INF_ASSERT(g_glfwKeyCodeMap.find(key) != g_glfwKeyCodeMap.end(), std::format("Key:{} not found in map", key));
 		KeyCode keyCode = g_glfwKeyCodeMap.at(key);
 		Win64Window* self = static_cast<Win64Window*>(glfwGetWindowUserPointer(window));
 		self->m_inputRegisterKeyFn(keyCode,
@@ -95,6 +97,20 @@ void Win64Window::SetInputKeyRegisterCallback(InputRegisterKeyFn inputRegisterKe
 			static_cast<KeyAction>(action),
 			mods);
 	});
+}
+
+void Win64Window::SetInputMouseButtonRegisterCallback(InputRegisterMousebuttonFn inputRegisterMouseButtonFn)
+{
+	m_inputRegisterMouseButtonFn = inputRegisterMouseButtonFn;
+	glfwSetMouseButtonCallback(m_window, [](GLFWwindow* window, int key, int action, int mods)
+		{
+			INF_ASSERT(g_glfwMouseButtonCodeMap.find(key) != g_glfwMouseButtonCodeMap.end(), std::format("Key:{} not found in map", key));
+			MouseButton button = g_glfwMouseButtonCodeMap.at(key);
+			Win64Window* self = static_cast<Win64Window*>(glfwGetWindowUserPointer(window));
+			self->m_inputRegisterMouseButtonFn(button,
+				static_cast<KeyAction>(action),
+				mods);
+		});
 }
 
 std::unordered_map<int, KeyCode> g_glfwKeyCodeMap
@@ -221,4 +237,11 @@ std::unordered_map<int, KeyCode> g_glfwKeyCodeMap
 	{GLFW_KEY_RIGHT_ALT          , KeyCode::RightMenu},
 	{GLFW_KEY_RIGHT_SUPER        , KeyCode::RightWindowsKey},
 	{GLFW_KEY_MENU               , KeyCode::Alt},
+};
+
+std::unordered_map<int, MouseButton> g_glfwMouseButtonCodeMap
+{
+	{GLFW_MOUSE_BUTTON_LEFT      , MouseButton::Left},
+	{GLFW_MOUSE_BUTTON_RIGHT     , MouseButton::Right},
+	{GLFW_MOUSE_BUTTON_MIDDLE    , MouseButton::Middle},
 };

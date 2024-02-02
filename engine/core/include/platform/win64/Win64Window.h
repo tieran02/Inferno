@@ -23,6 +23,8 @@ namespace INF
 
 		void SetInputKeyRegisterCallback(InputRegisterKeyFn inputRegisterKeyFn) override;
 		void SetInputMouseButtonRegisterCallback(InputRegisterMousebuttonFn inputRegisterMouseButtonFn) override;
+		void SetInputMouseCursorRegisterCallback(InputRegisterMouseCursorFn inputRegisterMouseCursorFn) override;
+
 	private:
 		std::string m_title;
 		uint32_t m_width, m_height;
@@ -31,6 +33,7 @@ namespace INF
 
 		InputRegisterKeyFn m_inputRegisterKeyFn;
 		InputRegisterMousebuttonFn m_inputRegisterMouseButtonFn;
+		InputRegisterMouseCursorFn m_inputRegisterMouseCursorFn;
 
 		GLFWwindow* m_window;
 	};

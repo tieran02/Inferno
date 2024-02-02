@@ -113,6 +113,16 @@ void Win64Window::SetInputMouseButtonRegisterCallback(InputRegisterMousebuttonFn
 		});
 }
 
+void Win64Window::SetInputMouseCursorRegisterCallback(InputRegisterMouseCursorFn inputRegisterMouseCursorFn)
+{
+	m_inputRegisterMouseCursorFn = inputRegisterMouseCursorFn;
+	glfwSetCursorPosCallback(m_window, [](GLFWwindow* window, double xPos, double yPos)
+		{
+			Win64Window* self = static_cast<Win64Window*>(glfwGetWindowUserPointer(window));
+			self->m_inputRegisterMouseCursorFn(xPos, yPos);
+		});
+}
+
 std::unordered_map<int, KeyCode> g_glfwKeyCodeMap
 {
 	{GLFW_KEY_SPACE              , KeyCode::Space},

@@ -16,6 +16,7 @@ int main()
 	Input input;
 	window->SetInputKeyRegisterCallback(input.GetRegisterKeyFn());
 	window->SetInputMouseButtonRegisterCallback(input.GetRegisterMouseButtonFn());
+	window->SetInputMouseCursorRegisterCallback(input.GetRegisterMouseCursorFn());
 
 	int shouldClose = false;
 	window->SetCloseCallBack([&shouldClose]
@@ -39,6 +40,10 @@ int main()
 			Log::Info("Right Click");
 		if (input.IsMouseButtonPress(MouseButton::Middle))
 			Log::Info("Middle Click");
+
+		//Log::Info(std::format("MouseX={} MouseY={}", input.GetMouseX(), input.GetMouseY()));
+		Log::Info(std::format("DeltaX={:10f} DeltaY={:10f}", input.GetDeltaMouseX(), input.GetDeltaMouseY()));
+
 
 		if (input.IsKeyRelease(KeyCode::Escape))
 			shouldClose = true;

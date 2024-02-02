@@ -198,6 +198,8 @@ namespace INF
 
 	using InputRegisterKeyFn = std::function<void(KeyCode key, int scancode, INF::KeyAction action, int mods)>;
 	using InputRegisterMousebuttonFn = std::function<void(MouseButton button,INF::KeyAction action, int mods)>;
+	using InputRegisterMouseCursorFn = std::function<void(double xPos, double yPos)>;
+
 
 	class Input
 	{
@@ -206,13 +208,18 @@ namespace INF
 
 		void Update();
 
-		bool IsKeyPress(KeyCode key);
-		bool IsKeyRelease(KeyCode key);
-		bool IsKeyDown(KeyCode key);
+		bool IsKeyPress(KeyCode key) const;
+		bool IsKeyRelease(KeyCode key) const;
+		bool IsKeyDown(KeyCode key) const;
 
-		bool IsMouseButtonPress(MouseButton button);
-		bool IsMouseButtonRelease(MouseButton button);
-		bool IsMouseButtonDown(MouseButton button);
+		bool IsMouseButtonPress(MouseButton button) const;
+		bool IsMouseButtonRelease(MouseButton button) const;
+		bool IsMouseButtonDown(MouseButton button) const;
+
+		double GetMouseX() const;
+		double GetMouseY() const;
+		double GetDeltaMouseX() const;
+		double GetDeltaMouseY() const;
 
 		inline InputRegisterKeyFn GetRegisterKeyFn()
 		{
@@ -224,14 +231,27 @@ namespace INF
 			return std::bind(&Input::RegisterMouseButton, this, std::placeholders::_1, std::placeholders::_2, std::placeholders::_3);
 		}
 
+		inline InputRegisterMouseCursorFn GetRegisterMouseCursorFn()
+		{
+			return std::bind(&Input::RegisterMouseCursorButton, this, std::placeholders::_1, std::placeholders::_2);
+		}
+
 	private:
 		void RegisterKey(KeyCode key, int scancode, KeyAction action, int mods);
 		void RegisterMouseButton(MouseButton button, KeyAction action, int mods);
+		void RegisterMouseCursorButton(double xPos, double yPos);
 		
 		std::array<KeyAction, std::underlying_type_t<KeyCode>(KeyCode::COUNT)> m_keyStates;
 		std::array<KeyAction, std::underlying_type_t<KeyCode>(KeyCode::COUNT)> m_previousKeyStates;
 
 		std::array<KeyAction, std::underlying_type_t<KeyCode>(MouseButton::COUNT)> m_mouseButtonStates;
 		std::array<KeyAction, std::underlying_type_t<KeyCode>(MouseButton::COUNT)> m_previousMouseButtonStates;
+
+		double m_mousePosX;
+		double m_mousePosY;
+		double m_callbackMousePosX;
+		double m_callbackMousePosY;
+		double m_prevMousePosX;
+		double m_prevMousePosY;
 	};
 }

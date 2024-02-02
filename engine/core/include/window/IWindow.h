@@ -38,5 +38,6 @@ namespace INF
 
 		virtual void SetInputKeyRegisterCallback(InputRegisterKeyFn inputRegisterKeyFn) = 0;
 		virtual void SetInputMouseButtonRegisterCallback(InputRegisterMousebuttonFn inputRegisterMouseButtonFn) = 0;
+		virtual void SetInputMouseCursorRegisterCallback(InputRegisterMouseCursorFn inputRegisterMouseCursorFn) = 0;
 	};
 }

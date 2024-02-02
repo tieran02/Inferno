@@ -22,39 +22,58 @@ void Input::RegisterMouseButton(MouseButton button, KeyAction action, int mods)
 		m_mouseButtonStates[static_cast<std::underlying_type_t<MouseButton>>(button)] = action;
 }
 
-bool Input::IsKeyPress(KeyCode key)
+bool Input::IsKeyPress(KeyCode key) const
 {
-	return m_keyStates[static_cast<std::underlying_type_t<KeyCode>>(key)] == KeyAction::PRESS;
+	return m_keyStates.at(static_cast<std::underlying_type_t<KeyCode>>(key)) == KeyAction::PRESS;
 }
 
-bool Input::IsKeyRelease(KeyCode key)
+bool Input::IsKeyRelease(KeyCode key) const
 {
-	return m_keyStates[static_cast<std::underlying_type_t<KeyCode>>(key)] == KeyAction::RELEASE;
+	return m_keyStates.at(static_cast<std::underlying_type_t<KeyCode>>(key)) == KeyAction::RELEASE;
 }
 
-bool Input::IsKeyDown(KeyCode key)
+bool Input::IsKeyDown(KeyCode key) const
 {
-	return m_keyStates[static_cast<std::underlying_type_t<KeyCode>>(key)] == KeyAction::PRESS ||
-		m_keyStates[static_cast<std::underlying_type_t<KeyCode>>(key)] == KeyAction::REPEAT;
+	return m_keyStates.at(static_cast<std::underlying_type_t<KeyCode>>(key)) == KeyAction::PRESS ||
+		m_keyStates.at(static_cast<std::underlying_type_t<KeyCode>>(key)) == KeyAction::REPEAT;
 }
 
-bool Input::IsMouseButtonPress(MouseButton button)
+bool Input::IsMouseButtonPress(MouseButton button) const
 {
-	return m_mouseButtonStates[static_cast<std::underlying_type_t<MouseButton>>(button)] == KeyAction::PRESS;
+	return m_mouseButtonStates.at(static_cast<std::underlying_type_t<MouseButton>>(button)) == KeyAction::PRESS;
 }
 
-bool Input::IsMouseButtonRelease(MouseButton button)
+bool Input::IsMouseButtonRelease(MouseButton button) const
 {
-	return m_mouseButtonStates[static_cast<std::underlying_type_t<MouseButton>>(button)] == KeyAction::RELEASE;
+	return m_mouseButtonStates.at(static_cast<std::underlying_type_t<MouseButton>>(button)) == KeyAction::RELEASE;
 
 }
 
-bool Input::IsMouseButtonDown(MouseButton button)
+bool Input::IsMouseButtonDown(MouseButton button) const
 {
-	return m_mouseButtonStates[static_cast<std::underlying_type_t<MouseButton>>(button)] == KeyAction::PRESS ||
-		m_mouseButtonStates[static_cast<std::underlying_type_t<MouseButton>>(button)] == KeyAction::REPEAT;
+	return m_mouseButtonStates.at(static_cast<std::underlying_type_t<MouseButton>>(button)) == KeyAction::PRESS ||
+		m_mouseButtonStates.at(static_cast<std::underlying_type_t<MouseButton>>(button)) == KeyAction::REPEAT;
 }
 
+double Input::GetMouseX() const
+{
+	return m_mousePosX;
+}
+
+double Input::GetMouseY() const
+{
+	return m_mousePosY;
+}
+
+double Input::GetDeltaMouseX() const
+{
+	return m_mousePosX - m_prevMousePosX;
+}
+
+double Input::GetDeltaMouseY() const
+{
+	return m_mousePosY - m_prevMousePosY;
+}
 
 void Input::Update()
 {
@@ -77,6 +96,15 @@ void Input::Update()
 
 		m_previousMouseButtonStates[i] = m_mouseButtonStates[i];
 	}
+
+	m_prevMousePosX = m_mousePosX;
+	m_prevMousePosY = m_mousePosY;
+	m_mousePosX = m_callbackMousePosX;
+	m_mousePosY = m_callbackMousePosY;
 }
 
-
+void Input::RegisterMouseCursorButton(double xPos, double yPos)
+{
+	m_callbackMousePosX = xPos;
+	m_callbackMousePosY = yPos;
+}

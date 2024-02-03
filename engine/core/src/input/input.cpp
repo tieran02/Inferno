@@ -1,6 +1,6 @@
-#include "input/input.h"
+#include "infPCH.h"
+#include "input/Input.h"
 #include "core/Log.h"
-#include <format>
 
 using namespace INF;
 
@@ -12,14 +12,12 @@ Input::Input()
 
 void Input::RegisterKey(KeyCode key, int scancode, KeyAction action, int mods)
 {
-	if(action == KeyAction::PRESS)
-		m_keyStates[static_cast<std::underlying_type_t<KeyCode>>(key)] = action;
+	m_keyStates[static_cast<std::underlying_type_t<KeyCode>>(key)] = action;
 }
 
 void Input::RegisterMouseButton(MouseButton button, KeyAction action, int mods)
 {
-	if (action == KeyAction::PRESS)
-		m_mouseButtonStates[static_cast<std::underlying_type_t<MouseButton>>(button)] = action;
+	m_mouseButtonStates[static_cast<std::underlying_type_t<MouseButton>>(button)] = action;
 }
 
 bool Input::IsKeyPress(KeyCode key) const

@@ -1,11 +1,7 @@
-// main.cpp
-#include <iostream>
+#include "infPCH.h"
 #include "core/Log.h"
-#include <format>
 #include "core/Assert.h"
 #include "window/IWindow.h"
-#include <memory>
-#include <functional>
 #include "graphics/interface/device.h"
 
 using namespace INF;
@@ -16,6 +12,7 @@ int main()
 	std::unique_ptr<IWindow> window = IWindow::Create("Hello Window", 1280, 720);
 
 	GFX::DeviceCreationParameters deviceInfo;
+	deviceInfo.enableDebugValidation = true;
 	GFX::DeviceHandle device = GFX::IDevice::Create(GFX::API::D3D12, deviceInfo);
 
 	Input input;

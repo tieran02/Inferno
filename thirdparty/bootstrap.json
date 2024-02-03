@@ -14,5 +14,13 @@
 			"url": "https://github.com/glfw/glfw.git",
 			"revision": "3.3.9"
 		}
+	},
+	{
+		"name": "directxheaders",
+		"source": {
+			"type": "git",
+			"url": "https://github.com/microsoft/DirectX-Headers.git",
+			"revision": "v1.611.0"
+		}
 	}
 ]

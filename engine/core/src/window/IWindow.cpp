@@ -1,4 +1,5 @@
 #pragma once
+#include "infPCH.h"
 #include "window/IWindow.h"
 #include "platform/win64/Win64Window.h"
 

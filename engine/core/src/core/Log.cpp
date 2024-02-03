@@ -1,5 +1,5 @@
+#include "infPCH.h"
 #include "core/log.h"
-
 #include "spdlog/spdlog.h"
 
 using namespace INF;

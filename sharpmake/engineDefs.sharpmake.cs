@@ -35,11 +35,37 @@ namespace Inferno
         {
 
         }
+
+        public override void ConfigureAll(Project.Configuration conf, Target target)
+        {
+            base.ConfigureAll(conf, target);
+            
+            conf.IncludePaths.Add(Path.Combine(Defines.Paths.INFERNO_ENGINE, @"pch"));
+            conf.PrecompHeader = Path.Combine(@"infPCH.h");
+            conf.PrecompSource = Path.Combine(@"infPCH.cpp");
+        }
     }
 
     abstract public class InfernoLib : InfernoProject
     {
         public InfernoLib(string projectName) : base(projectName, Project.Configuration.OutputType.Lib)
+        {
+
+        }
+
+        public override void ConfigureAll(Project.Configuration conf, Target target)
+        {
+            base.ConfigureAll(conf, target);
+            
+            conf.IncludePaths.Add(Path.Combine(Defines.Paths.INFERNO_ENGINE, @"pch"));
+            conf.PrecompHeader = Path.Combine(@"infPCH.h");
+            conf.PrecompSource = Path.Combine(@"infPCH.cpp");
+        }
+    }
+
+    abstract public class InfernoThridPartyLib : InfernoProject
+    {
+        public InfernoThridPartyLib(string projectName) : base(projectName, Project.Configuration.OutputType.Lib)
         {
 
         }

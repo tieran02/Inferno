@@ -17,7 +17,7 @@ namespace Inferno
             base.ConfigureAll(conf, target);
 
             conf.AddPrivateDependency<CoreLib>(target);
-            conf.AddPrivateDependency<GraphicsD3D12Lib>(target);
+            conf.AddPrivateDependency<GraphicsLib>(target);
 
             conf.IncludePaths.Add(Defines.Paths.INFERNO_CORE);
             conf.IncludePaths.Add(Defines.Paths.INFERNO_GRAPHICS);

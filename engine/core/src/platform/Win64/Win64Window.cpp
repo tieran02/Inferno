@@ -1,6 +1,6 @@
+#include "infPCH.h"
 #include "platform/Win64/Win64Window.h"
 #include "core/Assert.h"
-#include <format>
 
 using namespace INF;
 

@@ -1,8 +1,5 @@
 #pragma once
-#include <cstdint>
-#include "graphics/graphicDefines.h"
-#include <memory>
-#include <format>
+#include "graphics/GraphicDefines.h"
 #include "core/Assert.h"
 
 namespace INF::GFX

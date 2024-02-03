@@ -1,6 +1,4 @@
 #pragma once
-#include <functional>
-#include <array>
 
 namespace INF
 {

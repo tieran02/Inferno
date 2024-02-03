@@ -13,5 +13,38 @@ namespace Inferno
             SourceRootPath = Defines.Paths.INFERNO_GRAPHICS_SRC;
             AdditionalSourceRootPaths.Add(Defines.Paths.INFERNO_GRAPHICS_INC);
         }
+
+        public override void ConfigureAll(Project.Configuration conf, Target target)
+        {
+            base.ConfigureAll(conf, target);
+
+            conf.IncludePaths.Add(Defines.Paths.INFERNO_GRAPHICS_INC);
+
+            conf.AddPublicDependency<CoreLib>(target);
+            conf.IncludePaths.Add(Defines.Paths.INFERNO_CORE_INC);
+
+            conf.IncludePaths.Add(GraphicsD3D12Lib.INFERNO_GRAPHICS_D3D12_INC);
+        }
+    }
+
+    [Generate]
+    public class GraphicsD3D12Lib : InfernoLib
+    {
+        static public readonly string INFERNO_GRAPHICS_D3D12_SRC = Path.Combine(Defines.Paths.INFERNO_ENGINE, @"graphicsD3D12\src");
+        static public readonly string INFERNO_GRAPHICS_D3D12_INC = Path.Combine(Defines.Paths.INFERNO_ENGINE, @"graphicsD3D12\include\");
+        public GraphicsD3D12Lib() : base("graphics-D3D12")
+        {
+            SourceRootPath = INFERNO_GRAPHICS_D3D12_SRC;
+            AdditionalSourceRootPaths.Add(INFERNO_GRAPHICS_D3D12_INC);
+        }
+
+        public override void ConfigureAll(Project.Configuration conf, Target target)
+        {
+            base.ConfigureAll(conf, target);
+
+            conf.IncludePaths.Add(Defines.Paths.INFERNO_GRAPHICS_INC);
+            conf.IncludePaths.Add(INFERNO_GRAPHICS_D3D12_INC);
+            conf.AddPublicDependency<GraphicsLib>(target);
+        }
     }
 }

@@ -6,6 +6,7 @@
 #include "window/IWindow.h"
 #include <memory>
 #include <functional>
+#include "graphics/interface/device.h"
 
 using namespace INF;
 
@@ -13,6 +14,10 @@ int main()
 {
 	Log::Info("Starting editor");
 	std::unique_ptr<IWindow> window = IWindow::Create("Hello Window", 1280, 720);
+
+	GFX::DeviceCreationParameters deviceInfo;
+	GFX::DeviceHandle device = GFX::IDevice::Create(GFX::API::D3D12, deviceInfo);
+
 	Input input;
 	window->SetInputKeyRegisterCallback(input.GetRegisterKeyFn());
 	window->SetInputMouseButtonRegisterCallback(input.GetRegisterMouseButtonFn());
@@ -28,22 +33,6 @@ int main()
 	{
 		window->PollEvents();
 		input.Update();
-
-		if (input.IsKeyPress(KeyCode::A))
-			Log::Info("A key pressed");
-		if (input.IsKeyRelease(KeyCode::A))
-			Log::Info("A key release");
-
-		if (input.IsMouseButtonPress(MouseButton::Left))
-			Log::Info("Left Click");
-		if (input.IsMouseButtonPress(MouseButton::Right))
-			Log::Info("Right Click");
-		if (input.IsMouseButtonPress(MouseButton::Middle))
-			Log::Info("Middle Click");
-
-		//Log::Info(std::format("MouseX={} MouseY={}", input.GetMouseX(), input.GetMouseY()));
-		Log::Info(std::format("DeltaX={:10f} DeltaY={:10f}", input.GetDeltaMouseX(), input.GetDeltaMouseY()));
-
 
 		if (input.IsKeyRelease(KeyCode::Escape))
 			shouldClose = true;

@@ -2,6 +2,12 @@ using System.IO; // For Path.Combine
 using Sharpmake; // Contains the entire Sharpmake object library.
 using Inferno;
 
+[module: Sharpmake.Include("engineDefs.sharpmake.cs")]
+[module: Sharpmake.Include("core.sharpmake.cs")]
+[module: Sharpmake.Include("graphics.sharpmake.cs")]
+[module: Sharpmake.Include("editor.sharpmake.cs")]
+[module: Sharpmake.Include("thirdparty.sharpmake.cs")]
+
 namespace Inferno
 {
 

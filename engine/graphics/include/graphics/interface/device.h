@@ -1,6 +1,7 @@
 #pragma once
-#include "graphics/GraphicDefines.h"
 #include "core/Assert.h"
+#include "graphics/GraphicDefines.h"
+#include "graphics/interface/comandlist.h"
 
 namespace INF::GFX
 {
@@ -25,5 +26,8 @@ namespace INF::GFX
 	{
 	public:
 		static DeviceHandle Create(API api, DeviceCreationParameters createInfo);
+
+		virtual CommandListeHandle CreateCommandList(CommandQueue queueType) = 0;
+		virtual uint64_t ExecuteCommandLists(const ICommandList* commandLists, uint32_t commandListCount) = 0;
 	};
 }

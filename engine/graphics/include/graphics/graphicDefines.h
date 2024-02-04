@@ -4,7 +4,18 @@ namespace INF::GFX
 {
 	enum class API
 	{
-		D3D12
+		D3D12,
+
+		COUNT
+	};
+
+	enum class CommandQueue : uint8_t
+	{
+		GRAPHICS = 0,
+		COMPUTE,
+		COPY,
+
+		COUNT
 	};
 
 	enum class Format

@@ -10,15 +10,24 @@ namespace INF::GFX
 	{
 	public:
 		D3D12Device(DeviceCreationParameters createInfo);
+
+		CommandListeHandle CreateCommandList(CommandQueue queueType) override;
+		uint64_t ExecuteCommandLists(const ICommandList* commandLists, uint32_t commandListCount) override;
+
 	private:
 		void CreateDebugController();
 		void CreateFactory();
 		void CreateAdapter();
+		void CreateGraphicsCommandAllocator();
 
+		//Device members
 		Microsoft::WRL::ComPtr<ID3D12Debug1> m_debugController;
 		Microsoft::WRL::ComPtr<IDXGIFactory4> m_dxgiFactory;
 		Microsoft::WRL::ComPtr<IDXGIAdapter1> m_adapter;
 		Microsoft::WRL::ComPtr<ID3D12Device> m_device;
 		Microsoft::WRL::ComPtr<ID3D12DebugDevice> m_debugDevice;
+
+		//Context members
+		Microsoft::WRL::ComPtr<ID3D12CommandAllocator> m_graphicsCommandAllocator;
 	};
 }

@@ -3,6 +3,7 @@
 #include "core/Assert.h"
 #include "window/IWindow.h"
 #include "graphics/interface/device.h"
+#include "graphics/graphicDefines.h"
 
 using namespace INF;
 
@@ -14,6 +15,7 @@ int main()
 	GFX::DeviceCreationParameters deviceInfo;
 	deviceInfo.enableDebugValidation = true;
 	GFX::DeviceHandle device = GFX::IDevice::Create(GFX::API::D3D12, deviceInfo);
+	GFX::CommandListeHandle cmd = device->CreateCommandList(GFX::CommandQueue::GRAPHICS);
 
 	Input input;
 	window->SetInputKeyRegisterCallback(input.GetRegisterKeyFn());

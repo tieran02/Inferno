@@ -1,8 +1,8 @@
 #pragma once
 #include "infPCH.h"
-#include "d3d12Device.h"
-#include "core/Assert.h"
-
+#include "graphics/d3d12/d3d12Device.h"
+#include "graphics/d3d12/D3D12Defines.h"
+#include "graphics/d3d12/D3D12CommandList.h"
 
 namespace INF::GFX
 {
@@ -14,22 +14,19 @@ namespace INF::GFX
 
 		CreateFactory();
 		CreateAdapter();
+
+		CreateGraphicsCommandAllocator();
 	}
 
 	void D3D12Device::CreateDebugController()
 	{
 		Microsoft::WRL::ComPtr<ID3D12Debug> dc;
-		HRESULT hr = D3D12GetDebugInterface(IID_PPV_ARGS(&dc));
-		INF_ASSERT(SUCCEEDED(hr), "Failed to get D3D12GetDebugInterface");
+		VerifySuccess(D3D12GetDebugInterface(IID_PPV_ARGS(&dc)));
 
-		hr = dc->QueryInterface(IID_PPV_ARGS(&m_debugController));
-		INF_ASSERT(SUCCEEDED(hr), "Failed to query debug controller");
+		VerifySuccess(dc->QueryInterface(IID_PPV_ARGS(&m_debugController)));
 
-		if (SUCCEEDED(hr))
-		{
-			m_debugController->EnableDebugLayer();
-			m_debugController->SetEnableGPUBasedValidation(true);
-		}
+		m_debugController->EnableDebugLayer();
+		m_debugController->SetEnableGPUBasedValidation(true);
 	}
 
 	void D3D12Device::CreateFactory()
@@ -40,8 +37,7 @@ namespace INF::GFX
 			dxgiFactoryFlags |= DXGI_CREATE_FACTORY_DEBUG;
 		}
 
-		HRESULT hr = CreateDXGIFactory2(dxgiFactoryFlags, IID_PPV_ARGS(&m_dxgiFactory));
-		INF_ASSERT(SUCCEEDED(hr), "Failed to CreateDXGIFactory2");
+		VerifySuccess(CreateDXGIFactory2(dxgiFactoryFlags, IID_PPV_ARGS(&m_dxgiFactory)));
 	}
 
 	void D3D12Device::CreateAdapter()
@@ -69,13 +65,27 @@ namespace INF::GFX
 		INF_ASSERT(m_adapter.Get(), "Failed to create adapter"); //If assert is hit then there was now supported adapteru
 
 		//Now create the device here
-		HRESULT hr = D3D12CreateDevice(m_adapter.Get(), D3D_FEATURE_LEVEL_11_0, IID_PPV_ARGS(&m_device));
-		INF_ASSERT(m_adapter.Get(), "Failed to create device");
+		VerifySuccess(D3D12CreateDevice(m_adapter.Get(), D3D_FEATURE_LEVEL_11_0, IID_PPV_ARGS(&m_device)));
 
 		if (m_debugController)
 		{
-			hr = m_device->QueryInterface(IID_PPV_ARGS(&m_debugDevice));
+			VerifySuccess(m_device->QueryInterface(IID_PPV_ARGS(&m_debugDevice)));
 		}
+	}
+
+	void D3D12Device::CreateGraphicsCommandAllocator()
+	{
+		VerifySuccess(m_device->CreateCommandAllocator(D3D12_COMMAND_LIST_TYPE_DIRECT, IID_PPV_ARGS(&m_graphicsCommandAllocator)));
+	}
+
+	CommandListeHandle D3D12Device::CreateCommandList(CommandQueue queueType)
+	{
+		return CommandListeHandle(new D3D12CommandList(m_device.Get(), m_graphicsCommandAllocator.Get(), queueType));
+	}
+
+	uint64_t D3D12Device::ExecuteCommandLists(const ICommandList* commandLists, uint32_t commandListCount)
+	{
+		return 0;
 	}
 
 }

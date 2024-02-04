@@ -2,7 +2,6 @@
 #include "infPCH.h"
 #include "graphics/d3d12/d3d12Device.h"
 #include "graphics/d3d12/D3D12Defines.h"
-#include "graphics/d3d12/D3D12CommandList.h"
 
 namespace INF::GFX
 {
@@ -76,6 +75,8 @@ namespace INF::GFX
 	void D3D12Device::CreateGraphicsCommandAllocator()
 	{
 		VerifySuccess(m_device->CreateCommandAllocator(D3D12_COMMAND_LIST_TYPE_DIRECT, IID_PPV_ARGS(&m_graphicsCommandAllocator)));
+
+		m_graphicsQueue = std::move(std::unique_ptr<D3D12Queue>(new D3D12Queue(m_device.Get(), CommandQueue::GRAPHICS)));
 	}
 
 	CommandListeHandle D3D12Device::CreateCommandList(CommandQueue queueType)
@@ -86,6 +87,12 @@ namespace INF::GFX
 	uint64_t D3D12Device::ExecuteCommandLists(const ICommandList* commandLists, uint32_t commandListCount)
 	{
 		return 0;
+	}
+
+	void D3D12Device::WaitForIdle()
+	{
+		//Wait for the graphics queue to finish, if we have more queues later we will need to add them (E.G compute/copy)
+		m_graphicsQueue->Wait();
 	}
 
 }

@@ -29,5 +29,7 @@ namespace INF::GFX
 
 		virtual CommandListeHandle CreateCommandList(CommandQueue queueType) = 0;
 		virtual uint64_t ExecuteCommandLists(const ICommandList* commandLists, uint32_t commandListCount) = 0;
+
+		virtual void WaitForIdle() = 0;
 	};
 }

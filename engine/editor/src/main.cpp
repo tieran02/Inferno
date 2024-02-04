@@ -33,6 +33,8 @@ int main()
 		window->PollEvents();
 		input.Update();
 
+		device->WaitForIdle();
+
 		if (input.IsKeyRelease(KeyCode::Escape))
 			shouldClose = true;
 	}

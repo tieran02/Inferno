@@ -9,6 +9,102 @@ namespace INF::GFX
 		COUNT
 	};
 
+	enum class PrimitiveType : uint8_t
+	{
+		POINT_LIST,
+		LINE_LIST,
+		TRIANGLE_LIST,
+		TRIANGLE_STRIP,
+	};
+
+	enum class BlendFactor : uint8_t
+	{
+		ZERO = 1,
+		ONE = 2,
+		SRC_COLOR = 3,
+		INV_SRC_COLOR = 4,
+		SRC_ALPHA = 5,
+		INV_SRC_ALPHA = 6,
+		DST_ALPHA = 7,
+		INV_DST_ALPHA = 8,
+		DST_COLOR = 9,
+		INV_DST_COLOR = 10,
+		SRC_ALPHA_SATURATE = 11,
+		CONSTANT_COLOR = 14,
+		INV_CONSTANT_COLOR = 15,
+		SRC1_COLOR = 16,
+		INV_SRC1_COLOR = 17,
+		SRC1_ALPHA = 18,
+		INV_SRC1_ALPHA = 19,
+	};
+
+	enum class BlendOp : uint8_t
+	{
+		ADD = 1,
+		SUBRTACT = 2,
+		REVERSE_SUBTRACT = 3,
+		MIN = 4,
+		MAX = 5
+	};
+
+	enum class ColorMask : uint8_t
+	{
+		RED = 1,
+		GREEN = 2,
+		BLUE = 4,
+		ALPHA = 8,
+		ALL = 0XF
+	};
+
+	enum class StencilOp : uint8_t
+	{
+		KEEP = 1,
+		ZERO = 2,
+		REPLACE = 3,
+		INCREMENT_CLAMP = 4,
+		DECREMENT_CLAMP = 5,
+		INVERT = 6,
+		INCREMENT_WRAP = 7,
+		DECREMENT_WRAP = 8
+	};
+
+	enum class ComparisonFunc : uint8_t
+	{
+		NEVER = 1,
+		LESS = 2,
+		EQUAL = 3,
+		LESS_OR_EQUAL = 4,
+		GREATER = 5,
+		NOT_EQUAL = 6,
+		GREATER_OR_EQUAL = 7,
+		ALWAYS = 8
+	};
+
+	enum class RasterFillMode : uint8_t
+	{
+		SOLID,
+		WIREFRAME,
+	};
+
+	enum class RasterCullMode : uint8_t
+	{
+		BACK,
+		FRONT,
+		NONE
+	};
+
+	enum class ShaderType : uint8_t
+	{
+		None = 1 << 0,
+
+		Vertex = 1 << 1,
+		Pixel = 1 << 2,
+		AllGraphics = 1 << 3,
+
+		Compute = 1 << 4,
+		All = 0xff,
+	};
+
 	enum class CommandQueue : uint8_t
 	{
 		GRAPHICS = 0,

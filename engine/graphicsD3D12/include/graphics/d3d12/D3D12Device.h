@@ -12,6 +12,8 @@ namespace INF::GFX
 	public:
 		D3D12Device(DeviceCreationParameters createInfo);
 
+		ShaderHandle CreateShader(const ShaderDesc& desc) override;
+
 		CommandListeHandle CreateCommandList(CommandQueue queueType) override;
 		uint64_t ExecuteCommandLists(const ICommandList* commandLists, uint32_t commandListCount) override;
 

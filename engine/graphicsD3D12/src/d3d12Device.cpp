@@ -2,6 +2,7 @@
 #include "infPCH.h"
 #include "graphics/d3d12/d3d12Device.h"
 #include "graphics/d3d12/D3D12Defines.h"
+#include "graphics/d3d12/D3D12Shader.h"
 
 namespace INF::GFX
 {
@@ -93,6 +94,11 @@ namespace INF::GFX
 	{
 		//Wait for the graphics queue to finish, if we have more queues later we will need to add them (E.G compute/copy)
 		m_graphicsQueue->Wait();
+	}
+
+	ShaderHandle D3D12Device::CreateShader(const ShaderDesc& desc)
+	{
+		return ShaderHandle(new D3D12Shader(desc));
 	}
 
 }

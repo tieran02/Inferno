@@ -12,6 +12,7 @@ namespace Inferno
             static public readonly string INFERNO_ROOT = Path.Combine(Defines.Paths.SHARPMAKE_EXE_DIR, @"..\..\..");
             static public readonly string INFERNO_PROJECTS = Path.Combine(INFERNO_ROOT, @"projects");
             static public readonly string INFERNO_ENGINE = Path.Combine(INFERNO_ROOT, @"engine");
+             static public readonly string INFERNO_DATA = Path.Combine(INFERNO_ROOT, @"data");
 
             static public readonly string INFERNO_THIRD_PARTY = Path.Combine(INFERNO_ROOT, @"thirdparty\src");
 
@@ -98,7 +99,7 @@ namespace Inferno
             // release configurations have both a shared and a static version so
             // that would not create unique configuration names.
             //conf.Name = ProjectName;
-            conf.Name = @"[target.Optimization] [target.OutputType]";
+            conf.Name = @"[target.Optimization][target.OutputType]";
 
             // Gives a unique path for the project because Visual Studio does not
             // like shared intermediate directories.

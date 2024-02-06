@@ -2,6 +2,10 @@
 #include "platform/Win64/Win64Window.h"
 #include "core/Assert.h"
 
+#define GLFW_EXPOSE_NATIVE_WIN32
+#include <GLFW/glfw3native.h>
+
+
 using namespace INF;
 
 extern std::unordered_map<int, KeyCode> g_glfwKeyCodeMap;
@@ -121,6 +125,11 @@ void Win64Window::SetInputMouseCursorRegisterCallback(InputRegisterMouseCursorFn
 			Win64Window* self = static_cast<Win64Window*>(glfwGetWindowUserPointer(window));
 			self->m_inputRegisterMouseCursorFn(xPos, yPos);
 		});
+}
+
+void* Win64Window::GetNativeHandle()
+{
+	return glfwGetWin32Window(m_window);
 }
 
 std::unordered_map<int, KeyCode> g_glfwKeyCodeMap

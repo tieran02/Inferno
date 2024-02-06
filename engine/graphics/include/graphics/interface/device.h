@@ -16,7 +16,8 @@ namespace INF::GFX
 		uint32_t backBufferWidth = 1280;
 		uint32_t backBufferHeight = 720;
 		uint32_t swapChainBufferCount = 3;
-		Format swapChainFormat = Format::SRGBA8_UNORM;
+		Format swapChainFormat = Format::RGBA8_UNORM;
+		void* windowHandle;
 		bool enableDebugValidation = false;
 	};
 

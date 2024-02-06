@@ -15,6 +15,8 @@ int main()
 
 	GFX::DeviceCreationParameters deviceInfo;
 	deviceInfo.enableDebugValidation = true;
+	deviceInfo.windowHandle = window->GetNativeHandle();
+
 	GFX::DeviceHandle device = GFX::IDevice::Create(GFX::API::D3D12, deviceInfo);
 	GFX::CommandListeHandle cmd = device->CreateCommandList(GFX::CommandQueue::GRAPHICS);
 

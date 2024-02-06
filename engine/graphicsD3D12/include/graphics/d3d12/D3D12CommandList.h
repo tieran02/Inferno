@@ -13,6 +13,7 @@ namespace INF::GFX
 		~D3D12Queue();
 		void ExecuteCommandLists(ID3D12GraphicsCommandList* commandLists, uint32_t commandListCount);
 		void Wait();
+		ID3D12CommandQueue* D3D() { return Queue.Get(); }
 	private:
 		Microsoft::WRL::ComPtr<ID3D12CommandQueue> Queue;
 		Microsoft::WRL::ComPtr<ID3D12Fence> Fence;

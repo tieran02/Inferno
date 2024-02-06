@@ -24,13 +24,19 @@ namespace INF::GFX
 		void CreateFactory();
 		void CreateAdapter();
 		void CreateGraphicsCommandAllocator();
+		void CreateSwapchain();
+
+		DeviceCreationParameters m_createInfo;
 
 		//Device members
 		Microsoft::WRL::ComPtr<ID3D12Debug1> m_debugController;
 		Microsoft::WRL::ComPtr<IDXGIFactory4> m_dxgiFactory;
 		Microsoft::WRL::ComPtr<IDXGIAdapter1> m_adapter;
-		Microsoft::WRL::ComPtr<ID3D12Device> m_device;
+		Microsoft::WRL::ComPtr<ID3D12Device> m_device;	
 		Microsoft::WRL::ComPtr<ID3D12DebugDevice> m_debugDevice;
+
+		Microsoft::WRL::ComPtr<IDXGISwapChain3> m_swapchain;
+		std::vector<Microsoft::WRL::ComPtr<ID3D12Resource>> m_swapchainResources;
 
 		//Context members
 		std::unique_ptr<D3D12Queue> m_graphicsQueue;

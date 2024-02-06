@@ -1,6 +1,8 @@
 #pragma once
-#include "window/IWindow.h"
 #include "GLFW/glfw3.h"
+#include "window/IWindow.h"
+
+class GLFWwindow;
 
 namespace INF 
 {
@@ -24,6 +26,8 @@ namespace INF
 		void SetInputKeyRegisterCallback(InputRegisterKeyFn inputRegisterKeyFn) override;
 		void SetInputMouseButtonRegisterCallback(InputRegisterMousebuttonFn inputRegisterMouseButtonFn) override;
 		void SetInputMouseCursorRegisterCallback(InputRegisterMouseCursorFn inputRegisterMouseCursorFn) override;
+
+		void* GetNativeHandle() override;
 
 	private:
 		std::string m_title;

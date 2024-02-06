@@ -33,6 +33,8 @@ namespace INF
 		virtual void Close() = 0;
 		virtual void SetCloseCallBack(WindowCloseCallback callback) = 0;
 
+		virtual void* GetNativeHandle() = 0;
+
 		virtual void SetInputKeyRegisterCallback(InputRegisterKeyFn inputRegisterKeyFn) = 0;
 		virtual void SetInputMouseButtonRegisterCallback(InputRegisterMousebuttonFn inputRegisterMouseButtonFn) = 0;
 		virtual void SetInputMouseCursorRegisterCallback(InputRegisterMouseCursorFn inputRegisterMouseCursorFn) = 0;

@@ -8,6 +8,29 @@
 
 namespace INF::GFX
 {
+	using DescriptorIndex = uint32_t;
+	class D3D12DescriptorHeap
+	{
+	public:
+		bool CreateResources(ID3D12Device* device, D3D12_DESCRIPTOR_HEAP_TYPE heapType, uint32_t descriptorCount, bool shaderVisible);
+		DescriptorIndex AllocateDescriptor();
+		void ReleaseDescriptor(DescriptorIndex);
+		D3D12_CPU_DESCRIPTOR_HANDLE GetCPUHandle(DescriptorIndex index);
+		D3D12_GPU_DESCRIPTOR_HANDLE GetGPUHandle(DescriptorIndex index);
+	private:
+		struct D3D12Descritpor
+		{
+			D3D12_CPU_DESCRIPTOR_HANDLE Cpu;
+			D3D12_GPU_DESCRIPTOR_HANDLE Gpu;
+		};
+
+		Microsoft::WRL::ComPtr<ID3D12DescriptorHeap> m_heap;
+		D3D12_DESCRIPTOR_HEAP_TYPE m_heapType;
+
+		std::vector<D3D12Descritpor> m_descriptors;
+		std::stack<uint32_t> m_freeDescriptors; //Indices of free descriptors in m_descriptors
+	};
+
 	class D3D12Device : public IDevice
 	{
 	public:
@@ -29,6 +52,7 @@ namespace INF::GFX
 		void CreateFactory();
 		void CreateAdapter();
 		void CreateGraphicsCommandAllocator();
+		void CreateDescriptorHeaps();
 
 		//Device members
 		Microsoft::WRL::ComPtr<ID3D12Debug1> m_debugController;
@@ -40,5 +64,9 @@ namespace INF::GFX
 		//Context members
 		Microsoft::WRL::ComPtr<ID3D12CommandAllocator> m_graphicsCommandAllocator;
 		D3D12QueueHandle m_graphicsQueue;
+
+		D3D12DescriptorHeap m_SRVDescriptorHeap;
+		D3D12DescriptorHeap m_RTVDescriptorHeap;
+		D3D12DescriptorHeap m_DSVescriptorHeap;
 	};
 }

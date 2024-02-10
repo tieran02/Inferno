@@ -9,6 +9,65 @@
 
 namespace INF::GFX
 {
+	bool D3D12DescriptorHeap::CreateResources(ID3D12Device* device, D3D12_DESCRIPTOR_HEAP_TYPE heapType, uint32_t descriptorCount, bool shaderVisible)
+	{
+		m_heap = nullptr;
+
+		D3D12_DESCRIPTOR_HEAP_DESC heapDesc = {};
+		heapDesc.Type = heapType;
+		heapDesc.NumDescriptors = descriptorCount;
+		heapDesc.Flags = shaderVisible ? D3D12_DESCRIPTOR_HEAP_FLAG_SHADER_VISIBLE : D3D12_DESCRIPTOR_HEAP_FLAG_NONE;
+
+		VerifySuccess(device->CreateDescriptorHeap(&heapDesc, IID_PPV_ARGS(&m_heap)));
+
+		m_descriptors.resize(heapDesc.NumDescriptors);
+		m_heapType = heapDesc.Type;
+
+		const D3D12_CPU_DESCRIPTOR_HANDLE cpuStart = m_heap->GetCPUDescriptorHandleForHeapStart();
+		const D3D12_GPU_DESCRIPTOR_HANDLE gpuStart = shaderVisible ? m_heap->GetGPUDescriptorHandleForHeapStart() : D3D12_GPU_DESCRIPTOR_HANDLE(0);
+		const uint32_t descriptorSize = device->GetDescriptorHandleIncrementSize(heapType);
+
+		for (int i = 0; i < m_descriptors.size(); ++i)
+		{
+			D3D12Descritpor handle;
+
+			m_descriptors[i].Cpu = D3D12_CPU_DESCRIPTOR_HANDLE(cpuStart.ptr + (i * descriptorSize));
+
+			if (shaderVisible)
+				m_descriptors[i].Gpu = D3D12_GPU_DESCRIPTOR_HANDLE(gpuStart.ptr + (i * descriptorSize));
+			else
+				m_descriptors[i].Gpu = gpuStart;
+
+			m_freeDescriptors.push(i);
+		}
+
+		return true;
+	}
+
+	DescriptorIndex D3D12DescriptorHeap::AllocateDescriptor()
+	{
+		INF_ASSERT(!m_freeDescriptors.empty(), "No free descriptors left to allocate, either increase descriptor count or release unused descriptos");
+		DescriptorIndex index = m_freeDescriptors.top();
+		m_freeDescriptors.pop();
+		return index;
+	}
+
+	void D3D12DescriptorHeap::ReleaseDescriptor(DescriptorIndex index)
+	{
+		m_freeDescriptors.push(index);
+	}
+
+	D3D12_CPU_DESCRIPTOR_HANDLE D3D12DescriptorHeap::GetCPUHandle(DescriptorIndex index)
+	{
+		INF_ASSERT(index >= 0 && index < m_descriptors.size(), "Index out of rangr");
+		return m_descriptors.at(index).Cpu;
+	}
+
+	D3D12_GPU_DESCRIPTOR_HANDLE D3D12DescriptorHeap::GetGPUHandle(DescriptorIndex index)
+	{
+		INF_ASSERT(index >= 0 && index < m_descriptors.size(), "Index out of rangr");
+		return m_descriptors.at(index).Gpu;
+	}
 
 	D3D12Device::D3D12Device(const DeviceCreationParameters& createInfo)
 	{
@@ -19,6 +78,8 @@ namespace INF::GFX
 		CreateAdapter();
 
 		CreateGraphicsCommandAllocator();
+		CreateDescriptorHeaps();
+
 	}
 
 	void D3D12Device::CreateDebugController()
@@ -105,4 +166,12 @@ namespace INF::GFX
 		return ShaderHandle(new D3D12Shader(desc));
 	}
 
+	void D3D12Device::CreateDescriptorHeaps()
+	{
+		m_SRVDescriptorHeap.CreateResources(m_device.Get(), D3D12_DESCRIPTOR_HEAP_TYPE_CBV_SRV_UAV, 1024, true);
+		m_RTVDescriptorHeap.CreateResources(m_device.Get(), D3D12_DESCRIPTOR_HEAP_TYPE_RTV, 1024, false);
+		m_DSVescriptorHeap.CreateResources(m_device.Get(), D3D12_DESCRIPTOR_HEAP_TYPE_DSV, 1024, false);
+	}
+
+	
 }

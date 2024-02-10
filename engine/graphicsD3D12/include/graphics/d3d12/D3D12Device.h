@@ -1,5 +1,6 @@
 #pragma once
 #include "graphics/interface/device.h"
+#include "graphics/interface/deviceManager.h"
 #include "directx/d3dx12.h"
 #include <wrl/client.h>
 #include <dxgi1_4.h>
@@ -10,7 +11,7 @@ namespace INF::GFX
 	class D3D12Device : public IDevice
 	{
 	public:
-		D3D12Device(DeviceCreationParameters createInfo);
+		D3D12Device(const DeviceCreationParameters& createInfo);
 
 		ShaderHandle CreateShader(const ShaderDesc& desc) override;
 
@@ -19,14 +20,15 @@ namespace INF::GFX
 
 		void WaitForIdle() override;
 
+		IDXGIFactory4* Factory() { return m_dxgiFactory.Get(); }
+		IDXGIAdapter1* Adapter() { return m_adapter.Get(); }
+		ID3D12Device*  Device() { return  m_device.Get(); }
+		D3D12QueueHandle GetGraphicsQueue() { return m_graphicsQueue; }
 	private:
 		void CreateDebugController();
 		void CreateFactory();
 		void CreateAdapter();
 		void CreateGraphicsCommandAllocator();
-		void CreateSwapchain();
-
-		DeviceCreationParameters m_createInfo;
 
 		//Device members
 		Microsoft::WRL::ComPtr<ID3D12Debug1> m_debugController;
@@ -35,11 +37,8 @@ namespace INF::GFX
 		Microsoft::WRL::ComPtr<ID3D12Device> m_device;	
 		Microsoft::WRL::ComPtr<ID3D12DebugDevice> m_debugDevice;
 
-		Microsoft::WRL::ComPtr<IDXGISwapChain3> m_swapchain;
-		std::vector<Microsoft::WRL::ComPtr<ID3D12Resource>> m_swapchainResources;
-
 		//Context members
-		std::unique_ptr<D3D12Queue> m_graphicsQueue;
 		Microsoft::WRL::ComPtr<ID3D12CommandAllocator> m_graphicsCommandAllocator;
+		D3D12QueueHandle m_graphicsQueue;
 	};
 }

@@ -5,6 +5,7 @@
 #include "graphics/interface/device.h"
 #include "graphics/graphicDefines.h"
 #include "graphics/interface/Shader.h"
+#include "graphics/interface/deviceManager.h"
 
 using namespace INF;
 
@@ -15,9 +16,11 @@ int main()
 
 	GFX::DeviceCreationParameters deviceInfo;
 	deviceInfo.enableDebugValidation = true;
-	deviceInfo.windowHandle = window->GetNativeHandle();
 
-	GFX::DeviceHandle device = GFX::IDevice::Create(GFX::API::D3D12, deviceInfo);
+	GFX::DeviceManagerHandle deviceManager = GFX::IDeviceManager::Create(GFX::API::D3D12, deviceInfo);
+	deviceManager->CreateDeviceAndSwapChain(window.get(), deviceInfo);
+
+	GFX::IDevice* device = deviceManager->GetDevice();
 	GFX::CommandListeHandle cmd = device->CreateCommandList(GFX::CommandQueue::GRAPHICS);
 
 	GFX::ShaderDesc shaderDesc;
@@ -40,6 +43,14 @@ int main()
 	{
 		window->PollEvents();
 		input.Update();
+
+		cmd->Open();
+
+		cmd->Close();
+
+		device->ExecuteCommandLists(cmd.get(), 1);
+
+		deviceManager->Present();
 
 		device->WaitForIdle();
 

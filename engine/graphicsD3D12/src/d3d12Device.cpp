@@ -10,8 +10,7 @@
 namespace INF::GFX
 {
 
-	D3D12Device::D3D12Device(DeviceCreationParameters createInfo) :
-		m_createInfo(createInfo)
+	D3D12Device::D3D12Device(const DeviceCreationParameters& createInfo)
 	{
 		if(createInfo.enableDebugValidation)
 			CreateDebugController();
@@ -20,7 +19,6 @@ namespace INF::GFX
 		CreateAdapter();
 
 		CreateGraphicsCommandAllocator();
-		CreateSwapchain();
 	}
 
 	void D3D12Device::CreateDebugController()
@@ -80,55 +78,20 @@ namespace INF::GFX
 
 	void D3D12Device::CreateGraphicsCommandAllocator()
 	{
+		m_graphicsQueue = D3D12QueueHandle(new D3D12Queue(m_device.Get(), CommandQueue::GRAPHICS));
+
 		VerifySuccess(m_device->CreateCommandAllocator(D3D12_COMMAND_LIST_TYPE_DIRECT, IID_PPV_ARGS(&m_graphicsCommandAllocator)));
-
-		m_graphicsQueue = std::move(std::unique_ptr<D3D12Queue>(new D3D12Queue(m_device.Get(), CommandQueue::GRAPHICS)));
 	}
-
-
-	void D3D12Device::CreateSwapchain()
-	{
-		DXGI_SWAP_CHAIN_DESC1 swapchainDesc = {};
-		swapchainDesc.BufferCount = m_createInfo.swapChainBufferCount;
-		swapchainDesc.Width = m_createInfo.backBufferWidth;
-		swapchainDesc.Height = m_createInfo.backBufferHeight;
-		swapchainDesc.Format = D3D12Format(m_createInfo.swapChainFormat);
-		swapchainDesc.BufferUsage = DXGI_USAGE_RENDER_TARGET_OUTPUT;
-		swapchainDesc.SwapEffect = DXGI_SWAP_EFFECT_FLIP_DISCARD;
-		swapchainDesc.SampleDesc.Count = 1;
-
-		IDXGISwapChain1* swapchain = nullptr;
-		HWND windowHandle = (HWND)m_createInfo.windowHandle;
-		VerifySuccess(m_dxgiFactory->CreateSwapChainForHwnd(m_graphicsQueue->D3D(), windowHandle, &swapchainDesc, nullptr, nullptr, &swapchain));
-
-		HRESULT swapchainSupport = swapchain->QueryInterface(__uuidof(IDXGISwapChain3), (void**)&swapchain);
-		VerifySuccess(swapchainSupport);
-
-		if (SUCCEEDED(swapchainSupport))
-		{
-			m_swapchain = (IDXGISwapChain3*)swapchain;
-		}
-		else
-		{
-			swapchain->Release();
-		}
-
-		m_swapchainResources.resize(m_createInfo.swapChainBufferCount);
-		for (int n = 0; n < m_createInfo.swapChainBufferCount; n++)
-		{
-			VerifySuccess(swapchain->GetBuffer(n, IID_PPV_ARGS(&m_swapchainResources[n])));;
-		}
-	}
-
 
 	CommandListeHandle D3D12Device::CreateCommandList(CommandQueue queueType)
 	{
-		return CommandListeHandle(new D3D12CommandList(m_device.Get(), m_graphicsCommandAllocator.Get(), queueType));
+		return CommandListeHandle(new D3D12CommandList(m_device.Get(), m_graphicsCommandAllocator, queueType));
 	}
 
 	uint64_t D3D12Device::ExecuteCommandLists(const ICommandList* commandLists, uint32_t commandListCount)
 	{
-		return 0;
+		const D3D12CommandList* d3d12CommandLists = static_cast<const D3D12CommandList*>(commandLists);
+		return m_graphicsQueue->ExecuteCommandLists(d3d12CommandLists->D3D(), 1);
 	}
 
 	void D3D12Device::WaitForIdle()

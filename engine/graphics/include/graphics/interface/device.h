@@ -14,6 +14,7 @@ namespace INF::GFX
 	class IDevice
 	{
 	public:
+		virtual ~IDevice() = default;
 		virtual ShaderHandle CreateShader(const ShaderDesc& desc) = 0;
 
 		virtual CommandListeHandle CreateCommandList(CommandQueue queueType) = 0;

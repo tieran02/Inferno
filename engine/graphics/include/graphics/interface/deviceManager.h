@@ -27,6 +27,8 @@ namespace INF::GFX
 	class IDeviceManager
 	{
 	public:
+		virtual ~IDeviceManager() = default;
+
 		static DeviceManagerHandle Create(API api, const DeviceCreationParameters& createInfo);
 		virtual bool CreateDeviceAndSwapChain(IWindow* window, const DeviceCreationParameters& createInfo) = 0;
 
@@ -35,6 +37,7 @@ namespace INF::GFX
 
 		virtual uint32_t GetCurrentBackBufferIndex() = 0;
 		virtual uint32_t GetBackBufferCount() = 0;
+		virtual ITexture* GetCurrentBackBufferTexture() = 0;
 
 		virtual void Present() = 0;
 	};

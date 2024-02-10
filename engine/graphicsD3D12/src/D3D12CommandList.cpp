@@ -1,6 +1,8 @@
 #include "infPCH.h"
 #include "graphics/d3d12/D3D12CommandList.h"
 #include "graphics/d3d12/D3D12Defines.h"
+#include "graphics/interface/Texture.h"
+#include "graphics/d3d12/D3D12Texture.h"
 
 namespace INF::GFX
 {
@@ -105,4 +107,26 @@ namespace INF::GFX
 	{
 		m_commandList->Close();
 	}
+
+	void D3D12CommandList::Transition(ITexture* texture, TRANSITION_STATES_FLAGS from, TRANSITION_STATES_FLAGS to)
+	{
+		D3D12_RESOURCE_BARRIER renderTargetBarrier;
+		renderTargetBarrier.Type = D3D12_RESOURCE_BARRIER_TYPE_TRANSITION;
+		renderTargetBarrier.Flags = D3D12_RESOURCE_BARRIER_FLAG_NONE;
+
+		renderTargetBarrier.Transition.pResource = static_cast<D3D12Texture*>(texture)->Resource();
+		renderTargetBarrier.Transition.StateBefore = D3D12TransitionFlags(from);
+		renderTargetBarrier.Transition.StateAfter = D3D12TransitionFlags(to);
+		renderTargetBarrier.Transition.Subresource = D3D12_RESOURCE_BARRIER_ALL_SUBRESOURCES;
+
+		m_commandList->ResourceBarrier(1, &renderTargetBarrier);
+	}
+
+	void D3D12CommandList::ClearColor(ITexture* texture, const Color& color)
+	{
+		const D3D12TextureView* textureView = (const D3D12TextureView*)texture->GetView(ITextureView::ViewType::RENDER_TARGET);
+		INF_ASSERT(textureView, "Invalid Texture view");
+		m_commandList->ClearRenderTargetView(textureView->CPU, &color.R, 0, nullptr);
+	}
+
 }

@@ -4,12 +4,20 @@
 #include "graphics/d3d12/D3D12Defines.h"
 #include "window/IWindow.h"
 #include "graphics/d3d12/D3D12CommandList.h"
+#include "graphics/d3d12/D3D12Texture.h"
 
 using namespace INF::GFX;
 
 D3D12DeviceManager::D3D12DeviceManager(const DeviceCreationParameters& createInfo) : m_createInfo(createInfo), m_currentSwapchainBuffer(0)
 {
 }
+
+
+D3D12DeviceManager::~D3D12DeviceManager()
+{
+
+}
+
 
 IDevice* D3D12DeviceManager::GetDevice()
 {
@@ -28,8 +36,14 @@ uint32_t D3D12DeviceManager::GetCurrentBackBufferIndex()
 
 uint32_t D3D12DeviceManager::GetBackBufferCount()
 {
-	return static_cast<uint32_t>(m_swapchainResources.size());
+	return static_cast<uint32_t>(m_swapchainTextures.size());
 }
+
+ITexture* D3D12DeviceManager::GetCurrentBackBufferTexture()
+{
+	return m_swapchainTextures.at(GetCurrentBackBufferIndex()).get();
+}
+
 
 bool D3D12DeviceManager::CreateDeviceAndSwapChain(IWindow* window, const DeviceCreationParameters& createInfo)
 {
@@ -61,10 +75,22 @@ bool D3D12DeviceManager::CreateDeviceAndSwapChain(IWindow* window, const DeviceC
 		return false;
 	}
 
-	m_swapchainResources.resize(createInfo.swapChainBufferCount);
+	m_swapchainTextures.resize(createInfo.swapChainBufferCount);
 	for (uint32_t n = 0; n < createInfo.swapChainBufferCount; n++)
 	{
-		VerifySuccess(swapchain->GetBuffer(n, IID_PPV_ARGS(&m_swapchainResources[n])));;
+		Microsoft::WRL::ComPtr<ID3D12Resource> resource;
+		VerifySuccess(swapchain->GetBuffer(n, IID_PPV_ARGS(&resource)));
+
+		TextureDesc textureDesc;
+		textureDesc.width = swapchainDesc.Width;
+		textureDesc.height = swapchainDesc.Height;
+		textureDesc.format = createInfo.swapChainFormat;
+		textureDesc.name = "SwapChainBuffer";
+		m_swapchainTextures[n] = D3D12Texture::CreateTextureFromResource(m_device.get(), resource, textureDesc);
+
+		//Get the view straightaway as we know this will be used as a render target
+		m_swapchainTextures[n]->GetView(ITextureView::ViewType::RENDER_TARGET);
+
 	}
 
 	return true;
@@ -73,5 +99,6 @@ bool D3D12DeviceManager::CreateDeviceAndSwapChain(IWindow* window, const DeviceC
 void D3D12DeviceManager::Present()
 {
 	m_swapchain->Present(m_createInfo.vsync, 0);
-	m_currentSwapchainBuffer++;
+	m_currentSwapchainBuffer = (m_currentSwapchainBuffer + 1) % GetBackBufferCount();
 }
+

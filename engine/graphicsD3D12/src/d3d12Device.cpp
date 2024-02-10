@@ -6,6 +6,7 @@
 #include <wrl/client.h>
 #include <directx/d3d12.h>
 #include <dxgi1_4.h>
+#include "graphics/d3d12/D3D12Texture.h"
 
 namespace INF::GFX
 {
@@ -38,7 +39,7 @@ namespace INF::GFX
 			else
 				m_descriptors[i].Gpu = gpuStart;
 
-			m_freeDescriptors.push(i);
+			m_freeDescriptors.push_back(i);
 		}
 
 		return true;
@@ -47,14 +48,14 @@ namespace INF::GFX
 	DescriptorIndex D3D12DescriptorHeap::AllocateDescriptor()
 	{
 		INF_ASSERT(!m_freeDescriptors.empty(), "No free descriptors left to allocate, either increase descriptor count or release unused descriptos");
-		DescriptorIndex index = m_freeDescriptors.top();
-		m_freeDescriptors.pop();
+		DescriptorIndex index = m_freeDescriptors.front();
+		m_freeDescriptors.pop_front();
 		return index;
 	}
 
 	void D3D12DescriptorHeap::ReleaseDescriptor(DescriptorIndex index)
 	{
-		m_freeDescriptors.push(index);
+		m_freeDescriptors.push_front(index);
 	}
 
 	D3D12_CPU_DESCRIPTOR_HANDLE D3D12DescriptorHeap::GetCPUHandle(DescriptorIndex index)
@@ -170,8 +171,27 @@ namespace INF::GFX
 	{
 		m_SRVDescriptorHeap.CreateResources(m_device.Get(), D3D12_DESCRIPTOR_HEAP_TYPE_CBV_SRV_UAV, 1024, true);
 		m_RTVDescriptorHeap.CreateResources(m_device.Get(), D3D12_DESCRIPTOR_HEAP_TYPE_RTV, 1024, false);
-		m_DSVescriptorHeap.CreateResources(m_device.Get(), D3D12_DESCRIPTOR_HEAP_TYPE_DSV, 1024, false);
+		m_DSVDescriptorHeap.CreateResources(m_device.Get(), D3D12_DESCRIPTOR_HEAP_TYPE_DSV, 1024, false);
 	}
 
+	void D3D12Device::CreateRenderTargetView(DescriptorIndex descriptorIndex, ITexture* texture)
+	{
+		D3D12_RENDER_TARGET_VIEW_DESC viewDesc = {};
+		const TextureDesc& textureDesc = texture->GetDesc();
+
+		viewDesc.Format = D3D12Format(textureDesc.format);
+		switch (textureDesc.dimension)
+		{
+		case TextureDimension::Texture2D:
+			viewDesc.ViewDimension = D3D12_RTV_DIMENSION_TEXTURE2D;
+			viewDesc.Texture2D.MipSlice = 0; //todo mip subresources
+			break;
+		default:
+			INF_ASSERT(false, "Dimension not supported");
+			break;
+		}
+
+		m_device->CreateRenderTargetView(static_cast<D3D12Texture*>(texture)->Resource(), &viewDesc, m_RTVDescriptorHeap.GetCPUHandle(descriptorIndex));
+	}
 	
 }

@@ -28,10 +28,16 @@ namespace INF::GFX
 	{
 	public:
 		D3D12CommandList(ID3D12Device* d3dDevice, const Microsoft::WRL::ComPtr<ID3D12CommandAllocator>& commandAllocator, CommandQueue queueType);
+
 		void Open() override;
 		void Close() override;
 
+		void Transition(ITexture* texture, TRANSITION_STATES_FLAGS from, TRANSITION_STATES_FLAGS to) override;
+		void ClearColor(ITexture* texture, const Color& color) override;
+
 		ID3D12GraphicsCommandList* D3D() const { return m_commandList.Get(); }
+
+
 	private:
 		Microsoft::WRL::ComPtr<ID3D12CommandAllocator> m_commandAllocator; //Ref to the command allocator
 		Microsoft::WRL::ComPtr<ID3D12GraphicsCommandList> m_commandList;

@@ -9,6 +9,17 @@ namespace INF::GFX
 		COUNT
 	};
 
+	struct Color
+	{
+		float R, G, B, A;
+		Color() : R(0.f), G(0.f), B(0.f), A(0.f) { }
+		Color(float c) : R(c), G(c), B(c), A(c) { }
+		Color(float r, float g, float b, float a) : R(r), G(g), B(b), A(a) { }
+
+		bool operator ==(const Color& rhs) const { return R == rhs.R && G == rhs.G && B == rhs.B && A == rhs.A; }
+		bool operator !=(const Color& rhs) const { return R != rhs.R || G != rhs.G || B != rhs.B || A != rhs.A; }
+	};
+
 	enum class PrimitiveType : uint8_t
 	{
 		POINT_LIST,
@@ -114,6 +125,7 @@ namespace INF::GFX
 		COUNT
 	};
 
+
 	enum class Format
 	{
 		UNKNOWN,
@@ -190,5 +202,23 @@ namespace INF::GFX
 		BC7_UNORM_SRGB,
 
 		COUNT,
+	};
+
+	using TRANSITION_STATES_FLAGS = uint16_t;
+	enum class TRANSITION_STATES : TRANSITION_STATES_FLAGS
+	{
+		PRESENT						= 1 << 0,
+		INDEX_BUFFER				= 1 << 1,
+		RENDER_TARGET				= 1 << 2,
+		UNORDERED_ACCESS			= 1 << 3,
+		DEPTH_WRITE					= 1 << 4,
+		DEPTH_READ					= 1 << 5,
+		NON_PIXEL_SHADER_RESOURCE	= 1 << 6,
+		PIXEL_SHADER_RESOURCE		= 1 << 7,
+		STREAM_OUT					= 1 << 8,
+		COPY_DEST					= 1 << 9,
+		COPY_SOURCE					= 1 << 10,
+		RESOLVE_DEST				= 1 << 11,
+		RESOLVE_SOURCE				= 1 << 12,
 	};
 }

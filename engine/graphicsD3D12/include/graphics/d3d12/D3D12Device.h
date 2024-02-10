@@ -8,7 +8,10 @@
 
 namespace INF::GFX
 {
+	class ITexture;
 	using DescriptorIndex = uint32_t;
+	constexpr DescriptorIndex DescriptorIndexInvalid = UINT_MAX;
+
 	class D3D12DescriptorHeap
 	{
 	public:
@@ -28,7 +31,7 @@ namespace INF::GFX
 		D3D12_DESCRIPTOR_HEAP_TYPE m_heapType;
 
 		std::vector<D3D12Descritpor> m_descriptors;
-		std::stack<uint32_t> m_freeDescriptors; //Indices of free descriptors in m_descriptors
+		std::deque<uint32_t> m_freeDescriptors; //Indices of free descriptors in m_descriptors
 	};
 
 	class D3D12Device : public IDevice
@@ -43,10 +46,16 @@ namespace INF::GFX
 
 		void WaitForIdle() override;
 
+		void CreateRenderTargetView(DescriptorIndex descriptorIndex, ITexture* texture);
+
 		IDXGIFactory4* Factory() { return m_dxgiFactory.Get(); }
 		IDXGIAdapter1* Adapter() { return m_adapter.Get(); }
 		ID3D12Device*  Device() { return  m_device.Get(); }
 		D3D12QueueHandle GetGraphicsQueue() { return m_graphicsQueue; }
+
+		D3D12DescriptorHeap& SRVDescriptoHeap() { return m_SRVDescriptorHeap; }
+		D3D12DescriptorHeap& RTVDescriptoHeap() { return m_RTVDescriptorHeap; }
+		D3D12DescriptorHeap& DSVDescriptoHeap() { return m_DSVDescriptorHeap; }
 	private:
 		void CreateDebugController();
 		void CreateFactory();
@@ -67,6 +76,6 @@ namespace INF::GFX
 
 		D3D12DescriptorHeap m_SRVDescriptorHeap;
 		D3D12DescriptorHeap m_RTVDescriptorHeap;
-		D3D12DescriptorHeap m_DSVescriptorHeap;
+		D3D12DescriptorHeap m_DSVDescriptorHeap;
 	};
 }

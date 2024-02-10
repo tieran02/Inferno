@@ -4,15 +4,17 @@
 #include <dxgi1_4.h>
 #include "directx/d3d12.h"
 #include "graphics/d3d12/D3D12CommandList.h"
+#include "graphics/interface/Texture.h"
+#include "graphics/d3d12/D3D12Device.h"
 
 namespace INF::GFX
 {
-	class D3D12Device;
 
 	class D3D12DeviceManager : public IDeviceManager
 	{
 	public:
 		D3D12DeviceManager(const DeviceCreationParameters& createInfo);
+		~D3D12DeviceManager();
 		bool CreateDeviceAndSwapChain(IWindow* window, const DeviceCreationParameters& createInfo) override;
 
 		void Present() override;
@@ -21,6 +23,8 @@ namespace INF::GFX
 		API GetAPI() const override;
 		uint32_t GetCurrentBackBufferIndex() override;
 		uint32_t GetBackBufferCount() override;
+		ITexture* GetCurrentBackBufferTexture() override;
+
 	private:
 		DeviceCreationParameters m_createInfo;
 
@@ -28,7 +32,7 @@ namespace INF::GFX
 		D3D12QueueHandle m_graphicsQueue;
 
 		Microsoft::WRL::ComPtr<IDXGISwapChain3> m_swapchain;
-		std::vector<Microsoft::WRL::ComPtr<ID3D12Resource>> m_swapchainResources;
+		std::vector<TextureHandle> m_swapchainTextures;
 		uint32_t m_currentSwapchainBuffer;
 	};
 }

@@ -78,6 +78,7 @@ namespace INF::GFX
 	class IGraphicsPipeline
 	{
 	public:
+		virtual ~IGraphicsPipeline() = default;
 		virtual const GraphicsPipelineDesc& GetDesc() const = 0;
 	};
 }

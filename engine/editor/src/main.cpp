@@ -41,10 +41,20 @@ int main()
 
 	while (!shouldClose)
 	{
+		typedef std::chrono::high_resolution_clock clock;
+		typedef std::chrono::duration<float, std::milli> duration;
+		static clock::time_point start = clock::now();
+		float elapsed = (duration(clock::now() - start)).count();
+
+
 		window->PollEvents();
 		input.Update();
 
 		cmd->Open();
+
+		cmd->Transition(deviceManager->GetCurrentBackBufferTexture(), (GFX::TRANSITION_STATES_FLAGS)GFX::TRANSITION_STATES::PRESENT, (GFX::TRANSITION_STATES_FLAGS)GFX::TRANSITION_STATES::RENDER_TARGET);
+		cmd->ClearColor(deviceManager->GetCurrentBackBufferTexture(), GFX::Color((sinf(elapsed * 0.01f) + 1) * 0.5f, 0.5f, 0.2f, 1.0f));
+		cmd->Transition(deviceManager->GetCurrentBackBufferTexture(), (GFX::TRANSITION_STATES_FLAGS)GFX::TRANSITION_STATES::RENDER_TARGET, (GFX::TRANSITION_STATES_FLAGS)GFX::TRANSITION_STATES::PRESENT);
 
 		cmd->Close();
 

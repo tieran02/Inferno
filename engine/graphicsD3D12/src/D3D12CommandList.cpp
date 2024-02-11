@@ -3,6 +3,7 @@
 #include "graphics/d3d12/D3D12Defines.h"
 #include "graphics/interface/Texture.h"
 #include "graphics/d3d12/D3D12Texture.h"
+#include "graphics/d3d12/D3D12Pipeline.h"
 
 namespace INF::GFX
 {
@@ -127,6 +128,79 @@ namespace INF::GFX
 		const D3D12TextureView* textureView = (const D3D12TextureView*)texture->GetView(ITextureView::ViewType::RENDER_TARGET);
 		INF_ASSERT(textureView, "Invalid Texture view");
 		m_commandList->ClearRenderTargetView(textureView->CPU, &color.R, 0, nullptr);
+	}
+
+	void D3D12CommandList::SetGraphicsState(const GraphicsState& state)
+	{
+		D3D12GraphicsPipeline* pso = static_cast<D3D12GraphicsPipeline*>(state.pipeline);
+		D3D12Framebuffer* framebuffer = static_cast<D3D12Framebuffer*>(state.framebuffer);
+
+		BindGraphicsPipeline(pso);
+		BindFramebuffer(pso, framebuffer);
+	}
+
+	void D3D12CommandList::BindGraphicsPipeline(D3D12GraphicsPipeline* pso)
+	{
+		const auto& state = pso->GetDesc();
+
+		m_commandList->SetPipelineState(pso->PipelineState());
+		m_commandList->IASetPrimitiveTopology(D3D12Primitive(state.primitiveType));
+
+		if (state.depthStencilState.stencilEnable)
+		{
+			m_commandList->OMSetStencilRef(state.depthStencilState.stencilRefValue);
+		}
+
+		if (pso->RequiresBlendFactor())
+		{
+			m_commandList->OMSetBlendFactor(&state.blendState.blendFactor.R);
+		}
+	}
+
+	void D3D12CommandList::BindFramebuffer(D3D12GraphicsPipeline* pso, D3D12Framebuffer* fb)
+	{
+		const auto& state = pso->GetDesc();
+
+		for (const auto& attachment : fb->GetDesc().colorAttachments)
+		{
+			if(attachment.texture)
+				Transition(attachment.texture, (TRANSITION_STATES_FLAGS)TRANSITION_STATES::COMMON, (TRANSITION_STATES_FLAGS)TRANSITION_STATES::RENDER_TARGET);
+		}
+
+		if (fb->GetDesc().depthAttachment.texture)
+		{
+			const auto& attachment = fb->GetDesc().depthAttachment.texture;
+
+			TRANSITION_STATES resourceState = TRANSITION_STATES::DEPTH_READ;
+			if (state.depthStencilState.depthWriteEnable == true || state.depthStencilState.stencilWriteMask != 0)
+				resourceState = TRANSITION_STATES::DEPTH_WRITE;
+
+			Transition(attachment, (TRANSITION_STATES_FLAGS)TRANSITION_STATES::COMMON, (TRANSITION_STATES_FLAGS)resourceState);
+		}
+
+		std::array<D3D12_CPU_DESCRIPTOR_HANDLE, MAX_RENDER_TARGETS> RTVs;
+		int renderTargetCount = 0;
+		for (int i = 0; i < fb->GetDesc().colorAttachments.size(); ++i)
+		{
+			if (fb->GetDesc().colorAttachments[i].texture)
+			{
+				renderTargetCount++;
+				D3D12TextureView* view = (D3D12TextureView*)fb->GetDesc().colorAttachments[i].texture->GetView(ITextureView::ViewType::RENDER_TARGET);
+				RTVs[i] = (view->CPU);
+			}
+			else
+				RTVs[i] = D3D12_CPU_DESCRIPTOR_HANDLE(0);
+			
+		}
+
+		D3D12_CPU_DESCRIPTOR_HANDLE DSV = {};
+		if (fb->GetDesc().depthAttachment.texture)
+		{
+			D3D12TextureView* view = (D3D12TextureView*)fb->GetDesc().depthAttachment.texture->GetView(ITextureView::ViewType::DEPTH);
+			DSV = view->CPU;
+		}
+
+		m_commandList->OMSetRenderTargets(renderTargetCount, RTVs.data(), false, fb->GetDesc().depthAttachment.texture ? &DSV : nullptr);
 	}
 
 }

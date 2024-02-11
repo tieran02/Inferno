@@ -6,6 +6,9 @@
 
 namespace INF::GFX
 {
+	class D3D12GraphicsPipeline;
+	class D3D12Framebuffer;
+
 	class D3D12Queue
 	{
 	public:
@@ -35,10 +38,14 @@ namespace INF::GFX
 		void Transition(ITexture* texture, TRANSITION_STATES_FLAGS from, TRANSITION_STATES_FLAGS to) override;
 		void ClearColor(ITexture* texture, const Color& color) override;
 
+		void SetGraphicsState(const GraphicsState& state) override;
+
+
 		ID3D12GraphicsCommandList* D3D() const { return m_commandList.Get(); }
-
-
 	private:
+		void BindGraphicsPipeline(D3D12GraphicsPipeline* pso);
+		void BindFramebuffer(D3D12GraphicsPipeline* pso, D3D12Framebuffer* fb);
+
 		Microsoft::WRL::ComPtr<ID3D12CommandAllocator> m_commandAllocator; //Ref to the command allocator
 		Microsoft::WRL::ComPtr<ID3D12GraphicsCommandList> m_commandList;
 	};

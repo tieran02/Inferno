@@ -186,20 +186,7 @@ namespace INF::GFX
 
 		desc.RasterizerState = D3D12RasterizerState(state.rasterState);
 
-		switch (state.primitiveType)
-		{
-		case PrimitiveType::POINT_LIST:
-			desc.PrimitiveTopologyType = D3D12_PRIMITIVE_TOPOLOGY_TYPE_POINT;
-			break;
-		case PrimitiveType::LINE_LIST:
-			desc.PrimitiveTopologyType = D3D12_PRIMITIVE_TOPOLOGY_TYPE_LINE;
-			break;
-		case PrimitiveType::TRIANGLE_LIST:
-			desc.PrimitiveTopologyType = D3D12_PRIMITIVE_TOPOLOGY_TYPE_TRIANGLE;
-			break;
-		default:
-			INF_ASSERT(false, "Primitive type not supported");
-		}
+		desc.PrimitiveTopologyType = D3D12PrimitiveType(state.primitiveType);
 
 		desc.DSVFormat = D3D12Format(fb->GetInfo().depthFormat);
 
@@ -235,7 +222,7 @@ namespace INF::GFX
 	GraphicsPipelineHandle D3D12Device::CreateGraphicsPipeline(const GraphicsPipelineDesc& desc, IFramebuffer* fb)
 	{
 		auto pso = CreatePipelineState(desc, fb);
-		return GraphicsPipelineHandle(new D3D12GraphicsPipeline(desc, fb));
+		return GraphicsPipelineHandle(new D3D12GraphicsPipeline(desc, pso, fb));
 	}
 
 	void D3D12Device::CreateDescriptorHeaps()

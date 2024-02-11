@@ -57,6 +57,7 @@ int main()
 	GFX::GraphicsPipelineHandle pipeline = device->CreateGraphicsPipeline(pipelineDesc, framebuffers[0].get());
 
 
+
 	Input input;
 	window->SetInputKeyRegisterCallback(input.GetRegisterKeyFn());
 	window->SetInputMouseButtonRegisterCallback(input.GetRegisterMouseButtonFn());
@@ -75,14 +76,20 @@ int main()
 		static clock::time_point start = clock::now();
 		float elapsed = (duration(clock::now() - start)).count();
 
+		GFX::GraphicsState graphicsState;
+		graphicsState.pipeline = pipeline.get();
+		graphicsState.framebuffer = framebuffers[deviceManager->GetCurrentBackBufferIndex()].get();
 
 		window->PollEvents();
 		input.Update();
 
 		cmd->Open();
 
-		cmd->Transition(deviceManager->GetCurrentBackBufferTexture(), (GFX::TRANSITION_STATES_FLAGS)GFX::TRANSITION_STATES::PRESENT, (GFX::TRANSITION_STATES_FLAGS)GFX::TRANSITION_STATES::RENDER_TARGET);
+		cmd->SetGraphicsState(graphicsState);
+
 		cmd->ClearColor(deviceManager->GetCurrentBackBufferTexture(), GFX::Color((sinf(elapsed * 0.01f) + 1) * 0.5f, 0.5f, 0.2f, 1.0f));
+
+		//transition to present for swapchain
 		cmd->Transition(deviceManager->GetCurrentBackBufferTexture(), (GFX::TRANSITION_STATES_FLAGS)GFX::TRANSITION_STATES::RENDER_TARGET, (GFX::TRANSITION_STATES_FLAGS)GFX::TRANSITION_STATES::PRESENT);
 
 		cmd->Close();

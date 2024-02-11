@@ -100,4 +100,11 @@ namespace INF::GFX
 	};
 
 	using GraphicsPipelineHandle = std::shared_ptr<IGraphicsPipeline>;
+
+	class IFramebuffer;
+	struct GraphicsState
+	{
+		IGraphicsPipeline* pipeline;
+		IFramebuffer* framebuffer;
+	};
 }

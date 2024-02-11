@@ -207,6 +207,7 @@ namespace INF::GFX
 	using TRANSITION_STATES_FLAGS = uint16_t;
 	enum class TRANSITION_STATES : TRANSITION_STATES_FLAGS
 	{
+		COMMON						= 1 << 0,
 		PRESENT						= 1 << 0,
 		INDEX_BUFFER				= 1 << 1,
 		RENDER_TARGET				= 1 << 2,

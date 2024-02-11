@@ -350,21 +350,57 @@ inline D3D12_DEPTH_STENCIL_DESC D3D12DepthStencilState(const INF::GFX::DepthSten
 	return depthStencil;
 }
 
+inline D3D12_PRIMITIVE_TOPOLOGY D3D12Primitive(INF::GFX::PrimitiveType type)
+{
+	switch (type)
+	{
+	case INF::GFX::PrimitiveType::POINT_LIST:
+		return D3D_PRIMITIVE_TOPOLOGY_POINTLIST;
+	case INF::GFX::PrimitiveType::LINE_LIST:
+		return  D3D11_PRIMITIVE_TOPOLOGY_LINELIST;
+	case INF::GFX::PrimitiveType::TRIANGLE_LIST:
+		return  D3D_PRIMITIVE_TOPOLOGY_TRIANGLELIST;
+	default:
+		INF_ASSERT(false, "Primitive type not supported");
+		return  D3D_PRIMITIVE_TOPOLOGY_TRIANGLELIST;
+	}
+}
+
+inline D3D12_PRIMITIVE_TOPOLOGY_TYPE D3D12PrimitiveType(INF::GFX::PrimitiveType type)
+{
+	switch (type)
+	{
+	case INF::GFX::PrimitiveType::POINT_LIST:
+		return D3D12_PRIMITIVE_TOPOLOGY_TYPE_POINT;
+	case INF::GFX::PrimitiveType::LINE_LIST:
+		return  D3D12_PRIMITIVE_TOPOLOGY_TYPE_LINE;
+	case INF::GFX::PrimitiveType::TRIANGLE_LIST:
+		return  D3D12_PRIMITIVE_TOPOLOGY_TYPE_TRIANGLE;
+	default:
+		INF_ASSERT(false, "Primitive type not supported");
+		return  D3D12_PRIMITIVE_TOPOLOGY_TYPE_TRIANGLE;
+	}
+}
+
+inline D3D12_FILL_MODE D3D12FillMode(INF::GFX::RasterFillMode fillMode)
+{
+	switch (fillMode)
+	{
+	case INF::GFX::RasterFillMode::SOLID:
+		return D3D12_FILL_MODE_SOLID;
+	case INF::GFX::RasterFillMode::WIREFRAME:
+		return D3D12_FILL_MODE_WIREFRAME;
+	default:
+		INF_ASSERT(false, "Raster Fill Mode not supported");
+		return D3D12_FILL_MODE_SOLID;
+	}
+}
+
 inline D3D12_RASTERIZER_DESC D3D12RasterizerState(const INF::GFX::RasterState state)
 {
 	D3D12_RASTERIZER_DESC rast;
 
-	switch (state.fillMode)
-	{
-	case INF::GFX::RasterFillMode::SOLID:
-		rast.FillMode = D3D12_FILL_MODE_SOLID;
-		break;
-	case INF::GFX::RasterFillMode::WIREFRAME:
-		rast.FillMode = D3D12_FILL_MODE_WIREFRAME;
-		break;
-	default:
-		INF_ASSERT(false, "Raster Fill Mode not supported");
-	}
+	rast.FillMode = D3D12FillMode(state.fillMode);
 
 	switch (state.cullMode)
 	{

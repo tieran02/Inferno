@@ -47,6 +47,8 @@ int main()
 	GFX::GraphicsPipelineDesc pipelineDesc;
 	pipelineDesc.VS = vertexShader;
 	pipelineDesc.PS = pixelShader;
+	pipelineDesc.depthStencilState.depthTestEnable = false;
+	pipelineDesc.depthStencilState.depthWriteEnable = false;
 
 	pipelineDesc.inputLayoutDesc.emplace_back("POSITION", GFX::Format::RGB32_FLOAT);
 

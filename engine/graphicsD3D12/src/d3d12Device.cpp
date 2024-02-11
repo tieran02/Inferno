@@ -207,6 +207,7 @@ namespace INF::GFX
 		desc.SampleDesc.Count = 1;
 		desc.SampleDesc.Quality = 0;
 
+		desc.NumRenderTargets = MAX_RENDER_TARGETS;
 		for (int i = 0; i < fb->GetInfo().colorFormats.size(); i++)
 		{
 			desc.RTVFormats[i] = D3D12Format(fb->GetInfo().colorFormats[i]);

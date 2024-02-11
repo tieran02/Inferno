@@ -42,7 +42,7 @@ namespace Inferno
                 string filename = Path.GetFileName(vertexEntry);
                 filename = Path.ChangeExtension(filename, ".dxil");
                 string dest = Path.Combine(outputFolder, filename);
-                string cmd = $"{DXC} -T vs_6_3 -Fo {dest} {vertexEntry}";
+                string cmd = $"{DXC} -T vs_6_3 -rootsig-define LocalRootSignature -Fo {dest} {vertexEntry}";
 
                 conf.EventPreBuild.Add(cmd);
             }

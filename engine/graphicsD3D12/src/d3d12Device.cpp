@@ -7,6 +7,7 @@
 #include <directx/d3d12.h>
 #include <dxgi1_4.h>
 #include "graphics/d3d12/D3D12Texture.h"
+#include "graphics/d3d12/D3D12Pipeline.h"
 
 namespace INF::GFX
 {
@@ -167,6 +168,75 @@ namespace INF::GFX
 		return ShaderHandle(new D3D12Shader(desc));
 	}
 
+	FramebufferHandle D3D12Device::CreateFramebuffer(const FramebufferDesc& desc)
+	{
+		return FramebufferHandle(new D3D12Framebuffer(desc));
+	}
+
+	Microsoft::WRL::ComPtr<ID3D12PipelineState> D3D12Device::CreatePipelineState(const GraphicsPipelineDesc& state, IFramebuffer* fb)
+	{
+		D3D12_GRAPHICS_PIPELINE_STATE_DESC desc = {};
+
+		desc.VS = static_cast<D3D12Shader*>(state.VS.get())->D3D();
+		desc.PS = static_cast<D3D12Shader*>(state.PS.get())->D3D();
+
+		desc.BlendState = D3D12BlendState(state.blendState);
+
+		desc.DepthStencilState = D3D12DepthStencilState(state.depthStencilState);
+
+		desc.RasterizerState = D3D12RasterizerState(state.rasterState);
+
+		switch (state.primitiveType)
+		{
+		case PrimitiveType::POINT_LIST:
+			desc.PrimitiveTopologyType = D3D12_PRIMITIVE_TOPOLOGY_TYPE_POINT;
+			break;
+		case PrimitiveType::LINE_LIST:
+			desc.PrimitiveTopologyType = D3D12_PRIMITIVE_TOPOLOGY_TYPE_LINE;
+			break;
+		case PrimitiveType::TRIANGLE_LIST:
+			desc.PrimitiveTopologyType = D3D12_PRIMITIVE_TOPOLOGY_TYPE_TRIANGLE;
+			break;
+		default:
+			INF_ASSERT(false, "Primitive type not supported");
+		}
+
+		desc.DSVFormat = D3D12Format(fb->GetInfo().depthFormat);
+
+		//dont support MSAA
+		desc.SampleDesc.Count = 1;
+		desc.SampleDesc.Quality = 0;
+
+		for (int i = 0; i < fb->GetInfo().colorFormats.size(); i++)
+		{
+			desc.RTVFormats[i] = D3D12Format(fb->GetInfo().colorFormats[i]);
+		}
+
+		//Create the input layout
+		std::vector<D3D12_INPUT_ELEMENT_DESC> inputStates(state.inputLayoutDesc.size());
+		desc.InputLayout.NumElements = inputStates.size();
+		for (int i = 0; i < state.inputLayoutDesc.size(); ++i)
+		{
+			inputStates[i].SemanticName = state.inputLayoutDesc[i].semanticName.c_str();
+			inputStates[i].SemanticIndex = 0;
+			inputStates[i].InputSlot = 0;
+			inputStates[i].Format = D3D12Format(state.inputLayoutDesc[i].format);
+			inputStates[i].AlignedByteOffset = D3D12_APPEND_ALIGNED_ELEMENT;
+		}
+		desc.InputLayout.pInputElementDescs = inputStates.data();
+
+		Microsoft::WRL::ComPtr<ID3D12PipelineState> pipelineState;
+		VerifySuccess(m_device->CreateGraphicsPipelineState(&desc, IID_PPV_ARGS(&pipelineState)));
+
+		return pipelineState;
+	}
+	
+	GraphicsPipelineHandle D3D12Device::CreateGraphicsPipeline(const GraphicsPipelineDesc& desc, IFramebuffer* fb)
+	{
+		auto pso = CreatePipelineState(desc, fb);
+		return GraphicsPipelineHandle(new D3D12GraphicsPipeline(desc, fb));
+	}
+
 	void D3D12Device::CreateDescriptorHeaps()
 	{
 		m_SRVDescriptorHeap.CreateResources(m_device.Get(), D3D12_DESCRIPTOR_HEAP_TYPE_CBV_SRV_UAV, 1024, true);
@@ -193,5 +263,7 @@ namespace INF::GFX
 
 		m_device->CreateRenderTargetView(static_cast<D3D12Texture*>(texture)->Resource(), &viewDesc, m_RTVDescriptorHeap.GetCPUHandle(descriptorIndex));
 	}
-	
+
+
+
 }

@@ -59,3 +59,18 @@ const ITextureView* D3D12Texture::GetView(ITextureView::ViewType type)
 		break;
 	}
 }
+
+D3D12Framebuffer::D3D12Framebuffer(const FramebufferDesc& desc) : m_desc(desc), m_info(desc)
+{
+
+}
+
+const INF::GFX::FramebufferDesc& D3D12Framebuffer::GetDesc() const
+{
+	return m_desc;
+}
+
+const INF::GFX::FramebufferInfo& D3D12Framebuffer::GetInfo() const
+{
+	return m_info;
+}

@@ -15,6 +15,7 @@ namespace Inferno
              static public readonly string INFERNO_DATA = Path.Combine(INFERNO_ROOT, @"data");
 
             static public readonly string INFERNO_THIRD_PARTY = Path.Combine(INFERNO_ROOT, @"thirdparty\src");
+            static public readonly string INFERNO_THIRD_PARTY_BIN = Path.Combine(INFERNO_ROOT, @"thirdparty\bin");
 
             static public readonly string INFERNO_CORE = Path.Combine(INFERNO_ENGINE, @"core\");
             static public readonly string INFERNO_CORE_SRC = Path.Combine(INFERNO_ENGINE, @"core\src");

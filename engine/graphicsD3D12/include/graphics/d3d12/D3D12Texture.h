@@ -32,4 +32,17 @@ namespace INF::GFX
 
 		D3D12TextureView m_rtv;
 	};
+
+	//D3D12 doesn't have the concept of a framebuffer but we still use it to group the target in FrameBufferDesc
+	class D3D12Framebuffer : public IFramebuffer
+	{
+	public:
+		D3D12Framebuffer(const FramebufferDesc& desc);
+		virtual const FramebufferDesc& GetDesc() const override;
+		const FramebufferInfo& GetInfo() const override;
+
+	private:
+		FramebufferDesc m_desc;
+		FramebufferInfo m_info;
+	};
 }

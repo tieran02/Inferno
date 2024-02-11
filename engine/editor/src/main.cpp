@@ -6,6 +6,7 @@
 #include "graphics/graphicDefines.h"
 #include "graphics/interface/Shader.h"
 #include "graphics/interface/deviceManager.h"
+#include "graphics/interface/Texture.h"
 
 using namespace INF;
 
@@ -23,10 +24,36 @@ int main()
 	GFX::IDevice* device = deviceManager->GetDevice();
 	GFX::CommandListeHandle cmd = device->CreateCommandList(GFX::CommandQueue::GRAPHICS);
 
-	GFX::ShaderDesc shaderDesc;
-	shaderDesc.shaderType = GFX::ShaderType::Vertex;
-	shaderDesc.shaderPath = "data/test.txt";
-	GFX::ShaderHandle shader = device->CreateShader(shaderDesc);
+	//framebuffer for each backbuffer
+	std::vector<GFX::FramebufferHandle> framebuffers(deviceManager->GetBackBufferCount());
+	for (int i = 0; i < framebuffers.size(); ++i)
+	{
+		GFX::FramebufferDesc fbDesc;
+		fbDesc.colorAttachments[0] = GFX::FramebufferAttachment(deviceManager->GetBackBufferTexture(i));
+		framebuffers[i] = device->CreateFramebuffer(fbDesc);
+	}
+
+	GFX::ShaderDesc vertexShaderDesc;
+	vertexShaderDesc.shaderType = GFX::ShaderType::Vertex;
+	vertexShaderDesc.shaderPath = "data/shaders/triangle.vert.dxil";
+	GFX::ShaderHandle vertexShader = device->CreateShader(vertexShaderDesc);
+	GFX::ShaderDesc pixelShaderDesc;
+	pixelShaderDesc.shaderType = GFX::ShaderType::Pixel;
+	pixelShaderDesc.shaderPath = "data/shaders/triangle.pixel.dxil";
+	GFX::ShaderHandle pixelShader = device->CreateShader(pixelShaderDesc);
+
+
+	//Pipeline
+	GFX::GraphicsPipelineDesc pipelineDesc;
+	pipelineDesc.VS = vertexShader;
+	pipelineDesc.PS = pixelShader;
+
+	pipelineDesc.inputLayoutDesc.emplace_back("POSITION", GFX::Format::RGB32_FLOAT);
+
+
+
+	GFX::GraphicsPipelineHandle pipeline = device->CreateGraphicsPipeline(pipelineDesc, framebuffers[0].get());
+
 
 	Input input;
 	window->SetInputKeyRegisterCallback(input.GetRegisterKeyFn());

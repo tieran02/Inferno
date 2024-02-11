@@ -23,7 +23,7 @@ namespace Inferno
             conf.IncludePaths.Add(Defines.Paths.INFERNO_GRAPHICS);
 
             string dest = Path.Combine(Defines.Paths.INFERNO_PROJECTS, Name, "data/");
-            CopyDirectory(Defines.Paths.INFERNO_DATA, dest, true);
+            //CopyDirectory(Defines.Paths.INFERNO_DATA, dest, true);
         }
 
         void CopyDirectory(string sourceDir, string destinationDir, bool recursive)

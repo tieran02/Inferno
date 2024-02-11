@@ -44,6 +44,11 @@ ITexture* D3D12DeviceManager::GetCurrentBackBufferTexture()
 	return m_swapchainTextures.at(GetCurrentBackBufferIndex()).get();
 }
 
+ITexture* D3D12DeviceManager::GetBackBufferTexture(uint32_t backbufferIndex)
+{
+	INF_ASSERT(backbufferIndex >= 0 && backbufferIndex < GetBackBufferCount(), "backbuffer index out of range");
+	return m_swapchainTextures.at(backbufferIndex).get();
+}
 
 bool D3D12DeviceManager::CreateDeviceAndSwapChain(IWindow* window, const DeviceCreationParameters& createInfo)
 {

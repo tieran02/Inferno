@@ -10,14 +10,31 @@ namespace INF::GFX
 
 	struct BlendState
 	{
-		bool        blendEnable = false;
-		BlendFactor srcBlend = BlendFactor::ONE;
-		BlendFactor destBlend = BlendFactor::ZERO;
-		BlendOp     blendOp = BlendOp::ADD;
-		BlendFactor srcBlendAlpha = BlendFactor::ONE;
-		BlendFactor destBlendAlpha = BlendFactor::ZERO;
-		BlendOp     blendOpAlpha = BlendOp::ADD;
-		ColorMask   colorWriteMask = ColorMask::ALL;
+		std::array<bool, MAX_RENDER_TARGETS>		blendEnable;
+		std::array<BlendFactor, MAX_RENDER_TARGETS> srcBlend ;
+		std::array<BlendFactor, MAX_RENDER_TARGETS> destBlend;
+		std::array<BlendOp, MAX_RENDER_TARGETS>     blendOp;
+		std::array<BlendFactor, MAX_RENDER_TARGETS> srcBlendAlpha;
+		std::array<BlendFactor, MAX_RENDER_TARGETS> destBlendAlpha;
+		std::array<BlendOp, MAX_RENDER_TARGETS>     blendOpAlpha;
+		std::array<ColorMask, MAX_RENDER_TARGETS>   colorWriteMask;
+
+		Color blendFactor;
+		bool alphaToCoverage;
+		BlendState() : blendFactor(0,0,0,0), alphaToCoverage(false)
+		{
+			for (int i = 0; i < MAX_RENDER_TARGETS; ++i)
+			{
+				blendEnable[i] = false;
+				srcBlend[i] = BlendFactor::ONE;
+				destBlend[i] = BlendFactor::ZERO;
+				blendOp[i] = BlendOp::ADD;
+				srcBlendAlpha[i] = BlendFactor::ONE;
+				destBlendAlpha[i] = BlendFactor::ZERO;
+				blendOpAlpha[i] = BlendOp::ADD;
+				colorWriteMask[i] = ColorMask::ALL;
+			}
+		}
 	};
 
 	struct StencilOpDesc
@@ -81,4 +98,6 @@ namespace INF::GFX
 		virtual ~IGraphicsPipeline() = default;
 		virtual const GraphicsPipelineDesc& GetDesc() const = 0;
 	};
+
+	using GraphicsPipelineHandle = std::shared_ptr<IGraphicsPipeline>;
 }

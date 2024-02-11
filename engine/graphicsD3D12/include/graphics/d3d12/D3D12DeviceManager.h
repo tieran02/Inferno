@@ -24,6 +24,7 @@ namespace INF::GFX
 		uint32_t GetCurrentBackBufferIndex() override;
 		uint32_t GetBackBufferCount() override;
 		ITexture* GetCurrentBackBufferTexture() override;
+		ITexture* GetBackBufferTexture(uint32_t backbufferIndex) override;
 
 	private:
 		DeviceCreationParameters m_createInfo;

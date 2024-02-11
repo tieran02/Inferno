@@ -45,4 +45,62 @@ namespace INF::GFX
 	};
 
 	using TextureHandle = std::shared_ptr<ITexture>;
+
+
+	struct FramebufferAttachment
+	{
+		ITexture* texture;
+
+		FramebufferAttachment(ITexture* texture = nullptr) : texture(texture) {}
+	};
+
+	struct FramebufferDesc
+	{
+		std::array<FramebufferAttachment, MAX_RENDER_TARGETS> colorAttachments;
+		FramebufferAttachment depthAttachment;
+	};
+
+	//Only contains formats for each target and the width/height
+	struct FramebufferInfo
+	{
+		std::array<Format, MAX_RENDER_TARGETS> colorFormats;
+		Format depthFormat = Format::UNKNOWN;
+		uint32_t width = 0;
+		uint32_t height = 0;
+
+		FramebufferInfo()
+		{ }
+
+		FramebufferInfo(const FramebufferDesc& desc)
+		{
+			if (desc.depthAttachment.texture != nullptr)
+			{
+				const TextureDesc& textureDesc = desc.depthAttachment.texture->GetDesc();
+				depthFormat = textureDesc.format;
+				width = textureDesc.width;
+				height = textureDesc.height;
+			}
+
+			for (size_t i = 0; i < desc.colorAttachments.size(); i++)
+			{
+				const FramebufferAttachment& attachment = desc.colorAttachments[i];
+				colorFormats[i] = (attachment.texture ? attachment.texture->GetDesc().format : Format::UNKNOWN);
+
+				if (attachment.texture && width == 0)
+					width = attachment.texture->GetDesc().width;
+				if (attachment.texture && height == 0)
+					height = attachment.texture->GetDesc().height;
+			}
+		}
+	};
+
+	//Frame buffer is a vulkan conception and will hold the renderpass and framebuffers
+	//D3D12 doesn't have the concept of a framebuffer but we still use it to group the target
+	class IFramebuffer
+	{
+	public:
+		virtual const FramebufferDesc& GetDesc() const = 0;
+		virtual const FramebufferInfo& GetInfo() const = 0;
+	};
+	using FramebufferHandle = std::shared_ptr<IFramebuffer>;
 }

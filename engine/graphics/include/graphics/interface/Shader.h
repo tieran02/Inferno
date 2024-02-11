@@ -20,5 +20,5 @@ namespace INF::GFX
 		virtual void GetBytecode(const void** ppBytecode, size_t* pSize) const = 0;
 	};
 
-	using ShaderHandle = std::unique_ptr<IShader>;
+	using ShaderHandle = std::shared_ptr<IShader>;
 }

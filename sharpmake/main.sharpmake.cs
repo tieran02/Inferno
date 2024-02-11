@@ -7,6 +7,7 @@ using Inferno;
 [module: Sharpmake.Include("graphics.sharpmake.cs")]
 [module: Sharpmake.Include("editor.sharpmake.cs")]
 [module: Sharpmake.Include("thirdparty.sharpmake.cs")]
+[module: Sharpmake.Include("shaders.sharpmake.cs")]
 
 namespace Inferno
 {
@@ -45,6 +46,7 @@ public class InfernoSolution : Solution
         // You could, for example, exclude a project that only supports 64-bit
         // from the 32-bit targets.
         conf.AddProject<EditorProject>(target);
+		conf.AddProject<ShaderCustomBuild>(target);
     }
 }
 

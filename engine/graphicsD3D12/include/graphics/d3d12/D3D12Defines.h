@@ -1,6 +1,7 @@
 #pragma once
 #include "core/Assert.h"
 #include "graphics/graphicDefines.h"
+#include "graphics/interface/Pipeline.h"
 
 #define VerifySuccess(hr) INF_VERIFY(SUCCEEDED(hr), "D3D12 Call did not succeed");
 
@@ -182,4 +183,213 @@ inline D3D12_RESOURCE_STATES D3D12TransitionFlags(INF::GFX::TRANSITION_STATES_FL
 		d3dFlags |= D3D12_RESOURCE_STATE_RESOLVE_SOURCE;
 
 	return d3dFlags;
+}
+
+inline D3D12_BLEND D3D12Blend(INF::GFX::BlendFactor factor)
+{
+	switch (factor)
+	{
+	case INF::GFX::BlendFactor::ZERO:
+		return D3D12_BLEND::D3D12_BLEND_ZERO;
+	case INF::GFX::BlendFactor::ONE:
+		return D3D12_BLEND::D3D12_BLEND_ONE;
+	case INF::GFX::BlendFactor::SRC_COLOR:
+		return D3D12_BLEND::D3D12_BLEND_SRC_COLOR;
+	case INF::GFX::BlendFactor::INV_SRC_COLOR:
+		return D3D12_BLEND::D3D12_BLEND_SRC_COLOR;
+	case INF::GFX::BlendFactor::SRC_ALPHA:
+		return D3D12_BLEND::D3D12_BLEND_SRC_ALPHA;
+	case INF::GFX::BlendFactor::INV_SRC_ALPHA:
+		return D3D12_BLEND::D3D12_BLEND_INV_SRC_ALPHA;
+	case INF::GFX::BlendFactor::DST_ALPHA:
+		return D3D12_BLEND::D3D12_BLEND_DEST_ALPHA;
+	case INF::GFX::BlendFactor::INV_DST_ALPHA:
+		return D3D12_BLEND::D3D12_BLEND_INV_DEST_ALPHA;
+	case INF::GFX::BlendFactor::DST_COLOR:
+		return D3D12_BLEND::D3D12_BLEND_DEST_COLOR;
+	case INF::GFX::BlendFactor::INV_DST_COLOR:
+		return D3D12_BLEND::D3D12_BLEND_INV_DEST_ALPHA;
+	case INF::GFX::BlendFactor::SRC_ALPHA_SATURATE:
+		return D3D12_BLEND::D3D12_BLEND_SRC_ALPHA_SAT;
+	case INF::GFX::BlendFactor::CONSTANT_COLOR:
+		return D3D12_BLEND::D3D12_BLEND_BLEND_FACTOR;
+	case INF::GFX::BlendFactor::INV_CONSTANT_COLOR:
+		return D3D12_BLEND::D3D12_BLEND_INV_BLEND_FACTOR;
+	case INF::GFX::BlendFactor::SRC1_COLOR:
+		return D3D12_BLEND::D3D12_BLEND_INV_SRC1_COLOR;
+	case INF::GFX::BlendFactor::INV_SRC1_COLOR:
+		return D3D12_BLEND::D3D12_BLEND_INV_SRC1_COLOR;
+	case INF::GFX::BlendFactor::SRC1_ALPHA:
+		return D3D12_BLEND::D3D12_BLEND_SRC1_ALPHA;
+	case INF::GFX::BlendFactor::INV_SRC1_ALPHA:
+		return D3D12_BLEND::D3D12_BLEND_INV_SRC1_ALPHA;
+	default:
+		INF_ASSERT(false, "Blend factor not supported");
+		return D3D12_BLEND::D3D12_BLEND_ONE;
+	}
+}
+
+inline D3D12_BLEND_OP D3D12BlendOp(INF::GFX::BlendOp op)
+{
+	switch (op)
+	{
+	case INF::GFX::BlendOp::ADD:
+		return D3D12_BLEND_OP::D3D12_BLEND_OP_ADD;
+	case INF::GFX::BlendOp::SUBRTACT:
+		return D3D12_BLEND_OP::D3D12_BLEND_OP_REV_SUBTRACT;
+	case INF::GFX::BlendOp::REVERSE_SUBTRACT:
+		return D3D12_BLEND_OP::D3D12_BLEND_OP_REV_SUBTRACT;
+	case INF::GFX::BlendOp::MIN:
+		return D3D12_BLEND_OP::D3D12_BLEND_OP_MAX;
+	case INF::GFX::BlendOp::MAX:
+		return D3D12_BLEND_OP::D3D12_BLEND_OP_MAX;
+	default:
+		INF_ASSERT(false, "Blend factor not supported");
+		return D3D12_BLEND_OP::D3D12_BLEND_OP_ADD;
+	}
+}
+
+inline D3D12_BLEND_DESC D3D12BlendState(INF::GFX::BlendState state)
+{
+	D3D12_BLEND_DESC blend;
+
+	blend.AlphaToCoverageEnable = state.alphaToCoverage;
+	blend.IndependentBlendEnable = true;
+
+	for (uint32_t i = 0; i < INF::GFX::MAX_RENDER_TARGETS; i++)
+	{
+		blend.RenderTarget[i].LogicOpEnable = false;
+		blend.RenderTarget[i].BlendEnable = state.blendEnable[i];
+		blend.RenderTarget[i].SrcBlend = D3D12Blend(state.srcBlend[i]);
+		blend.RenderTarget[i].DestBlend = D3D12Blend(state.destBlend[i]);
+		blend.RenderTarget[i].BlendOp = D3D12BlendOp(state.blendOp[i]);
+		blend.RenderTarget[i].SrcBlendAlpha = D3D12Blend(state.srcBlendAlpha[i]);
+		blend.RenderTarget[i].DestBlendAlpha = D3D12Blend(state.destBlendAlpha[i]);
+		blend.RenderTarget[i].BlendOpAlpha = D3D12BlendOp(state.blendOpAlpha[i]);
+		blend.RenderTarget[i].RenderTargetWriteMask =
+			((uint8_t)state.colorWriteMask[i] & (uint8_t)INF::GFX::ColorMask::RED ? D3D12_COLOR_WRITE_ENABLE_RED : 0) |
+			((uint8_t)state.colorWriteMask[i] & (uint8_t)INF::GFX::ColorMask::GREEN ? D3D12_COLOR_WRITE_ENABLE_GREEN : 0) |
+			((uint8_t)state.colorWriteMask[i] & (uint8_t)INF::GFX::ColorMask::BLUE ? D3D12_COLOR_WRITE_ENABLE_BLUE : 0) |
+			((uint8_t)state.colorWriteMask[i] & (uint8_t)INF::GFX::ColorMask::ALPHA ? D3D12_COLOR_WRITE_ENABLE_ALPHA : 0);
+	}
+
+	return blend;
+}
+
+inline D3D12_COMPARISON_FUNC D3D12ComparisionFunc(INF::GFX::ComparisonFunc func)
+{
+	switch (func)
+	{
+	case INF::GFX::ComparisonFunc::NEVER:
+		return D3D12_COMPARISON_FUNC::D3D12_COMPARISON_FUNC_NEVER;
+	case INF::GFX::ComparisonFunc::LESS:
+		return D3D12_COMPARISON_FUNC::D3D12_COMPARISON_FUNC_LESS;
+	case INF::GFX::ComparisonFunc::EQUAL:
+		return D3D12_COMPARISON_FUNC::D3D12_COMPARISON_FUNC_EQUAL;
+	case INF::GFX::ComparisonFunc::LESS_OR_EQUAL:
+		return D3D12_COMPARISON_FUNC::D3D12_COMPARISON_FUNC_LESS_EQUAL;
+	case INF::GFX::ComparisonFunc::GREATER:
+		return D3D12_COMPARISON_FUNC::D3D12_COMPARISON_FUNC_GREATER;
+	case INF::GFX::ComparisonFunc::NOT_EQUAL:
+		return D3D12_COMPARISON_FUNC::D3D12_COMPARISON_FUNC_NOT_EQUAL;
+	case INF::GFX::ComparisonFunc::GREATER_OR_EQUAL:
+		return D3D12_COMPARISON_FUNC::D3D12_COMPARISON_FUNC_GREATER_EQUAL;
+	case INF::GFX::ComparisonFunc::ALWAYS:
+		return D3D12_COMPARISON_FUNC::D3D12_COMPARISON_FUNC_ALWAYS;
+	default:
+		INF_ASSERT(false, "Comparison Func not supported");
+		return D3D12_COMPARISON_FUNC::D3D12_COMPARISON_FUNC_NEVER;
+	}
+}
+
+inline D3D12_STENCIL_OP D3D12StencilOp(INF::GFX::StencilOp op)
+{
+	switch (op)
+	{
+	case INF::GFX::StencilOp::KEEP:
+		return D3D12_STENCIL_OP::D3D12_STENCIL_OP_KEEP;
+	case INF::GFX::StencilOp::ZERO:
+		return D3D12_STENCIL_OP::D3D12_STENCIL_OP_ZERO;
+	case INF::GFX::StencilOp::REPLACE:
+		return D3D12_STENCIL_OP::D3D12_STENCIL_OP_REPLACE;
+	case INF::GFX::StencilOp::INCREMENT_CLAMP:
+		return D3D12_STENCIL_OP::D3D12_STENCIL_OP_INCR_SAT;
+	case INF::GFX::StencilOp::DECREMENT_CLAMP:
+		return D3D12_STENCIL_OP::D3D12_STENCIL_OP_DECR_SAT;
+	case INF::GFX::StencilOp::INVERT:
+		return D3D12_STENCIL_OP::D3D12_STENCIL_OP_INVERT;
+	case INF::GFX::StencilOp::INCREMENT_WRAP:
+		return D3D12_STENCIL_OP::D3D12_STENCIL_OP_INCR;
+	case INF::GFX::StencilOp::DECREMENT_WRAP:
+		return D3D12_STENCIL_OP::D3D12_STENCIL_OP_DECR;
+	default:
+		INF_ASSERT(false, "Stencil Op not supported");
+		return D3D12_STENCIL_OP::D3D12_STENCIL_OP_KEEP;
+	}
+}
+
+inline D3D12_DEPTH_STENCIL_DESC D3D12DepthStencilState(const INF::GFX::DepthStencilState& state)
+{
+	D3D12_DEPTH_STENCIL_DESC depthStencil;
+
+	depthStencil.DepthEnable = state.depthTestEnable;
+	depthStencil.DepthWriteMask = state.depthWriteEnable ? D3D12_DEPTH_WRITE_MASK_ALL : D3D12_DEPTH_WRITE_MASK_ZERO;
+	depthStencil.DepthFunc = D3D12ComparisionFunc(state.depthFunc);
+	depthStencil.StencilEnable = state.stencilEnable;
+	depthStencil.StencilReadMask = state.stencilReadMask;
+	depthStencil.StencilWriteMask = state.stencilWriteMask;
+	depthStencil.FrontFace.StencilFailOp = D3D12StencilOp(state.frontFaceStencil.failOp);
+	depthStencil.FrontFace.StencilDepthFailOp = D3D12StencilOp(state.frontFaceStencil.depthFailOp);
+	depthStencil.FrontFace.StencilPassOp = D3D12StencilOp(state.frontFaceStencil.passOp);
+	depthStencil.FrontFace.StencilFunc = D3D12ComparisionFunc(state.frontFaceStencil.stencilFunc);
+	depthStencil.BackFace.StencilFailOp = D3D12StencilOp(state.backFaceStencil.failOp);
+	depthStencil.BackFace.StencilDepthFailOp = D3D12StencilOp(state.backFaceStencil.depthFailOp);
+	depthStencil.BackFace.StencilPassOp = D3D12StencilOp(state.backFaceStencil.passOp);
+	depthStencil.BackFace.StencilFunc = D3D12ComparisionFunc(state.backFaceStencil.stencilFunc);
+
+	return depthStencil;
+}
+
+inline D3D12_RASTERIZER_DESC D3D12RasterizerState(const INF::GFX::RasterState state)
+{
+	D3D12_RASTERIZER_DESC rast;
+
+	switch (state.fillMode)
+	{
+	case INF::GFX::RasterFillMode::SOLID:
+		rast.FillMode = D3D12_FILL_MODE_SOLID;
+		break;
+	case INF::GFX::RasterFillMode::WIREFRAME:
+		rast.FillMode = D3D12_FILL_MODE_WIREFRAME;
+		break;
+	default:
+		INF_ASSERT(false, "Raster Fill Mode not supported");
+	}
+
+	switch (state.cullMode)
+	{
+	case INF::GFX::RasterCullMode::BACK:
+		rast.CullMode = D3D12_CULL_MODE_BACK;
+		break;
+	case INF::GFX::RasterCullMode::FRONT:
+		rast.CullMode = D3D12_CULL_MODE_FRONT;
+		break;
+	case INF::GFX::RasterCullMode::NONE:
+		rast.CullMode = D3D12_CULL_MODE_NONE;
+		break;
+	default:
+		INF_ASSERT(false, "Raster Cull Mode not supported");
+	}
+
+	rast.FrontCounterClockwise = state.frontCounterClockwise;
+	rast.DepthBias = state.depthBias;
+	rast.DepthBiasClamp = state.depthBiasClamp;
+	rast.SlopeScaledDepthBias = state.slopeScaledDepthBias;
+	rast.DepthClipEnable = state.depthClipEnable;
+	rast.MultisampleEnable = state.multisampleEnable;
+	rast.AntialiasedLineEnable = false;
+	rast.ForcedSampleCount = 0;
+	rast.ConservativeRaster = D3D12_CONSERVATIVE_RASTERIZATION_MODE_OFF;
+
+	return rast;
 }

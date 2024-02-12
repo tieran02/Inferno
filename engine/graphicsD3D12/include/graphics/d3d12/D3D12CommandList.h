@@ -40,8 +40,13 @@ namespace INF::GFX
 
 		void SetGraphicsState(const GraphicsState& state) override;
 
+		void SetViewport(const Viewport& viewport) override;
+		void SetScissor(const Rect& scissor) override;
+
+		void Draw(uint32_t vertexCount, uint32_t instanceCount, uint32_t firstVertex, uint32_t firstInstance) override;
 
 		ID3D12GraphicsCommandList* D3D() const { return m_commandList.Get(); }
+
 	private:
 		void BindGraphicsPipeline(D3D12GraphicsPipeline* pso);
 		void BindFramebuffer(D3D12GraphicsPipeline* pso, D3D12Framebuffer* fb);

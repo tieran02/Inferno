@@ -37,6 +37,7 @@ int main()
 	vertexShaderDesc.shaderType = GFX::ShaderType::Vertex;
 	vertexShaderDesc.shaderPath = "data/shaders/triangle.vert.dxil";
 	GFX::ShaderHandle vertexShader = device->CreateShader(vertexShaderDesc);
+
 	GFX::ShaderDesc pixelShaderDesc;
 	pixelShaderDesc.shaderType = GFX::ShaderType::Pixel;
 	pixelShaderDesc.shaderPath = "data/shaders/triangle.pixel.dxil";
@@ -49,13 +50,16 @@ int main()
 	pipelineDesc.PS = pixelShader;
 	pipelineDesc.depthStencilState.depthTestEnable = false;
 	pipelineDesc.depthStencilState.depthWriteEnable = false;
+	pipelineDesc.rasterState.cullMode = GFX::RasterCullMode::NONE;
 
-	pipelineDesc.inputLayoutDesc.emplace_back("POSITION", GFX::Format::RGB32_FLOAT);
+	//pipelineDesc.inputLayoutDesc.emplace_back("POSITION", GFX::Format::RGB32_FLOAT);
 
 
 
 	GFX::GraphicsPipelineHandle pipeline = device->CreateGraphicsPipeline(pipelineDesc, framebuffers[0].get());
 
+	GFX::Viewport viewport(0, 0, deviceInfo.backBufferWidth, deviceInfo.backBufferHeight);
+	GFX::Rect scissor(0, 0, deviceInfo.backBufferWidth, deviceInfo.backBufferHeight);
 
 
 	Input input;
@@ -84,10 +88,16 @@ int main()
 		input.Update();
 
 		cmd->Open();
-
+		cmd->SetViewport(viewport);
+		cmd->SetScissor(scissor);
 		cmd->SetGraphicsState(graphicsState);
 
-		cmd->ClearColor(deviceManager->GetCurrentBackBufferTexture(), GFX::Color((sinf(elapsed * 0.01f) + 1) * 0.5f, 0.5f, 0.2f, 1.0f));
+
+		cmd->ClearColor(deviceManager->GetCurrentBackBufferTexture(), GFX::Color(0.2f, 0.2f, 0.2f, 1.0f));
+
+		cmd->Draw(3, 1, 0, 0);
+
+		//cmd->ClearColor(deviceManager->GetCurrentBackBufferTexture(), GFX::Color((sinf(elapsed * 0.01f) + 1) * 0.5f, 0.5f, 0.2f, 1.0f));
 
 		//transition to present for swapchain
 		cmd->Transition(deviceManager->GetCurrentBackBufferTexture(), (GFX::TRANSITION_STATES_FLAGS)GFX::TRANSITION_STATES::RENDER_TARGET, (GFX::TRANSITION_STATES_FLAGS)GFX::TRANSITION_STATES::PRESENT);

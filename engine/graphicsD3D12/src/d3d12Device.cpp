@@ -212,6 +212,7 @@ namespace INF::GFX
 			inputStates[i].AlignedByteOffset = D3D12_APPEND_ALIGNED_ELEMENT;
 		}
 		desc.InputLayout.pInputElementDescs = inputStates.data();
+		desc.SampleMask = ~0u;
 
 		Microsoft::WRL::ComPtr<ID3D12PipelineState> pipelineState;
 		VerifySuccess(m_device->CreateGraphicsPipelineState(&desc, IID_PPV_ARGS(&pipelineState)));
@@ -222,7 +223,16 @@ namespace INF::GFX
 	GraphicsPipelineHandle D3D12Device::CreateGraphicsPipeline(const GraphicsPipelineDesc& desc, IFramebuffer* fb)
 	{
 		auto pso = CreatePipelineState(desc, fb);
-		return GraphicsPipelineHandle(new D3D12GraphicsPipeline(desc, pso, fb));
+
+		//for now creat root sig from shader blob
+		Microsoft::WRL::ComPtr<ID3D12RootSignature> rootSignature;
+		const void* ppBytecode;
+		size_t pSize;
+		desc.VS->GetBytecode(&ppBytecode, pSize);
+
+		VerifySuccess(m_device->CreateRootSignature(0, ppBytecode, pSize, IID_PPV_ARGS(&rootSignature)));
+
+		return GraphicsPipelineHandle(new D3D12GraphicsPipeline(desc, pso, rootSignature, fb));
 	}
 
 	void D3D12Device::CreateDescriptorHeaps()

@@ -24,9 +24,10 @@ namespace INF::GFX
 		return m_shaderDesc;
 	}
 
-	void D3D12Shader::GetBytecode(const void** ppBytecode, size_t* pSize) const
+	void D3D12Shader::GetBytecode(const void** ppBytecode, size_t& pSize) const
 	{
-		
+		*ppBytecode = m_byteCode.data();
+		pSize = m_byteCode.size();
 	}
 
 	D3D12_SHADER_BYTECODE D3D12Shader::D3D()

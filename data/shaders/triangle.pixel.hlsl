@@ -6,6 +6,6 @@ struct PixelOutput
 PixelOutput main()
 {
     PixelOutput output;
-    output.attachment0 = float4(1.0,1.0,1.0,1.0);
+    output.attachment0 = float4(1.0,0.0,0.0,1.0);
     return output;
 }

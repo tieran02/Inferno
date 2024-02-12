@@ -19,6 +19,10 @@ namespace INF::GFX
 		virtual void ClearColor(ITexture* texture, const Color& color) = 0;
 
 		virtual void SetGraphicsState(const GraphicsState& state) = 0;
+		virtual void SetViewport(const Viewport& viewport) = 0;
+		virtual void SetScissor(const Rect& scissor) = 0;
+
+		virtual void Draw(uint32_t vertexCount, uint32_t instanceCount, uint32_t firstVertex, uint32_t firstInstance) = 0;
 	};
 
 	using CommandListeHandle = std::unique_ptr<ICommandList>;

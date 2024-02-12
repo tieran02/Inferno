@@ -139,11 +139,23 @@ namespace INF::GFX
 		BindFramebuffer(pso, framebuffer);
 	}
 
+	void D3D12CommandList::SetViewport(const Viewport& viewport)
+	{
+		m_commandList->RSSetViewports(1, reinterpret_cast<const D3D12_VIEWPORT*>(&viewport));
+	}
+
+	void D3D12CommandList::SetScissor(const Rect& scissor)
+	{
+		m_commandList->RSSetScissorRects(1, reinterpret_cast<const D3D12_RECT*>(&scissor));
+	}
+
 	void D3D12CommandList::BindGraphicsPipeline(D3D12GraphicsPipeline* pso)
 	{
 		const auto& state = pso->GetDesc();
 
 		m_commandList->SetPipelineState(pso->PipelineState());
+		m_commandList->SetGraphicsRootSignature(pso->RootSignature());
+
 		m_commandList->IASetPrimitiveTopology(D3D12Primitive(state.primitiveType));
 
 		if (state.depthStencilState.stencilEnable)
@@ -202,5 +214,11 @@ namespace INF::GFX
 
 		m_commandList->OMSetRenderTargets(renderTargetCount, RTVs.data(), false, fb->GetDesc().depthAttachment.texture ? &DSV : nullptr);
 	}
+
+	void D3D12CommandList::Draw(uint32_t vertexCount, uint32_t instanceCount, uint32_t firstVertex, uint32_t firstInstance)
+	{
+		m_commandList->DrawInstanced(vertexCount, instanceCount, firstVertex, firstInstance);
+	}
+
 
 }

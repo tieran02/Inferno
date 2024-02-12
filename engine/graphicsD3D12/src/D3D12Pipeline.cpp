@@ -5,12 +5,15 @@
 
 using namespace INF::GFX;
 
-D3D12GraphicsPipeline::D3D12GraphicsPipeline(const GraphicsPipelineDesc& desc, Microsoft::WRL::ComPtr<ID3D12PipelineState>& pso, IFramebuffer* fb) : m_desc(desc)
+D3D12GraphicsPipeline::D3D12GraphicsPipeline(const GraphicsPipelineDesc& desc, Microsoft::WRL::ComPtr<ID3D12PipelineState>& pso, Microsoft::WRL::ComPtr<ID3D12RootSignature>& rootSignature, IFramebuffer* fb) 
+	: m_desc(desc)
 {
 	INF_ASSERT(pso, "Invalid PSO");
 
 	m_desc = desc;
 	m_pso = pso;
+	m_rootSignature = rootSignature;
+
 
 	for (size_t index = 0; index < fb->GetInfo().colorFormats.size(); index++)
 	{

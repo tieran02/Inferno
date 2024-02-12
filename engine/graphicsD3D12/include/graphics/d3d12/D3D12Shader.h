@@ -10,7 +10,7 @@ namespace INF::GFX
 		D3D12Shader(const ShaderDesc& shaderDesc);
 
 		const ShaderDesc& GetDesc() const override;
-		void GetBytecode(const void** ppBytecode, size_t* pSize) const override;
+		void GetBytecode(const void** ppBytecode, size_t& pSize) const override;
 		D3D12_SHADER_BYTECODE D3D();
 	private:
 		ShaderDesc m_shaderDesc;

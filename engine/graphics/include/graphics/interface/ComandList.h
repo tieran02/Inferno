@@ -4,6 +4,7 @@
 
 namespace INF::GFX
 {
+	class IBuffer;
 	class ITexture;
 	struct GraphicsState;
 	struct Color;
@@ -21,6 +22,8 @@ namespace INF::GFX
 		virtual void SetGraphicsState(const GraphicsState& state) = 0;
 		virtual void SetViewport(const Viewport& viewport) = 0;
 		virtual void SetScissor(const Rect& scissor) = 0;
+
+		virtual void CopyBuffer(IBuffer* dest, uint32_t destOffset, IBuffer* src, uint32_t srcOffset, size_t size) = 0;
 
 		virtual void Draw(uint32_t vertexCount, uint32_t instanceCount, uint32_t firstVertex, uint32_t firstInstance) = 0;
 	};

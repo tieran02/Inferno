@@ -102,6 +102,7 @@ namespace INF::GFX
 
 	void D3D12CommandList::Open()
 	{
+		m_commandAllocator->Reset();
 		m_commandList->Reset(m_commandAllocator.Get(), nullptr);
 	}
 
@@ -110,18 +111,24 @@ namespace INF::GFX
 		m_commandList->Close();
 	}
 
-	void D3D12CommandList::Transition(ITexture* texture, TRANSITION_STATES_FLAGS from, TRANSITION_STATES_FLAGS to)
+
+	void D3D12CommandList::Transition(ID3D12Resource* resource, TRANSITION_STATES_FLAGS from, TRANSITION_STATES_FLAGS to)
 	{
 		D3D12_RESOURCE_BARRIER renderTargetBarrier;
 		renderTargetBarrier.Type = D3D12_RESOURCE_BARRIER_TYPE_TRANSITION;
 		renderTargetBarrier.Flags = D3D12_RESOURCE_BARRIER_FLAG_NONE;
 
-		renderTargetBarrier.Transition.pResource = static_cast<D3D12Texture*>(texture)->Resource();
+		renderTargetBarrier.Transition.pResource = resource;
 		renderTargetBarrier.Transition.StateBefore = D3D12TransitionFlags(from);
 		renderTargetBarrier.Transition.StateAfter = D3D12TransitionFlags(to);
 		renderTargetBarrier.Transition.Subresource = D3D12_RESOURCE_BARRIER_ALL_SUBRESOURCES;
 
 		m_commandList->ResourceBarrier(1, &renderTargetBarrier);
+	}
+
+	void D3D12CommandList::Transition(ITexture* texture, TRANSITION_STATES_FLAGS from, TRANSITION_STATES_FLAGS to)
+	{
+		Transition(static_cast<D3D12Texture*>(texture)->Resource(), from, to);
 	}
 
 	void D3D12CommandList::ClearColor(ITexture* texture, const Color& color)
@@ -222,10 +229,30 @@ namespace INF::GFX
 		m_commandList->OMSetRenderTargets(renderTargetCount, RTVs.data(), false, fb->GetDesc().depthAttachment.texture ? &DSV : nullptr);
 	}
 
+	void D3D12CommandList::CopyBuffer(IBuffer* dest, uint32_t destOffset, IBuffer* src, uint32_t srcOffset, size_t size)
+	{
+		D3D12Buffer* d3d12Dest = static_cast<D3D12Buffer*>(dest);
+		D3D12Buffer* d3d12Src = static_cast<D3D12Buffer*>(src);
+
+		INF_ASSERT(d3d12Dest->GetDesc().access == CpuVisible::NONE, "destination is CPU visible and can't be copied");
+		if (d3d12Dest->GetDesc().access != CpuVisible::NONE)
+			return;
+
+		if (d3d12Src->GetDesc().access == CpuVisible::NONE)
+			Transition(d3d12Src->Resource(), d3d12Src->GetDesc().initialState, (GFX::TRANSITION_STATES_FLAGS)GFX::TRANSITION_STATES::COPY_SOURCE);
+
+		Transition(d3d12Dest->Resource(), d3d12Dest->GetDesc().initialState, (GFX::TRANSITION_STATES_FLAGS)GFX::TRANSITION_STATES::COPY_DEST);
+
+		m_commandList->CopyBufferRegion(d3d12Dest->Resource(), destOffset, d3d12Src->Resource(), srcOffset, size);
+
+		if (d3d12Src->GetDesc().access == CpuVisible::NONE)
+			Transition(d3d12Src->Resource(), (GFX::TRANSITION_STATES_FLAGS)GFX::TRANSITION_STATES::COPY_SOURCE, d3d12Src->GetDesc().initialState);
+
+		Transition(d3d12Dest->Resource(), (GFX::TRANSITION_STATES_FLAGS)GFX::TRANSITION_STATES::COPY_DEST, d3d12Dest->GetDesc().initialState);
+	}
+
 	void D3D12CommandList::Draw(uint32_t vertexCount, uint32_t instanceCount, uint32_t firstVertex, uint32_t firstInstance)
 	{
 		m_commandList->DrawInstanced(vertexCount, instanceCount, firstVertex, firstInstance);
 	}
-
-
 }

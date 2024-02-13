@@ -32,7 +32,7 @@ int main()
 	std::unique_ptr<IWindow> window = IWindow::Create("Hello Window", 1280, 720);
 
 	GFX::DeviceCreationParameters deviceInfo;
-	deviceInfo.enableDebugValidation = true;
+	deviceInfo.enableDebugValidation = false;
 
 	GFX::DeviceManagerHandle deviceManager = GFX::IDeviceManager::Create(GFX::API::D3D12, deviceInfo);
 	deviceManager->CreateDeviceAndSwapChain(window.get(), deviceInfo);
@@ -78,23 +78,45 @@ int main()
 	GFX::Viewport viewport(0, 0, deviceInfo.backBufferWidth, deviceInfo.backBufferHeight);
 	GFX::Rect scissor(0, 0, deviceInfo.backBufferWidth, deviceInfo.backBufferHeight);
 
-	//create vertex buffer
-	GFX::VertexBufferDesc vertexBufferDesc;
-	vertexBufferDesc.access = GFX::CpuVisible::WRITE;
-	vertexBufferDesc.byteSize = sizeof(vertex) * verts.size();
-	vertexBufferDesc.strideInBytes = sizeof(vertex);
-	GFX::VertexBufferHandle vertexBuffer = device->CreateVertexBuffer(vertexBufferDesc);
-	void* dest = device->MapBuffer(vertexBuffer->GetBuffer());
-	memcpy(dest, verts.data(), vertexBufferDesc.byteSize);
+	//staging buffer
+	GFX::BufferDesc indexStagingBufferDesc;
+	indexStagingBufferDesc.access = GFX::CpuVisible::WRITE;
+	indexStagingBufferDesc.byteSize = sizeof(uint16_t) * indices.size();
+	indexStagingBufferDesc.usage = GFX::BufferUsage::GENERIC;
+	GFX::BufferHandle indexStagingBuffer = device->CreateBuffer(indexStagingBufferDesc);
+	void* dest = device->MapBuffer(indexStagingBuffer.get());
+	memcpy(dest, indices.data(), indexStagingBufferDesc.byteSize);
 
 	//create index buffer
 	GFX::IndexBufferDesc indexBufferDesc;
-	indexBufferDesc.access = GFX::CpuVisible::WRITE;
+	indexBufferDesc.access = GFX::CpuVisible::NONE;
 	indexBufferDesc.format = GFX::Format::R16_UINT;
 	indexBufferDesc.byteSize = sizeof(uint16_t) * indices.size();
 	GFX::IndexBufferHandle indexBuffer = device->CreateIndexBuffer(indexBufferDesc);
-	dest = device->MapBuffer(indexBuffer->GetBuffer());
-	memcpy(dest, indices.data(), indexBufferDesc.byteSize);
+
+	//staging buffer
+	GFX::BufferDesc vertexStagingBufferDesc;
+	vertexStagingBufferDesc.access = GFX::CpuVisible::WRITE;
+	vertexStagingBufferDesc.byteSize = sizeof(vertex) * verts.size();
+	vertexStagingBufferDesc.usage = GFX::BufferUsage::GENERIC;
+	GFX::BufferHandle vertexStagingBuffer = device->CreateBuffer(vertexStagingBufferDesc);
+	dest = device->MapBuffer(vertexStagingBuffer.get());
+	memcpy(dest, verts.data(), vertexStagingBufferDesc.byteSize);
+
+	//create vertex buffer
+	GFX::VertexBufferDesc vertexBufferDesc;
+	vertexBufferDesc.access = GFX::CpuVisible::NONE;
+	vertexBufferDesc.byteSize = sizeof(vertex) * verts.size();
+	vertexBufferDesc.strideInBytes = sizeof(vertex);
+	GFX::VertexBufferHandle vertexBuffer = device->CreateVertexBuffer(vertexBufferDesc);
+
+	//TODO upload context
+	cmd->Open();
+	cmd->CopyBuffer(vertexBuffer->GetBuffer(), 0, vertexStagingBuffer.get(), 0, vertexStagingBufferDesc.byteSize);
+	cmd->CopyBuffer(indexBuffer->GetBuffer(), 0, indexStagingBuffer.get(), 0, indexStagingBufferDesc.byteSize);
+	cmd->Close();
+	device->ExecuteCommandLists(cmd.get(), 1);
+	device->WaitForIdle();
 
 
 	Input input;

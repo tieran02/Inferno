@@ -8,6 +8,7 @@
 #include <dxgi1_4.h>
 #include "graphics/d3d12/D3D12Texture.h"
 #include "graphics/d3d12/D3D12Pipeline.h"
+#include "graphics/d3d12/D3D12Buffer.h"
 
 namespace INF::GFX
 {
@@ -235,6 +236,11 @@ namespace INF::GFX
 		return GraphicsPipelineHandle(new D3D12GraphicsPipeline(desc, pso, rootSignature, fb));
 	}
 
+	BufferHandle D3D12Device::CreateBuffer(const BufferDesc& desc)
+	{
+		return BufferHandle(new D3D12Buffer(this, desc));
+	}
+
 	void D3D12Device::CreateDescriptorHeaps()
 	{
 		m_SRVDescriptorHeap.CreateResources(m_device.Get(), D3D12_DESCRIPTOR_HEAP_TYPE_CBV_SRV_UAV, 1024, true);
@@ -261,7 +267,5 @@ namespace INF::GFX
 
 		m_device->CreateRenderTargetView(static_cast<D3D12Texture*>(texture)->Resource(), &viewDesc, m_RTVDescriptorHeap.GetCPUHandle(descriptorIndex));
 	}
-
-
 
 }

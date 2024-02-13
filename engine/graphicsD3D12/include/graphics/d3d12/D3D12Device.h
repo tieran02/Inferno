@@ -44,6 +44,7 @@ namespace INF::GFX
 		FramebufferHandle CreateFramebuffer(const FramebufferDesc& desc) override;
 		Microsoft::WRL::ComPtr<ID3D12PipelineState> CreatePipelineState(const GraphicsPipelineDesc& desc, IFramebuffer* fb);
 		GraphicsPipelineHandle CreateGraphicsPipeline(const GraphicsPipelineDesc& desc, IFramebuffer* fb) override;
+		BufferHandle CreateBuffer(const BufferDesc& desc) override;
 
 
 		CommandListeHandle CreateCommandList(CommandQueue queueType) override;
@@ -61,8 +62,6 @@ namespace INF::GFX
 		D3D12DescriptorHeap& SRVDescriptoHeap() { return m_SRVDescriptorHeap; }
 		D3D12DescriptorHeap& RTVDescriptoHeap() { return m_RTVDescriptorHeap; }
 		D3D12DescriptorHeap& DSVDescriptoHeap() { return m_DSVDescriptorHeap; }
-
-
 	private:
 		void CreateDebugController();
 		void CreateFactory();

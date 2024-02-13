@@ -5,6 +5,7 @@
 #include "graphics/interface/Shader.h"
 #include "graphics/interface/Texture.h"
 #include "graphics/interface/Pipeline.h"
+#include "graphics/interface/Buffer.h"
 
 namespace INF::GFX
 {
@@ -19,6 +20,7 @@ namespace INF::GFX
 
 		virtual FramebufferHandle CreateFramebuffer(const FramebufferDesc& desc) = 0;
 		virtual GraphicsPipelineHandle CreateGraphicsPipeline(const GraphicsPipelineDesc& desc, IFramebuffer* fb) = 0;
+		virtual BufferHandle CreateBuffer(const BufferDesc& desc) = 0;
 
 		virtual CommandListeHandle CreateCommandList(CommandQueue queueType) = 0;
 		virtual uint64_t ExecuteCommandLists(const ICommandList* commandLists, uint32_t commandListCount) = 0;

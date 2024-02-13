@@ -7,8 +7,23 @@
 #include "graphics/interface/Shader.h"
 #include "graphics/interface/deviceManager.h"
 #include "graphics/interface/Texture.h"
+#include "graphics/interface/Buffer.h"
 
 using namespace INF;
+
+struct vertex
+{
+	float x, y;
+};
+
+std::array<vertex, 3> verts{
+	vertex{0.0, 0.5},
+	vertex{0.5, -0.5},
+	vertex{-0.5, -0.5},
+};
+std::array<uint16_t, 3> indices{
+	0,1,2
+};
 
 int main()
 {
@@ -60,6 +75,19 @@ int main()
 
 	GFX::Viewport viewport(0, 0, deviceInfo.backBufferWidth, deviceInfo.backBufferHeight);
 	GFX::Rect scissor(0, 0, deviceInfo.backBufferWidth, deviceInfo.backBufferHeight);
+
+	//create vertex buffer
+	GFX::BufferDesc vertexBufferDesc;
+	vertexBufferDesc.access = GFX::CpuVisible::WRITE;
+	vertexBufferDesc.usage = GFX::BufferUsage::VERTEX;
+	vertexBufferDesc.byteSize = sizeof(vertex) * verts.size();
+	GFX::BufferHandle vertexBuffer = device->CreateBuffer(vertexBufferDesc);
+	//create index buffer
+	GFX::BufferDesc indexBufferDesc;
+	indexBufferDesc.access = GFX::CpuVisible::WRITE;
+	indexBufferDesc.usage = GFX::BufferUsage::INDEX;
+	indexBufferDesc.byteSize = sizeof(uint16_t) * indices.size();
+	GFX::BufferHandle indexBuffer = device->CreateBuffer(indexBufferDesc);
 
 
 	Input input;

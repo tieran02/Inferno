@@ -245,4 +245,5 @@ namespace INF::GFX
 		RESOLVE_DEST				= 1 << 11,
 		RESOLVE_SOURCE				= 1 << 12,
 	};
+	
 }

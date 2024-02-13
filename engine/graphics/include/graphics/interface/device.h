@@ -6,11 +6,14 @@
 #include "graphics/interface/Texture.h"
 #include "graphics/interface/Pipeline.h"
 #include "graphics/interface/Buffer.h"
+#include <functional>
 
 namespace INF::GFX
 {
 	class IDevice;
 	using DeviceHandle = std::unique_ptr<IDevice>;
+
+	using ImmediateSubmitFn = std::function<void(ICommandList* cmd)>;
 
 	class IDevice
 	{
@@ -29,6 +32,7 @@ namespace INF::GFX
 
 		virtual CommandListeHandle CreateCommandList(CommandQueue queueType) = 0;
 		virtual uint64_t ExecuteCommandLists(const ICommandList* commandLists, uint32_t commandListCount) = 0;
+		virtual void ImmediateSubmit(ImmediateSubmitFn ImmediateFn) = 0;
 
 		virtual void WaitForIdle() = 0;
 	};

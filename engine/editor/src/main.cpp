@@ -110,13 +110,11 @@ int main()
 	vertexBufferDesc.strideInBytes = sizeof(vertex);
 	GFX::VertexBufferHandle vertexBuffer = device->CreateVertexBuffer(vertexBufferDesc);
 
-	//TODO upload context
-	cmd->Open();
-	cmd->CopyBuffer(vertexBuffer->GetBuffer(), 0, vertexStagingBuffer.get(), 0, vertexStagingBufferDesc.byteSize);
-	cmd->CopyBuffer(indexBuffer->GetBuffer(), 0, indexStagingBuffer.get(), 0, indexStagingBufferDesc.byteSize);
-	cmd->Close();
-	device->ExecuteCommandLists(cmd.get(), 1);
-	device->WaitForIdle();
+	device->ImmediateSubmit([=](GFX::ICommandList* cmd)
+	{
+		cmd->CopyBuffer(vertexBuffer->GetBuffer(), 0, vertexStagingBuffer.get(), 0, vertexStagingBufferDesc.byteSize);
+		cmd->CopyBuffer(indexBuffer->GetBuffer(), 0, indexStagingBuffer.get(), 0, indexStagingBufferDesc.byteSize);
+	});
 
 
 	Input input;

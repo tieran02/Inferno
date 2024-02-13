@@ -51,10 +51,9 @@ namespace INF::GFX
 		void* MapBuffer(IBuffer* buffer, uint32_t readStart = 0, uint32_t readEnd = 0) override;
 		void UnmapBuffer(IBuffer* buffer, uint32_t writeStart = 0, uint32_t writeEnd = 0) override;
 
-
-
 		CommandListeHandle CreateCommandList(CommandQueue queueType) override;
 		uint64_t ExecuteCommandLists(const ICommandList* commandLists, uint32_t commandListCount) override;
+		void ImmediateSubmit(ImmediateSubmitFn ImmediateFn) override;
 
 		void WaitForIdle() override;
 

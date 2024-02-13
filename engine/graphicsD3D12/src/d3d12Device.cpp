@@ -158,6 +158,16 @@ namespace INF::GFX
 		return m_graphicsQueue->ExecuteCommandLists(d3d12CommandLists->D3D(), 1);
 	}
 
+	void D3D12Device::ImmediateSubmit(ImmediateSubmitFn ImmediateFn)
+	{
+		CommandListeHandle cmd = CreateCommandList(CommandQueue::GRAPHICS);
+		cmd->Open();
+		ImmediateFn(cmd.get());
+		cmd->Close();
+		uint64_t waitFenceVal = ExecuteCommandLists(cmd.get(), 1);
+		WaitForIdle();
+	}
+
 	void D3D12Device::WaitForIdle()
 	{
 		//Wait for the graphics queue to finish, if we have more queues later we will need to add them (E.G compute/copy)
@@ -301,5 +311,7 @@ namespace INF::GFX
 
 		m_device->CreateRenderTargetView(static_cast<D3D12Texture*>(texture)->Resource(), &viewDesc, m_RTVDescriptorHeap.GetCPUHandle(descriptorIndex));
 	}
+
+	
 
 }

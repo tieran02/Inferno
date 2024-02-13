@@ -13,13 +13,14 @@ using namespace INF;
 
 struct vertex
 {
-	float x, y;
+	float x, y,z,w;
+	float r, g, b, a;
 };
 
 std::array<vertex, 3> verts{
-	vertex{0.0, 0.5},
-	vertex{0.5, -0.5},
-	vertex{-0.5, -0.5},
+	vertex{0.0, 0.5, 0,1,			1.0f, 0.0, 0.0f, 1.0f},
+	vertex{0.5, -0.5, 0,1,			0.0f, 1.0, 0.0f, 1.0f},
+	vertex{-0.5, -0.5, 0,1,			0.0f, 0.0, 1.0f, 1.0f},
 };
 std::array<uint16_t, 3> indices{
 	0,1,2
@@ -50,12 +51,12 @@ int main()
 
 	GFX::ShaderDesc vertexShaderDesc;
 	vertexShaderDesc.shaderType = GFX::ShaderType::Vertex;
-	vertexShaderDesc.shaderPath = "data/shaders/triangle.vert.dxil";
+	vertexShaderDesc.shaderPath = "data/shaders/vertexBuffer.vert.dxil";
 	GFX::ShaderHandle vertexShader = device->CreateShader(vertexShaderDesc);
 
 	GFX::ShaderDesc pixelShaderDesc;
 	pixelShaderDesc.shaderType = GFX::ShaderType::Pixel;
-	pixelShaderDesc.shaderPath = "data/shaders/triangle.pixel.dxil";
+	pixelShaderDesc.shaderPath = "data/shaders/vertexBuffer.pixel.dxil";
 	GFX::ShaderHandle pixelShader = device->CreateShader(pixelShaderDesc);
 
 
@@ -67,7 +68,8 @@ int main()
 	pipelineDesc.depthStencilState.depthWriteEnable = false;
 	pipelineDesc.rasterState.cullMode = GFX::RasterCullMode::NONE;
 
-	//pipelineDesc.inputLayoutDesc.emplace_back("POSITION", GFX::Format::RGB32_FLOAT);
+	pipelineDesc.inputLayoutDesc.emplace_back("POSITION", GFX::Format::RGBA32_FLOAT);
+	pipelineDesc.inputLayoutDesc.emplace_back("COLOR", GFX::Format::RGBA32_FLOAT);
 
 
 
@@ -77,17 +79,22 @@ int main()
 	GFX::Rect scissor(0, 0, deviceInfo.backBufferWidth, deviceInfo.backBufferHeight);
 
 	//create vertex buffer
-	GFX::BufferDesc vertexBufferDesc;
+	GFX::VertexBufferDesc vertexBufferDesc;
 	vertexBufferDesc.access = GFX::CpuVisible::WRITE;
-	vertexBufferDesc.usage = GFX::BufferUsage::VERTEX;
 	vertexBufferDesc.byteSize = sizeof(vertex) * verts.size();
-	GFX::BufferHandle vertexBuffer = device->CreateBuffer(vertexBufferDesc);
+	vertexBufferDesc.strideInBytes = sizeof(vertex);
+	GFX::VertexBufferHandle vertexBuffer = device->CreateVertexBuffer(vertexBufferDesc);
+	void* dest = device->MapBuffer(vertexBuffer->GetBuffer());
+	memcpy(dest, verts.data(), vertexBufferDesc.byteSize);
+
 	//create index buffer
-	GFX::BufferDesc indexBufferDesc;
+	GFX::IndexBufferDesc indexBufferDesc;
 	indexBufferDesc.access = GFX::CpuVisible::WRITE;
-	indexBufferDesc.usage = GFX::BufferUsage::INDEX;
+	indexBufferDesc.format = GFX::Format::R16_UINT;
 	indexBufferDesc.byteSize = sizeof(uint16_t) * indices.size();
-	GFX::BufferHandle indexBuffer = device->CreateBuffer(indexBufferDesc);
+	GFX::IndexBufferHandle indexBuffer = device->CreateIndexBuffer(indexBufferDesc);
+	dest = device->MapBuffer(indexBuffer->GetBuffer());
+	memcpy(dest, indices.data(), indexBufferDesc.byteSize);
 
 
 	Input input;
@@ -111,6 +118,8 @@ int main()
 		GFX::GraphicsState graphicsState;
 		graphicsState.pipeline = pipeline.get();
 		graphicsState.framebuffer = framebuffers[deviceManager->GetCurrentBackBufferIndex()].get();
+		graphicsState.vertexBuffer = vertexBuffer.get();
+		graphicsState.indexBuffer = indexBuffer.get();
 
 		window->PollEvents();
 		input.Update();
@@ -121,11 +130,11 @@ int main()
 		cmd->SetGraphicsState(graphicsState);
 
 
-		cmd->ClearColor(deviceManager->GetCurrentBackBufferTexture(), GFX::Color(0.2f, 0.2f, 0.2f, 1.0f));
+		//cmd->ClearColor(deviceManager->GetCurrentBackBufferTexture(), GFX::Color(0.2f, 0.2f, 0.2f, 1.0f));
+		cmd->ClearColor(deviceManager->GetCurrentBackBufferTexture(), GFX::Color((sinf(elapsed * 0.01f) + 1) * 0.5f, 0.5f, 0.2f, 1.0f));
 
 		cmd->Draw(3, 1, 0, 0);
 
-		//cmd->ClearColor(deviceManager->GetCurrentBackBufferTexture(), GFX::Color((sinf(elapsed * 0.01f) + 1) * 0.5f, 0.5f, 0.2f, 1.0f));
 
 		//transition to present for swapchain
 		cmd->Transition(deviceManager->GetCurrentBackBufferTexture(), (GFX::TRANSITION_STATES_FLAGS)GFX::TRANSITION_STATES::RENDER_TARGET, (GFX::TRANSITION_STATES_FLAGS)GFX::TRANSITION_STATES::PRESENT);

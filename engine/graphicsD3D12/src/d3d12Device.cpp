@@ -241,6 +241,40 @@ namespace INF::GFX
 		return BufferHandle(new D3D12Buffer(this, desc));
 	}
 
+	VertexBufferHandle D3D12Device::CreateVertexBuffer(const VertexBufferDesc& desc)
+	{
+		return VertexBufferHandle(new D3D12VertexBuffer(this, desc));
+	}
+
+	IndexBufferHandle D3D12Device::CreateIndexBuffer(const IndexBufferDesc& desc)
+	{
+		return IndexBufferHandle(new D3D12IndexBuffer(this, desc));
+	}
+
+	void* D3D12Device::MapBuffer(IBuffer* buffer, uint32_t readStart /*= 0*/, uint32_t readEnd /*= 0*/)
+	{
+		INF_ASSERT(buffer->GetDesc().access != CpuVisible::NONE, "Buffer not CPU visable, can't map")
+		if (buffer->GetDesc().access == CpuVisible::NONE)
+			return nullptr;
+
+		D3D12Buffer* d3d12Buffer = static_cast<D3D12Buffer*>(buffer);
+		D3D12_RANGE readRange(readStart, readEnd);
+		void* data;
+		VerifySuccess(d3d12Buffer->Resource()->Map(0, &readRange, &data));
+		return data;
+	}
+
+	void D3D12Device::UnmapBuffer(IBuffer* buffer, uint32_t writeStart /*= 0*/, uint32_t writeEnd /*= 0*/)
+	{
+		INF_ASSERT(buffer->GetDesc().access != CpuVisible::NONE, "Buffer not CPU visable, can't unmap")
+			if (buffer->GetDesc().access == CpuVisible::NONE)
+				return;
+
+		D3D12_RANGE writeRange(writeStart, writeEnd);
+		D3D12Buffer* d3d12Buffer = static_cast<D3D12Buffer*>(buffer);
+		d3d12Buffer->Resource()->Unmap(0, &writeRange);
+	}
+
 	void D3D12Device::CreateDescriptorHeaps()
 	{
 		m_SRVDescriptorHeap.CreateResources(m_device.Get(), D3D12_DESCRIPTOR_HEAP_TYPE_CBV_SRV_UAV, 1024, true);

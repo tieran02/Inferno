@@ -102,9 +102,14 @@ namespace INF::GFX
 	using GraphicsPipelineHandle = std::shared_ptr<IGraphicsPipeline>;
 
 	class IFramebuffer;
+	class IVertexBuffer;
+	class IIndexBuffer;
 	struct GraphicsState
 	{
 		IGraphicsPipeline* pipeline;
 		IFramebuffer* framebuffer;
+
+		IVertexBuffer* vertexBuffer;
+		IIndexBuffer* indexBuffer;
 	};
 }

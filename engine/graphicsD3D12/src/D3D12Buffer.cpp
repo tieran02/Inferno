@@ -70,3 +70,58 @@ BufferDesc D3D12Buffer::GetDesc()
 {
 	return m_desc;
 }
+
+BufferDesc ConvertVertexDesc(const VertexBufferDesc& desc)
+{
+	BufferDesc bufferDesc;
+	bufferDesc.access = desc.access;
+	bufferDesc.byteSize = desc.byteSize;
+	bufferDesc.name = desc.name;
+	bufferDesc.usage = BufferUsage::VERTEX;
+	bufferDesc.initialState = (TRANSITION_STATES_FLAGS)TRANSITION_STATES::VERTEX_BUFFER;
+	return bufferDesc;
+}
+
+D3D12VertexBuffer::D3D12VertexBuffer(D3D12Device* device, VertexBufferDesc desc) : m_buffer(device, ConvertVertexDesc(desc)), m_desc(desc)
+{
+	m_view.BufferLocation = m_buffer.Resource()->GetGPUVirtualAddress();
+	m_view.SizeInBytes = desc.byteSize;
+	m_view.StrideInBytes = desc.strideInBytes;
+}
+
+VertexBufferDesc D3D12VertexBuffer::GetDesc()
+{
+	return m_desc;
+}
+
+IBuffer* D3D12VertexBuffer::GetBuffer()
+{
+	return &m_buffer;
+}
+
+BufferDesc ConvertIndexDesc(const IndexBufferDesc& desc)
+{
+	BufferDesc bufferDesc;
+	bufferDesc.access = desc.access;
+	bufferDesc.byteSize = desc.byteSize;
+	bufferDesc.name = desc.name;
+	bufferDesc.usage = BufferUsage::INDEX;
+	bufferDesc.initialState = (TRANSITION_STATES_FLAGS)TRANSITION_STATES::INDEX_BUFFER;
+	return bufferDesc;
+}
+D3D12IndexBuffer::D3D12IndexBuffer(D3D12Device* device, IndexBufferDesc desc) : m_buffer(device, ConvertIndexDesc(desc)), m_desc(desc)
+{
+	m_view.BufferLocation = m_buffer.Resource()->GetGPUVirtualAddress();
+	m_view.SizeInBytes = desc.byteSize;
+	m_view.Format = D3D12Format(desc.format);
+}
+
+IndexBufferDesc D3D12IndexBuffer::GetDesc()
+{
+	return m_desc;
+}
+
+IBuffer* D3D12IndexBuffer::GetBuffer()
+{
+	return &m_buffer;
+}

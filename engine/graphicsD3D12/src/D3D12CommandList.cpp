@@ -4,6 +4,7 @@
 #include "graphics/interface/Texture.h"
 #include "graphics/d3d12/D3D12Texture.h"
 #include "graphics/d3d12/D3D12Pipeline.h"
+#include "graphics/d3d12/D3D12Buffer.h"
 
 namespace INF::GFX
 {
@@ -137,6 +138,12 @@ namespace INF::GFX
 
 		BindGraphicsPipeline(pso);
 		BindFramebuffer(pso, framebuffer);
+
+		D3D12VertexBuffer* vertexBuffer = static_cast<D3D12VertexBuffer*>(state.vertexBuffer);
+		m_commandList->IASetVertexBuffers(0,1, &vertexBuffer->View());
+
+		D3D12IndexBuffer* indexBuffer = static_cast<D3D12IndexBuffer*>(state.indexBuffer);
+		m_commandList->IASetIndexBuffer(&indexBuffer->View());
 	}
 
 	void D3D12CommandList::SetViewport(const Viewport& viewport)

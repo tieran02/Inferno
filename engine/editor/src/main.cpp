@@ -51,6 +51,17 @@ int main()
 		framebuffers[i] = device->CreateFramebuffer(fbDesc);
 	}
 
+	//descriptos
+	GFX::DescriptorLayoutDesc descriptorDesc;
+	//descriptorDesc.PS[0].registerSpace = 0;
+	//descriptorDesc.PS[0].slot = 0;
+	//descriptorDesc.PS[0].type = GFX::ResourceType::TEXTURE_SRV;
+	//descriptorDesc.PS[1].registerSpace = 0;
+	//descriptorDesc.PS[1].slot = 1;
+	//descriptorDesc.PS[1].type = GFX::ResourceType::SAMPLER;
+	GFX::DescriptorLayoutHandle descriptorHandle = device->CreateDescriptorLayout(descriptorDesc);
+
+
 	GFX::ShaderDesc vertexShaderDesc;
 	vertexShaderDesc.shaderType = GFX::ShaderType::Vertex;
 	vertexShaderDesc.shaderPath = "data/shaders/vertexBuffer.vert.dxil";
@@ -69,6 +80,7 @@ int main()
 	pipelineDesc.depthStencilState.depthTestEnable = false;
 	pipelineDesc.depthStencilState.depthWriteEnable = false;
 	pipelineDesc.rasterState.cullMode = GFX::RasterCullMode::NONE;
+	pipelineDesc.descriptorLayout = descriptorHandle;
 
 	pipelineDesc.inputLayoutDesc.emplace_back("POSITION", GFX::Format::RGBA32_FLOAT);
 	pipelineDesc.inputLayoutDesc.emplace_back("COLOR", GFX::Format::RGBA32_FLOAT);

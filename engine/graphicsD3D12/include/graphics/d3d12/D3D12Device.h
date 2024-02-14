@@ -44,6 +44,7 @@ namespace INF::GFX
 		FramebufferHandle CreateFramebuffer(const FramebufferDesc& desc) override;
 		Microsoft::WRL::ComPtr<ID3D12PipelineState> CreatePipelineState(const GraphicsPipelineDesc& desc, IFramebuffer* fb);
 		GraphicsPipelineHandle CreateGraphicsPipeline(const GraphicsPipelineDesc& desc, IFramebuffer* fb) override;
+		DescriptorLayoutHandle CreateDescriptorLayout(const DescriptorLayoutDesc desc) override;
 
 		BufferHandle CreateBuffer(const BufferDesc& desc) override;
 		VertexBufferHandle CreateVertexBuffer(const VertexBufferDesc& desc) override;

@@ -128,14 +128,12 @@ namespace INF::GFX
 
 	enum class ShaderType : uint8_t
 	{
-		None = 1 << 0,
+		Vertex,
+		Pixel,
+		AllGraphics,
 
-		Vertex = 1 << 1,
-		Pixel = 1 << 2,
-		AllGraphics = 1 << 3,
-
-		Compute = 1 << 4,
-		All = 0xff,
+		Compute,
+		All,
 	};
 
 	enum class CommandQueue : uint8_t

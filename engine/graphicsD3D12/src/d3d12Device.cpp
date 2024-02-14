@@ -9,6 +9,7 @@
 #include "graphics/d3d12/D3D12Texture.h"
 #include "graphics/d3d12/D3D12Pipeline.h"
 #include "graphics/d3d12/D3D12Buffer.h"
+#include "graphics/d3d12/D3D12Descriptor.h"
 
 namespace INF::GFX
 {
@@ -235,15 +236,14 @@ namespace INF::GFX
 	{
 		auto pso = CreatePipelineState(desc, fb);
 
-		//for now creat root sig from shader blob
-		Microsoft::WRL::ComPtr<ID3D12RootSignature> rootSignature;
-		const void* ppBytecode;
-		size_t pSize;
-		desc.VS->GetBytecode(&ppBytecode, pSize);
+		//Get root sig from descriptor layout handle
+		D3D12DescriptorLayout* layout = static_cast<D3D12DescriptorLayout*>(desc.descriptorLayout.get());
+		return GraphicsPipelineHandle(new D3D12GraphicsPipeline(desc, pso, layout->RootSignature(), fb));
+	}
 
-		VerifySuccess(m_device->CreateRootSignature(0, ppBytecode, pSize, IID_PPV_ARGS(&rootSignature)));
-
-		return GraphicsPipelineHandle(new D3D12GraphicsPipeline(desc, pso, rootSignature, fb));
+	DescriptorLayoutHandle D3D12Device::CreateDescriptorLayout(const DescriptorLayoutDesc desc)
+	{
+		return DescriptorLayoutHandle(new D3D12DescriptorLayout(m_device.Get(), desc));
 	}
 
 	BufferHandle D3D12Device::CreateBuffer(const BufferDesc& desc)
@@ -311,7 +311,4 @@ namespace INF::GFX
 
 		m_device->CreateRenderTargetView(static_cast<D3D12Texture*>(texture)->Resource(), &viewDesc, m_RTVDescriptorHeap.GetCPUHandle(descriptorIndex));
 	}
-
-	
-
 }

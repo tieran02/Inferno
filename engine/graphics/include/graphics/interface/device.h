@@ -6,7 +6,9 @@
 #include "graphics/interface/Texture.h"
 #include "graphics/interface/Pipeline.h"
 #include "graphics/interface/Buffer.h"
+#include "graphics/interface/Descriptor.h"
 #include <functional>
+
 
 namespace INF::GFX
 {
@@ -23,6 +25,7 @@ namespace INF::GFX
 
 		virtual FramebufferHandle CreateFramebuffer(const FramebufferDesc& desc) = 0;
 		virtual GraphicsPipelineHandle CreateGraphicsPipeline(const GraphicsPipelineDesc& desc, IFramebuffer* fb) = 0;
+		virtual DescriptorLayoutHandle CreateDescriptorLayout(const DescriptorLayoutDesc desc) = 0;
 
 		virtual BufferHandle CreateBuffer(const BufferDesc& desc) = 0;
 		virtual VertexBufferHandle CreateVertexBuffer(const VertexBufferDesc& desc) = 0;

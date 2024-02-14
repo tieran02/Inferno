@@ -433,3 +433,22 @@ inline D3D12_RASTERIZER_DESC D3D12RasterizerState(const INF::GFX::RasterState st
 
 	return rast;
 }
+
+inline D3D12_SHADER_VISIBILITY D3D12ShaderVisibility(INF::GFX::ShaderType type)
+{
+	switch (type)
+	{
+	case INF::GFX::ShaderType::Vertex:
+		return D3D12_SHADER_VISIBILITY_VERTEX;
+	case INF::GFX::ShaderType::Pixel:
+		return D3D12_SHADER_VISIBILITY_PIXEL;
+
+	case INF::GFX::ShaderType::Compute:
+	case INF::GFX::ShaderType::AllGraphics:
+	case INF::GFX::ShaderType::All:
+		return D3D12_SHADER_VISIBILITY_ALL;
+	default:
+		INF_ASSERT(false, "Shader Type not supported");
+		return D3D12_SHADER_VISIBILITY_ALL;
+	}
+}

@@ -5,7 +5,7 @@
 
 using namespace INF::GFX;
 
-D3D12GraphicsPipeline::D3D12GraphicsPipeline(const GraphicsPipelineDesc& desc, Microsoft::WRL::ComPtr<ID3D12PipelineState>& pso, Microsoft::WRL::ComPtr<ID3D12RootSignature>& rootSignature, IFramebuffer* fb) 
+D3D12GraphicsPipeline::D3D12GraphicsPipeline(const GraphicsPipelineDesc& desc, Microsoft::WRL::ComPtr<ID3D12PipelineState>& pso,ID3D12RootSignature* rootSignature, IFramebuffer* fb) 
 	: m_desc(desc)
 {
 	INF_ASSERT(pso, "Invalid PSO");

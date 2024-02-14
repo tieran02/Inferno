@@ -2,6 +2,7 @@
 #include "Shader.h"
 #include "graphics/GraphicDefines.h"
 #include "graphics/interface/Shader.h"
+#include "graphics/interface/Descriptor.h"
 #include <cstdint>
 #include <vector>
 
@@ -86,6 +87,8 @@ namespace INF::GFX
 
 		ShaderHandle VS;
 		ShaderHandle PS;
+
+		DescriptorLayoutHandle descriptorLayout;
 
 		BlendState blendState;
 		DepthStencilState depthStencilState;

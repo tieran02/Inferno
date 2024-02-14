@@ -9,17 +9,17 @@ namespace INF::GFX
 	class D3D12GraphicsPipeline : public IGraphicsPipeline
 	{
 	public:
-		D3D12GraphicsPipeline(const GraphicsPipelineDesc& desc, Microsoft::WRL::ComPtr<ID3D12PipelineState>& pso, Microsoft::WRL::ComPtr<ID3D12RootSignature>& rootSignature, IFramebuffer* fb);
+		D3D12GraphicsPipeline(const GraphicsPipelineDesc& desc, Microsoft::WRL::ComPtr<ID3D12PipelineState>& pso, ID3D12RootSignature* rootSignature, IFramebuffer* fb);
 		const GraphicsPipelineDesc& GetDesc() const override;
 
 		ID3D12PipelineState* PipelineState() const { return m_pso.Get(); }
-		ID3D12RootSignature* RootSignature() const { return m_rootSignature.Get(); }
+		ID3D12RootSignature* RootSignature() const { return m_rootSignature; }
 		bool RequiresBlendFactor() const { return m_requiresBlendFactor; }
 	private:
 		GraphicsPipelineDesc m_desc;
 
 		Microsoft::WRL::ComPtr<ID3D12PipelineState> m_pso; //shared ref to pso, other pipeline may use the same pso
-		Microsoft::WRL::ComPtr<ID3D12RootSignature> m_rootSignature;
+		ID3D12RootSignature* m_rootSignature;
 		bool m_requiresBlendFactor;
 	};
 }

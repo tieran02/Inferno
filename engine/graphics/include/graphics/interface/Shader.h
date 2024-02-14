@@ -7,7 +7,7 @@ namespace INF::GFX
 {
 	struct ShaderDesc
 	{
-		ShaderType shaderType = ShaderType::None;
+		ShaderType shaderType = ShaderType::Vertex;
 		std::string shaderPath;
 		std::string entryName = "main";
 	};

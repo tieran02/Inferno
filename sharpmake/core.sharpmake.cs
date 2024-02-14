@@ -22,7 +22,8 @@ namespace Inferno
 
             conf.IncludePaths.Add(Defines.Paths.INFERNO_CORE_INC);
             conf.IncludePaths.Add(Path.Combine(Defines.Paths.INFERNO_THIRD_PARTY, "spdlog/include"));
-
+            conf.IncludePaths.Add(Path.Combine(Defines.Paths.INFERNO_THIRD_PARTY, "glm"));
+            
             conf.AddPrivateDependency<GLFWLib>(target);
         }
     }

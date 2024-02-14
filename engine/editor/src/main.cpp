@@ -8,19 +8,20 @@
 #include "graphics/interface/deviceManager.h"
 #include "graphics/interface/Texture.h"
 #include "graphics/interface/Buffer.h"
+#include <glm/glm.hpp>
 
 using namespace INF;
 
 struct vertex
 {
-	float x, y,z,w;
-	float r, g, b, a;
+	alignas(16) glm::vec2 pos;
+	alignas(16) glm::vec3 color;
 };
 
 std::array<vertex, 3> verts{
-	vertex{0.0, 0.5, 0,1,			1.0f, 0.0, 0.0f, 1.0f},
-	vertex{0.5, -0.5, 0,1,			0.0f, 1.0, 0.0f, 1.0f},
-	vertex{-0.5, -0.5, 0,1,			0.0f, 0.0, 1.0f, 1.0f},
+	vertex{{0.0, 0.5},			{1.0f, 0.0, 0.0f}},
+	vertex{{0.5, -0.5},			{0.0f, 1.0, 0.0f}},
+	vertex{{-0.5, -0.5},		{0.0f, 0.0, 1.0f}},
 };
 std::array<uint16_t, 3> indices{
 	0,1,2
@@ -33,6 +34,7 @@ int main()
 
 	GFX::DeviceCreationParameters deviceInfo;
 	deviceInfo.enableDebugValidation = false;
+	deviceInfo.vsync = false;
 
 	GFX::DeviceManagerHandle deviceManager = GFX::IDeviceManager::Create(GFX::API::D3D12, deviceInfo);
 	deviceManager->CreateDeviceAndSwapChain(window.get(), deviceInfo);
@@ -110,11 +112,15 @@ int main()
 	vertexBufferDesc.strideInBytes = sizeof(vertex);
 	GFX::VertexBufferHandle vertexBuffer = device->CreateVertexBuffer(vertexBufferDesc);
 
+
 	device->ImmediateSubmit([=](GFX::ICommandList* cmd)
 	{
 		cmd->CopyBuffer(vertexBuffer->GetBuffer(), 0, vertexStagingBuffer.get(), 0, vertexStagingBufferDesc.byteSize);
 		cmd->CopyBuffer(indexBuffer->GetBuffer(), 0, indexStagingBuffer.get(), 0, indexStagingBufferDesc.byteSize);
 	});
+	//reset staging buffer to free resources
+	indexStagingBuffer.reset();
+	vertexStagingBuffer.reset();
 
 
 	Input input;
@@ -130,10 +136,10 @@ int main()
 
 	while (!shouldClose)
 	{
-		typedef std::chrono::high_resolution_clock clock;
-		typedef std::chrono::duration<float, std::milli> duration;
-		static clock::time_point start = clock::now();
-		float elapsed = (duration(clock::now() - start)).count();
+		//typedef std::chrono::high_resolution_clock clock;
+		//typedef std::chrono::duration<float, std::milli> duration;
+		//static clock::time_point start = clock::now();
+		//float elapsed = (duration(clock::now() - start)).count();
 
 		GFX::GraphicsState graphicsState;
 		graphicsState.pipeline = pipeline.get();
@@ -150,8 +156,8 @@ int main()
 		cmd->SetGraphicsState(graphicsState);
 
 
-		//cmd->ClearColor(deviceManager->GetCurrentBackBufferTexture(), GFX::Color(0.2f, 0.2f, 0.2f, 1.0f));
-		cmd->ClearColor(deviceManager->GetCurrentBackBufferTexture(), GFX::Color((sinf(elapsed * 0.01f) + 1) * 0.5f, 0.5f, 0.2f, 1.0f));
+		cmd->ClearColor(deviceManager->GetCurrentBackBufferTexture(), GFX::Color(0.2f, 0.2f, 0.2f, 1.0f));
+		//cmd->ClearColor(deviceManager->GetCurrentBackBufferTexture(), GFX::Color((sinf(elapsed * 0.01f) + 1) * 0.5f, 0.5f, 0.2f, 1.0f));
 
 		cmd->Draw(3, 1, 0, 0);
 

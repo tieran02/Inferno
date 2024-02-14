@@ -1,6 +1,6 @@
 struct PixelInput
 {
-    float4 color : COLOR;
+    float3 color : COLOR;
 };
 
 struct PixelOutput
@@ -11,6 +11,6 @@ struct PixelOutput
 PixelOutput main(PixelInput pixelInput)
 {
     PixelOutput output;
-    output.attachment0 = pixelInput.color;
+    output.attachment0 = float4(pixelInput.color, 1.0);
     return output;
 }

@@ -22,5 +22,20 @@
 			"url": "https://github.com/microsoft/DirectX-Headers.git",
 			"revision": "v1.611.0"
 		}
+	},
+	{
+		"name": "glm",
+		"source": {
+			"type": "git",
+			"url": "https://github.com/g-truc/glm.git",
+			"revision": "1.0.0"
+		}
+	},
+	{
+		"name": "stb",
+		"source": {
+			"type": "git",
+			"url": "https://github.com/nothings/stb.git"
+		}
 	}
 ]

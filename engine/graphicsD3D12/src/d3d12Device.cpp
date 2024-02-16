@@ -292,11 +292,17 @@ namespace INF::GFX
 		d3d12Buffer->Resource()->Unmap(0, &writeRange);
 	}
 
+	SamplerHandle D3D12Device::CreateSampler(const SamplerDesc& desc)
+	{
+		return SamplerHandle(new D3D12Sampler(this, desc));
+	}
+
 	void D3D12Device::CreateDescriptorHeaps()
 	{
 		m_SRVDescriptorHeap.CreateResources(m_device.Get(), D3D12_DESCRIPTOR_HEAP_TYPE_CBV_SRV_UAV, 1024, true);
 		m_RTVDescriptorHeap.CreateResources(m_device.Get(), D3D12_DESCRIPTOR_HEAP_TYPE_RTV, 1024, false);
 		m_DSVDescriptorHeap.CreateResources(m_device.Get(), D3D12_DESCRIPTOR_HEAP_TYPE_DSV, 1024, false);
+		m_SamplerDescriptorHeap.CreateResources(m_device.Get(), D3D12_DESCRIPTOR_HEAP_TYPE_SAMPLER, 100,false);
 	}
 
 	void D3D12Device::CreateRenderTargetView(DescriptorIndex descriptorIndex, ITexture* texture)
@@ -318,4 +324,6 @@ namespace INF::GFX
 
 		m_device->CreateRenderTargetView(static_cast<D3D12Texture*>(texture)->Resource(), &viewDesc, m_RTVDescriptorHeap.GetCPUHandle(descriptorIndex));
 	}
+
+
 }

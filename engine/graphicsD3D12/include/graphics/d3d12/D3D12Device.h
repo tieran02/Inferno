@@ -54,6 +54,8 @@ namespace INF::GFX
 		void* MapBuffer(IBuffer* buffer, uint32_t readStart = 0, uint32_t readEnd = 0) override;
 		void UnmapBuffer(IBuffer* buffer, uint32_t writeStart = 0, uint32_t writeEnd = 0) override;
 
+		SamplerHandle CreateSampler(const SamplerDesc& desc) override;
+
 		CommandListeHandle CreateCommandList(CommandQueue queueType) override;
 		uint64_t ExecuteCommandLists(const ICommandList* commandLists, uint32_t commandListCount) override;
 		void ImmediateSubmit(ImmediateSubmitFn ImmediateFn) override;
@@ -70,6 +72,7 @@ namespace INF::GFX
 		D3D12DescriptorHeap& SRVDescriptoHeap() { return m_SRVDescriptorHeap; }
 		D3D12DescriptorHeap& RTVDescriptoHeap() { return m_RTVDescriptorHeap; }
 		D3D12DescriptorHeap& DSVDescriptoHeap() { return m_DSVDescriptorHeap; }
+		D3D12DescriptorHeap& SamplerDescriptoHeap() { return m_SamplerDescriptorHeap; }
 	private:
 		void CreateDebugController();
 		void CreateFactory();
@@ -91,5 +94,6 @@ namespace INF::GFX
 		D3D12DescriptorHeap m_SRVDescriptorHeap;
 		D3D12DescriptorHeap m_RTVDescriptorHeap;
 		D3D12DescriptorHeap m_DSVDescriptorHeap;
+		D3D12DescriptorHeap m_SamplerDescriptorHeap;
 	};
 }

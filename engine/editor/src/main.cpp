@@ -165,6 +165,8 @@ int main()
 	descriptorSetDesc.VS[0] = GFX::DescriptorSetItem::ConstantBuffer(0, constantBuffer.get());
 	GFX::DescriptorSetHandle descriptorSet = device->CreateDescriptorSet(descriptorSetDesc, descriptorHandle.get());
 
+	GFX::SamplerDesc samplerDesc;
+	GFX::SamplerHandle sampler = device->CreateSampler(samplerDesc);
 
 	Input input;
 	window->SetInputKeyRegisterCallback(input.GetRegisterKeyFn());

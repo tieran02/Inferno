@@ -145,6 +145,21 @@ namespace INF::GFX
 		COUNT
 	};
 
+	enum class WrapMode : uint8_t
+	{
+		CLAMP,
+		WRAP,
+		BORDER
+	};
+
+	enum class ReductionType : uint8_t
+	{
+		STANDARD,
+		COMPARISON,
+		MINIMUM,
+		MAXIMUM
+	};
+
 	constexpr uint8_t MAX_RENDER_TARGETS = 8;
 
 	enum class Format

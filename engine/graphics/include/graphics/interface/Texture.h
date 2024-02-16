@@ -46,6 +46,36 @@ namespace INF::GFX
 
 	using TextureHandle = std::shared_ptr<ITexture>;
 
+	struct SamplerDesc
+	{
+
+
+		WrapMode wrapMode[3];
+		float mipBias, anisotropy;
+		bool minFilter, magFilter, mipFilter;
+		ReductionType reductionType;
+		Color borderColor;
+
+		SamplerDesc() :
+			minFilter(true),
+			magFilter(true),
+			mipFilter(true),
+			mipBias(0),
+			anisotropy(1),
+			reductionType(ReductionType::STANDARD),
+			borderColor(1, 1, 1, 1)
+		{
+			wrapMode[0] = wrapMode[1] = wrapMode[2] = WrapMode::CLAMP;
+		}
+	};
+
+	class ISampler
+	{
+	public:
+		virtual ~ISampler() = default;
+		virtual const SamplerDesc& GetDesc() const = 0;
+	};
+	using SamplerHandle = std::shared_ptr<ISampler>;
 
 	struct FramebufferAttachment
 	{

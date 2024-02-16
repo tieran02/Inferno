@@ -33,6 +33,22 @@ namespace INF::GFX
 		D3D12TextureView m_rtv;
 	};
 
+	class D3D12Sampler : public ISampler
+	{
+	public:
+		D3D12Sampler(D3D12Device* ownerDevice, const SamplerDesc& desc);
+		~D3D12Sampler();
+
+		const SamplerDesc& GetDesc() const override;
+	private:
+		D3D12Device* m_device;
+		SamplerDesc m_desc;
+
+		DescriptorIndex m_descriptorIndex{ DescriptorIndexInvalid };
+		D3D12_CPU_DESCRIPTOR_HANDLE m_CPU;
+		D3D12_GPU_DESCRIPTOR_HANDLE m_GPU;
+	};
+
 	//D3D12 doesn't have the concept of a framebuffer but we still use it to group the target in FrameBufferDesc
 	class D3D12Framebuffer : public IFramebuffer
 	{

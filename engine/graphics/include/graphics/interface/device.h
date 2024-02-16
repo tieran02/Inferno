@@ -34,6 +34,8 @@ namespace INF::GFX
 		virtual void* MapBuffer(IBuffer* buffer, uint32_t readStart = 0, uint32_t readEnd = 0) = 0;
 		virtual void UnmapBuffer(IBuffer* buffer, uint32_t writeStart = 0, uint32_t writeEnd = 0) = 0;
 
+		virtual SamplerHandle CreateSampler(const SamplerDesc& desc) = 0;
+
 		virtual CommandListeHandle CreateCommandList(CommandQueue queueType) = 0;
 		virtual uint64_t ExecuteCommandLists(const ICommandList* commandLists, uint32_t commandListCount) = 0;
 		virtual void ImmediateSubmit(ImmediateSubmitFn ImmediateFn) = 0;

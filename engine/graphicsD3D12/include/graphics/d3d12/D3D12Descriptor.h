@@ -5,6 +5,7 @@
 
 namespace INF::GFX
 {
+	using LayoutRootIndexMap = std::unordered_map<DescriptorLayoutItem, uint32_t>;
 	class D3D12DescriptorLayout : public IDescriptorLayout
 	{
 	public:
@@ -12,9 +13,13 @@ namespace INF::GFX
 
 		const DescriptorLayoutDesc& GetDesc() const override;
 		ID3D12RootSignature* RootSignature() const { return m_rootSignature.Get(); }
+
+		uint32_t GetRootParamIndex(ShaderType stage, const DescriptorSetItem& setItem);
 	private:
 		DescriptorLayoutDesc m_desc;
 		Microsoft::WRL::ComPtr<ID3D12RootSignature> m_rootSignature;
+
+		std::array<LayoutRootIndexMap, static_cast<uint8_t>(ShaderType::All)> m_stageLayoutRootIndexMap;
 	};
 
 	class D3D12DescriptorSet : public IDescriptorSet
@@ -24,8 +29,6 @@ namespace INF::GFX
 
 		const DescriptorSetDesc& GetDesc() const override;
 		IDescriptorLayout* GetLayout() const override;
-
-		uint32_t GetRootParamIndex(const DescriptorSetItem& setItem);
 	private:
 		DescriptorSetDesc m_desc;
 		IDescriptorLayout* m_layout;

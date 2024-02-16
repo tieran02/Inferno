@@ -8,6 +8,8 @@ struct PixelOutput
     float4 attachment0 : SV_Target0;
 };
 
+SamplerState samp : register(s0);
+
 PixelOutput main(PixelInput pixelInput)
 {
     PixelOutput output;

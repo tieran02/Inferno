@@ -237,24 +237,26 @@ namespace INF::GFX
 	void D3D12CommandList::BindDescriptorSet(D3D12DescriptorSet* set)
 	{
 		//TODO we should only set the heaps if they changed
-		ID3D12DescriptorHeap* heaps[1] = { m_device->SRVDescriptoHeap().Heap() };
-		m_commandList->SetDescriptorHeaps(1, heaps);
+		ID3D12DescriptorHeap* heaps[2] = { m_device->SRVDescriptoHeap().Heap(), m_device->SamplerDescriptoHeap().Heap()};
+		m_commandList->SetDescriptorHeaps(2, heaps);
 
-		std::array<const StageDescriptorSetDesc*, 3> stages
+		std::array<std::pair<ShaderType, const StageDescriptorSetDesc*>, 3> stages
 		{
-			&set->GetDesc().VS,
-			& set->GetDesc().PS,
-			& set->GetDesc().ALL,
+			std::make_pair(ShaderType::Vertex, &set->GetDesc().VS),
+			std::make_pair(ShaderType::Pixel, &set->GetDesc().PS),
+			std::make_pair(ShaderType::All, &set->GetDesc().ALL),
 		};
 
-		for (const StageDescriptorSetDesc* stage : stages)
+
+		D3D12DescriptorLayout* layout = static_cast<D3D12DescriptorLayout*>(set->GetLayout());
+		for (const auto& stage : stages)
 		{
-			for (const DescriptorSetItem& setItem : *stage)
+			for (const DescriptorSetItem& setItem : *stage.second)
 			{
 				if(setItem.slot == UINT_MAX)
 					continue;
 
-				uint32_t rootIndex = set->GetRootParamIndex(setItem);
+				uint32_t rootIndex = layout->GetRootParamIndex(stage.first,setItem);
 
 				switch (setItem.type)
 				{
@@ -273,8 +275,11 @@ namespace INF::GFX
 					break;
 				}
 				case ResourceType::SAMPLER:
-					throw std::logic_error("The method or operation is not implemented.");
+				{
+					D3D12Sampler* sampler = static_cast<D3D12Sampler*>(setItem.resourceHandle.sampler);
+					m_commandList->SetGraphicsRootDescriptorTable(rootIndex, sampler->GPU());
 					break;
+				}
 				default:
 					INF_ASSERT(false, "set item type not supported")
 					break;

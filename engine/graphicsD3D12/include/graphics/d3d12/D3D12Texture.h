@@ -40,6 +40,7 @@ namespace INF::GFX
 		~D3D12Sampler();
 
 		const SamplerDesc& GetDesc() const override;
+		D3D12_GPU_DESCRIPTOR_HANDLE GPU() const { return m_GPU; }
 	private:
 		D3D12Device* m_device;
 		SamplerDesc m_desc;

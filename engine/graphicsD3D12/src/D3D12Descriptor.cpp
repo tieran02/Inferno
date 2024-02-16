@@ -7,107 +7,116 @@
 
 using namespace INF::GFX;
 
-void GetRootRanges(StageBindingDescriptorDesc stage, std::vector<D3D12_DESCRIPTOR_RANGE1>& outSrvRanges, std::vector<D3D12_DESCRIPTOR_RANGE1>& outSamplerRanges)
+struct StageDescriptorLayout
 {
-	outSrvRanges.clear();
-	outSamplerRanges.clear();
-
-	int descriptorTableSizeSamplers = 0;
-	int descriptorTableSizeSRVetc = 0;
-
-	for (const DescriptorLayoutItem& layoutItem : stage)
-	{
-		if(layoutItem.slot == UINT_MAX)
-			continue;
-
-		if (layoutItem.type == ResourceType::SAMPLER)
-		{
-			outSamplerRanges.resize(outSamplerRanges.size() + 1);
-			D3D12_DESCRIPTOR_RANGE1& range = outSamplerRanges[outSamplerRanges.size() - 1];
-
-			range.RangeType = D3D12_DESCRIPTOR_RANGE_TYPE_SAMPLER;
-			range.NumDescriptors = 1;
-			range.BaseShaderRegister = layoutItem.slot;
-			range.RegisterSpace = layoutItem.registerSpace;
-			range.OffsetInDescriptorsFromTableStart = descriptorTableSizeSamplers;
-			range.Flags = D3D12_DESCRIPTOR_RANGE_FLAG_NONE;
-
-			descriptorTableSizeSamplers += 1;
-		}
-		else
-		{
-			outSrvRanges.resize(outSrvRanges.size() + 1);
-			D3D12_DESCRIPTOR_RANGE1& range = outSrvRanges[outSrvRanges.size() - 1];
-
-			switch (layoutItem.type)
-			{
-			case ResourceType::TEXTURE_SRV:
-			case ResourceType::BUFFER_SRV:
-				range.RangeType = D3D12_DESCRIPTOR_RANGE_TYPE_SRV;
-				break;
-			case ResourceType::CONSTANTBUFFER:
-				range.RangeType = D3D12_DESCRIPTOR_RANGE_TYPE_CBV;
-				break;
-			default:
-				INF_ASSERT(false, "ResourceType not supported");
-			}
-			range.NumDescriptors = 1;
-			range.BaseShaderRegister = layoutItem.slot;
-			range.RegisterSpace = layoutItem.registerSpace;
-			range.OffsetInDescriptorsFromTableStart = descriptorTableSizeSRVetc;
-
-			descriptorTableSizeSRVetc += 1;
-
-		}
-	}
-}
-
-struct D3D12DescriptorRangeStage
-{
-	std::vector<D3D12_DESCRIPTOR_RANGE1> samplerParams;
-	std::vector<D3D12_DESCRIPTOR_RANGE1> srvParams;
 	ShaderType shaderType;
+	const StageBindingDescriptorDesc& stageDesc;
+	StageDescriptorLayout(ShaderType type, const StageBindingDescriptorDesc& desc) : shaderType(type), stageDesc(desc) {}
+};
 
-	D3D12DescriptorRangeStage(ShaderType type) : shaderType(type) {}
+struct StageDescriptorLayoutItem
+{
+	DescriptorLayoutItem LayoutItem;
+	D3D12_DESCRIPTOR_RANGE1 range;
+	ShaderType Stage;
 };
 
 
 D3D12DescriptorLayout::D3D12DescriptorLayout(ID3D12Device* device, const DescriptorLayoutDesc& desc) : m_desc(desc), m_rootSignature(nullptr)
 {
-	std::vector<D3D12DescriptorRangeStage> stageRanges
-	{ 
-		D3D12DescriptorRangeStage(ShaderType::Vertex),
-		D3D12DescriptorRangeStage(ShaderType::Pixel),
-		D3D12DescriptorRangeStage(ShaderType::AllGraphics),
+	std::array<StageDescriptorLayout, 3> stages =
+	{
+		StageDescriptorLayout(ShaderType::Vertex, desc.VS),
+		StageDescriptorLayout(ShaderType::Pixel, desc.PS),
+		StageDescriptorLayout(ShaderType::AllGraphics, desc.ALL),
 	};
-	GetRootRanges(desc.VS, stageRanges[0].srvParams, stageRanges[0].samplerParams);
-	GetRootRanges(desc.PS, stageRanges[1].srvParams, stageRanges[1].samplerParams);
-	GetRootRanges(desc.ALL, stageRanges[2].srvParams, stageRanges[2].samplerParams);
+
+	std::vector<StageDescriptorLayoutItem> outSrvRanges;
+	std::vector<StageDescriptorLayoutItem> outSamplerRanges;
+	int descriptorTableSizeSamplers = 0;
+	int descriptorTableSizeSRVetc = 0;
+
+	//Loop through the stages to get the ranges
+	for (const StageDescriptorLayout& stage : stages)
+	{
+		for (const DescriptorLayoutItem& layoutItem : stage.stageDesc)
+		{
+			if(layoutItem.slot == UINT_MAX)
+				continue;
+
+			if (layoutItem.type == ResourceType::SAMPLER)
+			{
+				outSamplerRanges.resize(outSamplerRanges.size() + 1);
+				StageDescriptorLayoutItem& outItem = outSamplerRanges.back();
+				outItem.Stage = stage.shaderType;
+				outItem.LayoutItem = layoutItem;
+				D3D12_DESCRIPTOR_RANGE1& range = outItem.range;
+
+				range.RangeType = D3D12_DESCRIPTOR_RANGE_TYPE_SAMPLER;
+				range.NumDescriptors = 1;
+				range.BaseShaderRegister = layoutItem.slot;
+				range.RegisterSpace = layoutItem.registerSpace;
+				range.OffsetInDescriptorsFromTableStart = descriptorTableSizeSamplers;
+				range.Flags = D3D12_DESCRIPTOR_RANGE_FLAG_NONE;
+
+				descriptorTableSizeSamplers += 1;
+			}
+			else
+			{
+				outSrvRanges.resize(outSrvRanges.size() + 1);
+				StageDescriptorLayoutItem& outItem = outSrvRanges.back();
+				outItem.Stage = stage.shaderType;
+				outItem.LayoutItem = layoutItem;
+				D3D12_DESCRIPTOR_RANGE1& range = outItem.range;
+
+				switch (layoutItem.type)
+				{
+				case ResourceType::TEXTURE_SRV:
+				case ResourceType::BUFFER_SRV:
+					range.RangeType = D3D12_DESCRIPTOR_RANGE_TYPE_SRV;
+					break;
+				case ResourceType::CONSTANTBUFFER:
+					range.RangeType = D3D12_DESCRIPTOR_RANGE_TYPE_CBV;
+					break;
+				default:
+					INF_ASSERT(false, "ResourceType not supported");
+				}
+				range.NumDescriptors = 1;
+				range.BaseShaderRegister = layoutItem.slot;
+				range.RegisterSpace = layoutItem.registerSpace;
+				range.OffsetInDescriptorsFromTableStart = descriptorTableSizeSRVetc;
+
+				descriptorTableSizeSRVetc += 1;
+
+			}
+		}
+	}
 
 	std::vector<D3D12_ROOT_PARAMETER1> rootParameters;
-	for (const auto& stageRange : stageRanges)
+	rootParameters.reserve(outSamplerRanges.size() + outSrvRanges.size());
+
+	for (const StageDescriptorLayoutItem& srv : outSrvRanges)
 	{
-		if (stageRange.samplerParams.size() > 0)
-		{
-			rootParameters.resize(rootParameters.size() + 1);
-			D3D12_ROOT_PARAMETER1& param = rootParameters[rootParameters.size() - 1];
+		D3D12_ROOT_PARAMETER1& param = rootParameters.emplace_back();
 
-			param.ParameterType = D3D12_ROOT_PARAMETER_TYPE_DESCRIPTOR_TABLE;
-			param.ShaderVisibility = D3D12ShaderVisibility(stageRange.shaderType);
-			param.DescriptorTable.NumDescriptorRanges = UINT(stageRange.samplerParams.size());
-			param.DescriptorTable.pDescriptorRanges = stageRange.samplerParams.data();
-		}
+		param.ParameterType = D3D12_ROOT_PARAMETER_TYPE_DESCRIPTOR_TABLE;
+		param.ShaderVisibility = D3D12ShaderVisibility(srv.Stage);
+		param.DescriptorTable.NumDescriptorRanges = 1;
+		param.DescriptorTable.pDescriptorRanges = &srv.range;
 
-		if (stageRange.srvParams.size() > 0)
-		{
-			rootParameters.resize(rootParameters.size() + 1);
-			D3D12_ROOT_PARAMETER1& param = rootParameters[rootParameters.size() - 1];
+		m_stageLayoutRootIndexMap[static_cast<uint8_t>(srv.Stage)].emplace(srv.LayoutItem, rootParameters.size() - 1);
+	}
 
-			param.ParameterType = D3D12_ROOT_PARAMETER_TYPE_DESCRIPTOR_TABLE;
-			param.ShaderVisibility = D3D12ShaderVisibility(stageRange.shaderType);
-			param.DescriptorTable.NumDescriptorRanges = UINT(stageRange.srvParams.size());
-			param.DescriptorTable.pDescriptorRanges = stageRange.srvParams.data();
-		}
+	for (const auto& sampler : outSamplerRanges)
+	{
+		D3D12_ROOT_PARAMETER1& param = rootParameters.emplace_back();
+
+		param.ParameterType = D3D12_ROOT_PARAMETER_TYPE_DESCRIPTOR_TABLE;
+		param.ShaderVisibility = D3D12ShaderVisibility(sampler.Stage);
+		param.DescriptorTable.NumDescriptorRanges = 1;
+		param.DescriptorTable.pDescriptorRanges = &sampler.range;
+
+		m_stageLayoutRootIndexMap[static_cast<uint8_t>(sampler.Stage)].emplace(sampler.LayoutItem, rootParameters.size() - 1);
 	}
 
 	D3D12_VERSIONED_ROOT_SIGNATURE_DESC rsDesc = {};
@@ -130,6 +139,18 @@ D3D12DescriptorLayout::D3D12DescriptorLayout(ID3D12Device* device, const Descrip
 const INF::GFX::DescriptorLayoutDesc& D3D12DescriptorLayout::GetDesc() const
 {
 	return m_desc;
+}
+
+uint32_t D3D12DescriptorLayout::GetRootParamIndex(ShaderType stage, const DescriptorSetItem& setItem)
+{
+	DescriptorLayoutItem layoutItem{ setItem.slot, setItem.type, setItem.registerSpace };
+	LayoutRootIndexMap& layoutRootIndexMap = m_stageLayoutRootIndexMap[static_cast<uint8_t>(stage)];
+	auto found = layoutRootIndexMap.find(layoutItem);
+	INF_ASSERT(found != layoutRootIndexMap.end(), std::format("Descriptor set item not found in layout: slot{}, type{}", setItem.slot, (uint8_t)setItem.type));
+	if (found != layoutRootIndexMap.end())
+		return found->second;
+
+	return UINT_MAX;
 }
 
 void GetRootParamtersForState(const StageBindingDescriptorDesc& stageLayoutDesc, const StageDescriptorSetDesc& stageSetDesc, std::unordered_map<DescriptorLayoutItem, uint32_t>& layoutRootIndexMap)
@@ -173,19 +194,6 @@ D3D12DescriptorSet::D3D12DescriptorSet(ID3D12Device* device, IDescriptorLayout* 
 	GetRootParamtersForState(layout->GetDesc().PS, setDesc.PS, m_layoutRootIndexMap);
 	GetRootParamtersForState(layout->GetDesc().ALL, setDesc.ALL, m_layoutRootIndexMap);
 }
-
-
-uint32_t D3D12DescriptorSet::GetRootParamIndex(const DescriptorSetItem& setItem)
-{
-	DescriptorLayoutItem layoutItem{ setItem.slot, setItem.type, setItem.registerSpace };
-	auto found = m_layoutRootIndexMap.find(layoutItem);
-	INF_ASSERT(found != m_layoutRootIndexMap.end(), std::format("Descriptor set item not found in layout: slot{}, type{}", setItem.slot, (uint8_t)setItem.type));
-	if (found != m_layoutRootIndexMap.end())
-		return found->second;
-
-	return UINT_MAX;
-}
-
 
 const DescriptorSetDesc& D3D12DescriptorSet::GetDesc() const
 {

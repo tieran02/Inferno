@@ -302,7 +302,7 @@ namespace INF::GFX
 		m_SRVDescriptorHeap.CreateResources(m_device.Get(), D3D12_DESCRIPTOR_HEAP_TYPE_CBV_SRV_UAV, 1024, true);
 		m_RTVDescriptorHeap.CreateResources(m_device.Get(), D3D12_DESCRIPTOR_HEAP_TYPE_RTV, 1024, false);
 		m_DSVDescriptorHeap.CreateResources(m_device.Get(), D3D12_DESCRIPTOR_HEAP_TYPE_DSV, 1024, false);
-		m_SamplerDescriptorHeap.CreateResources(m_device.Get(), D3D12_DESCRIPTOR_HEAP_TYPE_SAMPLER, 100,false);
+		m_SamplerDescriptorHeap.CreateResources(m_device.Get(), D3D12_DESCRIPTOR_HEAP_TYPE_SAMPLER, 100,true);
 	}
 
 	void D3D12Device::CreateRenderTargetView(DescriptorIndex descriptorIndex, ITexture* texture)

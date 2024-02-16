@@ -8,6 +8,7 @@ namespace INF::GFX
 {
 	class ITexture;
 	class IBuffer;
+	class ISampler;
 
 	static constexpr uint32_t MaxBindingsPerStage = 32;
 
@@ -59,6 +60,7 @@ namespace INF::GFX
 		{
 			ITexture* texture;
 			IBuffer* buffer;
+			ISampler* sampler;
 		} resourceHandle;
 
 		static inline DescriptorSetItem SRV(uint32_t slot, ITexture* texture, Format format = Format::UNKNOWN, uint32_t registerSpace = 0)
@@ -93,6 +95,17 @@ namespace INF::GFX
 			result.format = Format::UNKNOWN;
 			return result;
 		};
+
+		static inline DescriptorSetItem Sampler(uint32_t slot, ISampler* sampler, uint32_t registerSpace = 0)
+		{
+			DescriptorSetItem result;
+			result.slot = slot;
+			result.type = ResourceType::SAMPLER;
+			result.registerSpace = registerSpace;
+			result.resourceHandle.sampler = sampler;
+			result.format = Format::UNKNOWN;
+			return result;
+		}
 	};
 	using StageDescriptorSetDesc = std::array<DescriptorSetItem, MaxBindingsPerStage>;
 

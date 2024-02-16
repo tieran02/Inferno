@@ -70,6 +70,9 @@ int main()
 	descriptorDesc.VS[0].registerSpace = 0;
 	descriptorDesc.VS[0].slot = 0;
 	descriptorDesc.VS[0].type = GFX::ResourceType::CONSTANTBUFFER;
+	descriptorDesc.PS[0].registerSpace = 0;
+	descriptorDesc.PS[0].slot = 0;
+	descriptorDesc.PS[0].type = GFX::ResourceType::SAMPLER;
 	GFX::DescriptorLayoutHandle descriptorHandle = device->CreateDescriptorLayout(descriptorDesc);
 
 
@@ -161,12 +164,13 @@ int main()
 	matrixData->view = { glm::lookAt(glm::vec3(0.0f, 0.0f, 3.0f), glm::vec3(0.0f, 0.0f, 0.1f),glm::vec3(0,1,0)) };
 
 
-	GFX::DescriptorSetDesc descriptorSetDesc;
-	descriptorSetDesc.VS[0] = GFX::DescriptorSetItem::ConstantBuffer(0, constantBuffer.get());
-	GFX::DescriptorSetHandle descriptorSet = device->CreateDescriptorSet(descriptorSetDesc, descriptorHandle.get());
-
 	GFX::SamplerDesc samplerDesc;
 	GFX::SamplerHandle sampler = device->CreateSampler(samplerDesc);
+
+	GFX::DescriptorSetDesc descriptorSetDesc;
+	descriptorSetDesc.VS[0] = GFX::DescriptorSetItem::ConstantBuffer(0, constantBuffer.get());
+	descriptorSetDesc.PS[0] = GFX::DescriptorSetItem::Sampler(0, sampler.get());
+	GFX::DescriptorSetHandle descriptorSet = device->CreateDescriptorSet(descriptorSetDesc, descriptorHandle.get());
 
 	Input input;
 	window->SetInputKeyRegisterCallback(input.GetRegisterKeyFn());

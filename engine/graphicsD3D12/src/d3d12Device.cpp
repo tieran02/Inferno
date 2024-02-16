@@ -297,6 +297,11 @@ namespace INF::GFX
 		return SamplerHandle(new D3D12Sampler(this, desc));
 	}
 
+	TextureHandle D3D12Device::CreateTexture(const TextureDesc& desc)
+	{
+		return D3D12Texture::CreateTexture(this, desc);
+	}
+
 	void D3D12Device::CreateDescriptorHeaps()
 	{
 		m_SRVDescriptorHeap.CreateResources(m_device.Get(), D3D12_DESCRIPTOR_HEAP_TYPE_CBV_SRV_UAV, 1024, true);
@@ -321,9 +326,28 @@ namespace INF::GFX
 			INF_ASSERT(false, "Dimension not supported");
 			break;
 		}
-
 		m_device->CreateRenderTargetView(static_cast<D3D12Texture*>(texture)->Resource(), &viewDesc, m_RTVDescriptorHeap.GetCPUHandle(descriptorIndex));
 	}
 
+	void D3D12Device::CreateShaderResourceView(DescriptorIndex descriptorIndex, ITexture* texture)
+	{
+		D3D12_SHADER_RESOURCE_VIEW_DESC viewDesc = {};
+		const TextureDesc& textureDesc = texture->GetDesc();
+
+		viewDesc.Format = D3D12Format(textureDesc.format);
+		viewDesc.Shader4ComponentMapping = D3D12_DEFAULT_SHADER_4_COMPONENT_MAPPING;
+		viewDesc.Texture2D.MipLevels = textureDesc.mipLevels;
+		switch (textureDesc.dimension)
+		{
+		case TextureDimension::Texture2D:
+			viewDesc.ViewDimension = D3D12_SRV_DIMENSION_TEXTURE2D;
+			break;
+		default:
+			INF_ASSERT(false, "Dimension not supported");
+			break;
+		}
+
+		m_device->CreateShaderResourceView(static_cast<D3D12Texture*>(texture)->Resource(), &viewDesc, m_SRVDescriptorHeap.GetCPUHandle(descriptorIndex));
+	}
 
 }

@@ -35,6 +35,7 @@ namespace INF::GFX
 		virtual void UnmapBuffer(IBuffer* buffer, uint32_t writeStart = 0, uint32_t writeEnd = 0) = 0;
 
 		virtual SamplerHandle CreateSampler(const SamplerDesc& desc) = 0;
+		virtual TextureHandle CreateTexture(const TextureDesc& desc) = 0;
 
 		virtual CommandListeHandle CreateCommandList(CommandQueue queueType) = 0;
 		virtual uint64_t ExecuteCommandLists(const ICommandList* commandLists, uint32_t commandListCount) = 0;

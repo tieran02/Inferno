@@ -59,7 +59,7 @@ D3D12DescriptorLayout::D3D12DescriptorLayout(ID3D12Device* device, const Descrip
 				range.OffsetInDescriptorsFromTableStart = descriptorTableSizeSamplers;
 				range.Flags = D3D12_DESCRIPTOR_RANGE_FLAG_NONE;
 
-				descriptorTableSizeSamplers += 1;
+				//descriptorTableSizeSamplers += 1;
 			}
 			else
 			{
@@ -86,7 +86,7 @@ D3D12DescriptorLayout::D3D12DescriptorLayout(ID3D12Device* device, const Descrip
 				range.RegisterSpace = layoutItem.registerSpace;
 				range.OffsetInDescriptorsFromTableStart = descriptorTableSizeSRVetc;
 
-				descriptorTableSizeSRVetc += 1;
+				//descriptorTableSizeSRVetc += 1;
 
 			}
 		}

@@ -3,6 +3,7 @@
 #include "graphics/graphicDefines.h"
 #include "directx/d3d12.h"
 #include "wrl/client.h"
+#include "graphics/interface/Buffer.h"
 
 namespace INF::GFX
 {
@@ -46,6 +47,8 @@ namespace INF::GFX
 		void SetScissor(const Rect& scissor) override;
 
 		void CopyBuffer(IBuffer* dest, uint32_t destOffset, IBuffer* src, uint32_t srcOffset, size_t size) override;
+		void WriteTexture(ITexture* dest, const Bitmap& bitmap) override;
+
 
 		void Draw(uint32_t vertexCount, uint32_t instanceCount, uint32_t firstVertex, uint32_t firstInstance) override;
 
@@ -60,6 +63,9 @@ namespace INF::GFX
 
 		Microsoft::WRL::ComPtr<ID3D12CommandAllocator> m_commandAllocator; //Ref to the command allocator
 		Microsoft::WRL::ComPtr<ID3D12GraphicsCommandList> m_commandList;
+
+		std::vector<BufferHandle> m_referencedBuffers;
+
 		D3D12Device* m_device;
 	};
 }

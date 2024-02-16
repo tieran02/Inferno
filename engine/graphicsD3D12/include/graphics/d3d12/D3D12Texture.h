@@ -21,6 +21,7 @@ namespace INF::GFX
 		~D3D12Texture();
 		const TextureDesc& GetDesc() const override;
 
+		static TextureHandle CreateTexture(D3D12Device* ownerDevice, const TextureDesc& desc);
 		static TextureHandle CreateTextureFromResource(D3D12Device* ownerDevice, Microsoft::WRL::ComPtr<ID3D12Resource> resource, const TextureDesc& desc);
 		ID3D12Resource* Resource() const { return m_resource.Get(); }
 
@@ -31,6 +32,7 @@ namespace INF::GFX
 		Microsoft::WRL::ComPtr<ID3D12Resource> m_resource;
 
 		D3D12TextureView m_rtv;
+		D3D12TextureView m_srv;
 	};
 
 	class D3D12Sampler : public ISampler

@@ -8,6 +8,7 @@ struct PixelOutput
     float4 attachment0 : SV_Target0;
 };
 
+Texture2D g_texture : register(t0);
 SamplerState samp : register(s0);
 
 PixelOutput main(PixelInput pixelInput)

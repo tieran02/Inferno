@@ -13,6 +13,7 @@ namespace INF::GFX
 		uint32_t Width() const { return m_width; }
 		uint32_t Height() const { return m_height; }
 		Format GetFormat() const { return m_format; }
+		uint32_t ComponentCount() const;
 	private:
 		Format m_format;
 		uint32_t m_width, m_height;

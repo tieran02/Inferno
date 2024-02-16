@@ -27,5 +27,11 @@ void Bitmap::Load(std::string_view filename)
 	memcpy(m_data.data(), pixelData, bitmapSize);
 	stbi_image_free(pixelData);
 
-	m_format = Format::RGBA8_UINT;
+	m_format = Format::RGBA8_UNORM;
+}
+
+uint32_t Bitmap::ComponentCount() const
+{
+	//for now only 4 components are supported
+	return 4;
 }

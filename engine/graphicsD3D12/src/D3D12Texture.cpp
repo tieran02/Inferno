@@ -1,6 +1,7 @@
 #include "infPCH.h"
 #include "graphics/d3d12/D3D12Texture.h"
 #include "graphics/interface/device.h"
+#include "graphics/d3d12/D3D12Defines.h"
 
 
 using namespace INF::GFX;
@@ -17,6 +18,58 @@ D3D12Texture::~D3D12Texture()
 	{
 		m_ownerDevice->RTVDescriptoHeap().ReleaseDescriptor(m_rtv.descriptorIndex);
 	}
+	if (m_srv.descriptorIndex != DescriptorIndexInvalid)
+	{
+		m_ownerDevice->SRVDescriptoHeap().ReleaseDescriptor(m_srv.descriptorIndex);
+	}
+}
+
+D3D12_RESOURCE_DESC GetResourceDesc(const TextureDesc& desc)
+{
+	D3D12_RESOURCE_DESC resourceDesc{};
+
+	resourceDesc.Width = desc.width;
+	resourceDesc.Height = desc.height;
+	resourceDesc.MipLevels = UINT16(desc.mipLevels);
+	resourceDesc.Format = D3D12Format(desc.format);
+	resourceDesc.SampleDesc.Count = 1;
+	resourceDesc.SampleDesc.Quality = 0;
+	resourceDesc.Layout = D3D12_TEXTURE_LAYOUT_UNKNOWN;
+
+	switch (desc.dimension)
+	{
+	case TextureDimension::Texture2D:
+		resourceDesc.Dimension = D3D12_RESOURCE_DIMENSION_TEXTURE2D;
+		resourceDesc.DepthOrArraySize = UINT16(desc.arraySize);
+		break;
+	default:
+		INF_ASSERT(false, "dimension not supported");
+		break;
+	}
+
+	resourceDesc.Flags = D3D12_RESOURCE_FLAG_NONE;
+
+	return resourceDesc;
+}
+
+TextureHandle D3D12Texture::CreateTexture(D3D12Device* ownerDevice, const TextureDesc& desc)
+{
+	D3D12Texture* texture = new D3D12Texture(ownerDevice, desc);
+	TextureHandle handle = TextureHandle(texture);
+	D3D12_RESOURCE_DESC resourceDesc = GetResourceDesc(desc);
+	D3D12_HEAP_PROPERTIES heapProps = {};
+	heapProps.Type = D3D12_HEAP_TYPE_DEFAULT;
+
+	VerifySuccess(ownerDevice->Device()->CreateCommittedResource(
+		&heapProps,
+		D3D12_HEAP_FLAG_NONE,
+		&resourceDesc,
+		D3D12TransitionFlags(desc.initialState),
+		nullptr,
+		IID_PPV_ARGS(&texture->m_resource)));
+
+
+	return handle;
 }
 
 
@@ -53,6 +106,18 @@ const ITextureView* D3D12Texture::GetView(ITextureView::ViewType type)
 		return &m_rtv;
 		break;
 	case INF::GFX::ITextureView::ViewType::SHADER_RESOURCE:
+		if (m_srv.descriptorIndex == DescriptorIndexInvalid)
+		{
+			m_srv.descriptorIndex = m_ownerDevice->SRVDescriptoHeap().AllocateDescriptor();
+			m_srv.CPU = m_ownerDevice->SRVDescriptoHeap().GetCPUHandle(m_srv.descriptorIndex);
+			m_srv.GPU = m_ownerDevice->SRVDescriptoHeap().GetGPUHandle(m_srv.descriptorIndex);
+
+			m_ownerDevice->CreateShaderResourceView(m_srv.descriptorIndex, this);
+
+			m_srv.format = m_desc.format;
+			m_srv.type = ITextureView::ViewType::SHADER_RESOURCE;
+		}
+		return &m_srv;
 		break;
 	case INF::GFX::ITextureView::ViewType::DEPTH:
 		break;

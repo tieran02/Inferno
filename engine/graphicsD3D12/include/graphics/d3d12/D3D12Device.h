@@ -55,6 +55,7 @@ namespace INF::GFX
 		void UnmapBuffer(IBuffer* buffer, uint32_t writeStart = 0, uint32_t writeEnd = 0) override;
 
 		SamplerHandle CreateSampler(const SamplerDesc& desc) override;
+		TextureHandle CreateTexture(const TextureDesc& desc) override;
 
 		CommandListeHandle CreateCommandList(CommandQueue queueType) override;
 		uint64_t ExecuteCommandLists(const ICommandList* commandLists, uint32_t commandListCount) override;
@@ -63,6 +64,7 @@ namespace INF::GFX
 		void WaitForIdle() override;
 
 		void CreateRenderTargetView(DescriptorIndex descriptorIndex, ITexture* texture);
+		void CreateShaderResourceView(DescriptorIndex descriptorIndex, ITexture* texture);
 
 		IDXGIFactory4* Factory() { return m_dxgiFactory.Get(); }
 		IDXGIAdapter1* Adapter() { return m_adapter.Get(); }

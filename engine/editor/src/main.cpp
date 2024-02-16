@@ -14,6 +14,7 @@
 #include <glm/glm.hpp>
 #include <glm/gtc/matrix_transform.hpp>
 #include <glm/gtc/type_ptr.hpp>
+#include "graphics/Bitmap.h"
 
 using namespace INF;
 
@@ -72,7 +73,10 @@ int main()
 	descriptorDesc.VS[0].type = GFX::ResourceType::CONSTANTBUFFER;
 	descriptorDesc.PS[0].registerSpace = 0;
 	descriptorDesc.PS[0].slot = 0;
-	descriptorDesc.PS[0].type = GFX::ResourceType::SAMPLER;
+	descriptorDesc.PS[0].type = GFX::ResourceType::TEXTURE_SRV;
+	descriptorDesc.PS[1].registerSpace = 0;
+	descriptorDesc.PS[1].slot = 0;
+	descriptorDesc.PS[1].type = GFX::ResourceType::SAMPLER;
 	GFX::DescriptorLayoutHandle descriptorHandle = device->CreateDescriptorLayout(descriptorDesc);
 
 
@@ -138,11 +142,24 @@ int main()
 	vertexBufferDesc.strideInBytes = sizeof(vertex);
 	GFX::VertexBufferHandle vertexBuffer = device->CreateVertexBuffer(vertexBufferDesc);
 
+	//Texture
+	GFX::Bitmap bitmap;
+	bitmap.Load("data/textures/uvTest.png");
+
+	GFX::TextureDesc textureDesc;
+	textureDesc.width = bitmap.Width();
+	textureDesc.height = bitmap.Height();
+	textureDesc.format = bitmap.GetFormat();
+	textureDesc.name = "Test texture";
+	textureDesc.initialState = (GFX::TRANSITION_STATES_FLAGS)GFX::TRANSITION_STATES::PIXEL_SHADER_RESOURCE;
+	GFX::TextureHandle texture = device->CreateTexture(textureDesc);
+
 
 	device->ImmediateSubmit([=](GFX::ICommandList* cmd)
 	{
 		cmd->CopyBuffer(vertexBuffer->GetBuffer(), 0, vertexStagingBuffer.get(), 0, vertexStagingBufferDesc.byteSize);
 		cmd->CopyBuffer(indexBuffer->GetBuffer(), 0, indexStagingBuffer.get(), 0, indexStagingBufferDesc.byteSize);
+		cmd->WriteTexture(texture.get(), bitmap);
 	});
 	//reset staging buffer to free resources
 	indexStagingBuffer.reset();
@@ -169,7 +186,8 @@ int main()
 
 	GFX::DescriptorSetDesc descriptorSetDesc;
 	descriptorSetDesc.VS[0] = GFX::DescriptorSetItem::ConstantBuffer(0, constantBuffer.get());
-	descriptorSetDesc.PS[0] = GFX::DescriptorSetItem::Sampler(0, sampler.get());
+	descriptorSetDesc.PS[0] = GFX::DescriptorSetItem::SRV(0, texture.get());
+	descriptorSetDesc.PS[1] = GFX::DescriptorSetItem::Sampler(0, sampler.get());
 	GFX::DescriptorSetHandle descriptorSet = device->CreateDescriptorSet(descriptorSetDesc, descriptorHandle.get());
 
 	Input input;

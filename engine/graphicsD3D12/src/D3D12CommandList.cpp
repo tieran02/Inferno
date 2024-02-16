@@ -7,6 +7,7 @@
 #include "graphics/d3d12/D3D12Buffer.h"
 #include "graphics/d3d12/D3D12Descriptor.h"
 #include "graphics/d3d12/D3D12Device.h"
+#include "graphics/Bitmap.h"
 
 namespace INF::GFX
 {
@@ -107,6 +108,7 @@ namespace INF::GFX
 	{
 		m_commandAllocator->Reset();
 		m_commandList->Reset(m_commandAllocator.Get(), nullptr);
+		m_referencedBuffers.clear();
 	}
 
 	void D3D12CommandList::Close()
@@ -261,8 +263,13 @@ namespace INF::GFX
 				switch (setItem.type)
 				{
 				case ResourceType::TEXTURE_SRV:
-					throw std::logic_error("The method or operation is not implemented.");
+				{
+					D3D12Texture* texture = static_cast<D3D12Texture*>(setItem.resourceHandle.texture);
+					const D3D12TextureView* view = static_cast<const D3D12TextureView*>(texture->GetView(ITextureView::ViewType::SHADER_RESOURCE));
+
+					m_commandList->SetGraphicsRootDescriptorTable(rootIndex, view->GPU);
 					break;
+				}
 				case ResourceType::BUFFER_SRV:
 					throw std::logic_error("The method or operation is not implemented.");
 					break;
@@ -315,4 +322,37 @@ namespace INF::GFX
 	{
 		m_commandList->DrawInstanced(vertexCount, instanceCount, firstVertex, firstInstance);
 	}
+
+	inline static uint32_t CalcSubresource(uint32_t MipSlice, uint32_t ArraySlice, uint32_t PlaneSlice, uint32_t MipLevels, uint32_t ArraySize)
+	{
+		return MipSlice + (ArraySlice * MipLevels) + (PlaneSlice * MipLevels * ArraySize);
+	}
+
+	void D3D12CommandList::WriteTexture(ITexture* dest, const Bitmap& bitmap)
+	{
+		D3D12Texture* destTexture = static_cast<D3D12Texture*>(dest);
+		Transition(destTexture->Resource(), destTexture->GetDesc().initialState, (GFX::TRANSITION_STATES_FLAGS)GFX::TRANSITION_STATES::COPY_DEST);
+
+		const size_t uploadBufferSize = (bitmap.Size() + D3D12_TEXTURE_DATA_PITCH_ALIGNMENT) & ~D3D12_TEXTURE_DATA_PITCH_ALIGNMENT; // size is required to be 256-byte aligned.
+
+		BufferDesc uploadBufferDesc;
+		uploadBufferDesc.access = CpuVisible::WRITE;
+		uploadBufferDesc.byteSize = uploadBufferSize;
+		uploadBufferDesc.name = "upload buffer";
+		BufferHandle uploadBuffer = m_device->CreateBuffer(uploadBufferDesc);
+
+		D3D12_SUBRESOURCE_DATA textureData = {};
+		textureData.pData = bitmap.Data();
+		textureData.RowPitch = bitmap.Width() * bitmap.ComponentCount();
+		textureData.SlicePitch = textureData.RowPitch * bitmap.Height();
+
+		//add the temp upload buffer to referenced buffer so it doesn't get deleted until next command buffer open or command buffer destroyed
+		m_referencedBuffers.emplace_back(uploadBuffer);
+
+		UpdateSubresources(m_commandList.Get(), destTexture->Resource(), static_cast<D3D12Buffer*>(uploadBuffer.get())->Resource(), 0, 0, 1, &textureData);
+
+		Transition(destTexture->Resource(), (GFX::TRANSITION_STATES_FLAGS)GFX::TRANSITION_STATES::COPY_DEST, destTexture->GetDesc().initialState);
+
+	}
+
 }

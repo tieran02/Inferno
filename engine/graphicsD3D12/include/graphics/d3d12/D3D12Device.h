@@ -20,6 +20,7 @@ namespace INF::GFX
 		void ReleaseDescriptor(DescriptorIndex);
 		D3D12_CPU_DESCRIPTOR_HANDLE GetCPUHandle(DescriptorIndex index);
 		D3D12_GPU_DESCRIPTOR_HANDLE GetGPUHandle(DescriptorIndex index);
+		ID3D12DescriptorHeap* Heap() const { return m_heap.Get(); }
 	private:
 		struct D3D12Descritpor
 		{
@@ -42,9 +43,10 @@ namespace INF::GFX
 		ShaderHandle CreateShader(const ShaderDesc& desc) override;
 
 		FramebufferHandle CreateFramebuffer(const FramebufferDesc& desc) override;
-		Microsoft::WRL::ComPtr<ID3D12PipelineState> CreatePipelineState(const GraphicsPipelineDesc& desc, IFramebuffer* fb);
+		Microsoft::WRL::ComPtr<ID3D12PipelineState> CreatePipelineState(const GraphicsPipelineDesc& desc, IFramebuffer* fb, ID3D12RootSignature* rootSignature);
 		GraphicsPipelineHandle CreateGraphicsPipeline(const GraphicsPipelineDesc& desc, IFramebuffer* fb) override;
 		DescriptorLayoutHandle CreateDescriptorLayout(const DescriptorLayoutDesc desc) override;
+		DescriptorSetHandle CreateDescriptorSet(const DescriptorSetDesc& desc, IDescriptorLayout* layout) override;
 
 		BufferHandle CreateBuffer(const BufferDesc& desc) override;
 		VertexBufferHandle CreateVertexBuffer(const VertexBufferDesc& desc) override;

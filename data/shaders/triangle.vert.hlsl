@@ -1,5 +1,3 @@
-#define LocalRootSignature "RootFlags( ALLOW_INPUT_ASSEMBLER_INPUT_LAYOUT | DENY_VERTEX_SHADER_ROOT_ACCESS)" \
-              
 static const float2 positions[3] =
 {
     float2(0.0, 0.5),

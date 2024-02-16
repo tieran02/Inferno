@@ -3,12 +3,13 @@
 #include "core/Assert.h"
 #include "graphics/d3d12/D3D12Device.h"
 #include "graphics/d3d12/D3D12Defines.h"
+#include "directx/d3d12.h"
 
 using namespace INF::GFX;
 
-D3D12Buffer::D3D12Buffer(D3D12Device* device, const BufferDesc& desc) : m_device(device), m_desc(desc)
+D3D12Buffer::D3D12Buffer(D3D12Device* device, const BufferDesc& desc) : m_desc(desc), m_device(device)
 {
-	constexpr uint32_t CONSTANT_BUFFER_ALINGMENT = 255;
+	constexpr uint32_t CONSTANT_BUFFER_ALINGMENT = 256;
 
 	D3D12_RESOURCE_DESC bufferDesc = {};
 	switch (desc.usage)
@@ -57,18 +58,40 @@ D3D12Buffer::D3D12Buffer(D3D12Device* device, const BufferDesc& desc) : m_device
 		break;
 	}
 
-	VerifySuccess(m_device->Device()->CreateCommittedResource(
+	VerifySuccess(device->Device()->CreateCommittedResource(
 		&heapProps,
 		D3D12_HEAP_FLAG_NONE,
 		&bufferDesc,
 		initialState,
 		nullptr,
 		IID_PPV_ARGS(&m_resource)));
+
+
+	if (m_desc.usage == BufferUsage::CONSTANT) 
+	{
+		m_view.descriptorIndex = device->SRVDescriptoHeap().AllocateDescriptor();
+		m_view.CPU = device->SRVDescriptoHeap().GetCPUHandle(m_view.descriptorIndex);
+		m_view.GPU = device->SRVDescriptoHeap().GetGPUHandle(m_view.descriptorIndex);
+
+		D3D12_CONSTANT_BUFFER_VIEW_DESC viewDesc = { m_resource->GetGPUVirtualAddress(), bufferDesc.Width };
+		m_device->Device()->CreateConstantBufferView(&viewDesc, m_view.CPU);
+	}
 }
 
 BufferDesc D3D12Buffer::GetDesc()
 {
 	return m_desc;
+}
+
+IBufferView* D3D12Buffer::GetView()
+{
+	return &m_view;
+}
+
+D3D12Buffer::~D3D12Buffer()
+{
+	if(m_view.descriptorIndex != DescriptorIndexInvalid)
+		m_device->SRVDescriptoHeap().ReleaseDescriptor(m_view.descriptorIndex);
 }
 
 BufferDesc ConvertVertexDesc(const VertexBufferDesc& desc)

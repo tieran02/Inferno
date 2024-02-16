@@ -8,7 +8,12 @@
 #include "graphics/interface/deviceManager.h"
 #include "graphics/interface/Texture.h"
 #include "graphics/interface/Buffer.h"
+
+
+#define GLM_FORCE_LEFT_HANDED
 #include <glm/glm.hpp>
+#include <glm/gtc/matrix_transform.hpp>
+#include <glm/gtc/type_ptr.hpp>
 
 using namespace INF;
 
@@ -27,14 +32,23 @@ std::array<uint16_t, 3> indices{
 	0,1,2
 };
 
+struct ConstantBufferStruct 
+{
+	glm::mat4 model;
+	glm::mat4 view;
+	glm::mat4 projection;
+} cbVS;
+
 int main()
 {
-	Log::Info("Starting editor");
-	std::unique_ptr<IWindow> window = IWindow::Create("Hello Window", 1280, 720);
-
 	GFX::DeviceCreationParameters deviceInfo;
-	deviceInfo.enableDebugValidation = false;
+	deviceInfo.enableDebugValidation = true;
 	deviceInfo.vsync = false;
+	deviceInfo.backBufferWidth = 1280;
+	deviceInfo.backBufferHeight = 720;
+
+	Log::Info("Starting editor");
+	std::unique_ptr<IWindow> window = IWindow::Create("Hello Window", deviceInfo.backBufferWidth, deviceInfo.backBufferHeight);
 
 	GFX::DeviceManagerHandle deviceManager = GFX::IDeviceManager::Create(GFX::API::D3D12, deviceInfo);
 	deviceManager->CreateDeviceAndSwapChain(window.get(), deviceInfo);
@@ -53,23 +67,20 @@ int main()
 
 	//descriptos
 	GFX::DescriptorLayoutDesc descriptorDesc;
-	//descriptorDesc.PS[0].registerSpace = 0;
-	//descriptorDesc.PS[0].slot = 0;
-	//descriptorDesc.PS[0].type = GFX::ResourceType::TEXTURE_SRV;
-	//descriptorDesc.PS[1].registerSpace = 0;
-	//descriptorDesc.PS[1].slot = 1;
-	//descriptorDesc.PS[1].type = GFX::ResourceType::SAMPLER;
+	descriptorDesc.VS[0].registerSpace = 0;
+	descriptorDesc.VS[0].slot = 0;
+	descriptorDesc.VS[0].type = GFX::ResourceType::CONSTANTBUFFER;
 	GFX::DescriptorLayoutHandle descriptorHandle = device->CreateDescriptorLayout(descriptorDesc);
 
 
 	GFX::ShaderDesc vertexShaderDesc;
 	vertexShaderDesc.shaderType = GFX::ShaderType::Vertex;
-	vertexShaderDesc.shaderPath = "data/shaders/vertexBuffer.vert.dxil";
+	vertexShaderDesc.shaderPath = "data/shaders/constantBuffer.vert.dxil";
 	GFX::ShaderHandle vertexShader = device->CreateShader(vertexShaderDesc);
 
 	GFX::ShaderDesc pixelShaderDesc;
 	pixelShaderDesc.shaderType = GFX::ShaderType::Pixel;
-	pixelShaderDesc.shaderPath = "data/shaders/vertexBuffer.pixel.dxil";
+	pixelShaderDesc.shaderPath = "data/shaders/constantBuffer.pixel.dxil";
 	GFX::ShaderHandle pixelShader = device->CreateShader(pixelShaderDesc);
 
 
@@ -135,6 +146,26 @@ int main()
 	vertexStagingBuffer.reset();
 
 
+	//Create a descriptor set that contains the actual buffer to be bound
+	GFX::BufferDesc constantBufferDesc;
+	constantBufferDesc.usage = GFX::BufferUsage::CONSTANT;
+	constantBufferDesc.access = GFX::CpuVisible::WRITE;
+	constantBufferDesc.byteSize = sizeof(ConstantBufferStruct);
+	constantBufferDesc.name = "Constant Buffer";
+	GFX::BufferHandle constantBuffer = device->CreateBuffer(constantBufferDesc);
+	
+	ConstantBufferStruct* matrixData = (ConstantBufferStruct*)device->MapBuffer(constantBuffer.get());
+	memcpy(dest, &cbVS, constantBufferDesc.byteSize);
+	matrixData->projection = glm::perspective(70.0f, (float)deviceInfo.backBufferWidth / (float)deviceInfo.backBufferHeight, 0.1f, 100.0f);
+	matrixData->model = { glm::identity<glm::mat4>() };
+	matrixData->view = { glm::lookAt(glm::vec3(0.0f, 0.0f, 3.0f), glm::vec3(0.0f, 0.0f, 0.1f),glm::vec3(0,1,0)) };
+
+
+	GFX::DescriptorSetDesc descriptorSetDesc;
+	descriptorSetDesc.VS[0] = GFX::DescriptorSetItem::ConstantBuffer(0, constantBuffer.get());
+	GFX::DescriptorSetHandle descriptorSet = device->CreateDescriptorSet(descriptorSetDesc, descriptorHandle.get());
+
+
 	Input input;
 	window->SetInputKeyRegisterCallback(input.GetRegisterKeyFn());
 	window->SetInputMouseButtonRegisterCallback(input.GetRegisterMouseButtonFn());
@@ -148,14 +179,15 @@ int main()
 
 	while (!shouldClose)
 	{
-		//typedef std::chrono::high_resolution_clock clock;
-		//typedef std::chrono::duration<float, std::milli> duration;
-		//static clock::time_point start = clock::now();
-		//float elapsed = (duration(clock::now() - start)).count();
+		typedef std::chrono::high_resolution_clock clock;
+		typedef std::chrono::duration<float, std::milli> duration;
+		static clock::time_point start = clock::now();
+		float elapsed = (duration(clock::now() - start)).count();
 
 		GFX::GraphicsState graphicsState;
 		graphicsState.pipeline = pipeline.get();
 		graphicsState.framebuffer = framebuffers[deviceManager->GetCurrentBackBufferIndex()].get();
+		graphicsState.descriptorSet = descriptorSet.get();
 		graphicsState.vertexBuffer = vertexBuffer.get();
 		graphicsState.indexBuffer = indexBuffer.get();
 
@@ -171,6 +203,7 @@ int main()
 		cmd->ClearColor(deviceManager->GetCurrentBackBufferTexture(), GFX::Color(0.2f, 0.2f, 0.2f, 1.0f));
 		//cmd->ClearColor(deviceManager->GetCurrentBackBufferTexture(), GFX::Color((sinf(elapsed * 0.01f) + 1) * 0.5f, 0.5f, 0.2f, 1.0f));
 
+		matrixData->model = glm::rotate(glm::mat4(1.0f), (float)elapsed * 0.001f, glm::vec3(0, 1, 0));
 		cmd->Draw(3, 1, 0, 0);
 
 

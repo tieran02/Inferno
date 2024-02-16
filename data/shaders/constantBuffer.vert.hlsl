@@ -1,3 +1,9 @@
+cbuffer transformCB : register(b0)
+{
+    row_major float4x4 modelMatrix : packoffset(c0);
+    row_major float4x4 viewMatrix : packoffset(c4);
+    row_major float4x4 projectionMatrix : packoffset(c8);
+};
 struct VertexInput
 {
     float2 inPos : POSITION;
@@ -13,7 +19,7 @@ struct VertexOutput
 VertexOutput main(VertexInput vertexInput)
 {
     float3 inColor = vertexInput.inColor;
-    float4 position = float4(vertexInput.inPos, 0.0,1.0);
+    float4 position = mul(float4(vertexInput.inPos, 0.0, 1.0f), mul(modelMatrix, mul(viewMatrix, projectionMatrix)));
 
     VertexOutput output;
     output.position = position;

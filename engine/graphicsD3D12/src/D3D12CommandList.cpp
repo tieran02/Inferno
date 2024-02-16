@@ -5,6 +5,8 @@
 #include "graphics/d3d12/D3D12Texture.h"
 #include "graphics/d3d12/D3D12Pipeline.h"
 #include "graphics/d3d12/D3D12Buffer.h"
+#include "graphics/d3d12/D3D12Descriptor.h"
+#include "graphics/d3d12/D3D12Device.h"
 
 namespace INF::GFX
 {
@@ -77,13 +79,14 @@ namespace INF::GFX
 		return LastCompletedInstance;
 	}
 
-	D3D12CommandList::D3D12CommandList(ID3D12Device* d3dDevice, const Microsoft::WRL::ComPtr<ID3D12CommandAllocator>& commandAllocator, CommandQueue queueType)
+	D3D12CommandList::D3D12CommandList(D3D12Device* d3dDevice, const Microsoft::WRL::ComPtr<ID3D12CommandAllocator>& commandAllocator, CommandQueue queueType)
 	{
+		m_device = d3dDevice;
 		m_commandAllocator = commandAllocator;
 		switch (queueType)
 		{
 		case INF::GFX::CommandQueue::GRAPHICS:
-			VerifySuccess(d3dDevice->CreateCommandList(0, D3D12_COMMAND_LIST_TYPE_DIRECT, commandAllocator.Get(), nullptr, IID_PPV_ARGS(&m_commandList)));
+			VerifySuccess(d3dDevice->Device()->CreateCommandList(0, D3D12_COMMAND_LIST_TYPE_DIRECT, commandAllocator.Get(), nullptr, IID_PPV_ARGS(&m_commandList)));
 			break;
 		case INF::GFX::CommandQueue::COMPUTE:
 			throw std::logic_error("The method or operation is not implemented.");
@@ -142,9 +145,11 @@ namespace INF::GFX
 	{
 		D3D12GraphicsPipeline* pso = static_cast<D3D12GraphicsPipeline*>(state.pipeline);
 		D3D12Framebuffer* framebuffer = static_cast<D3D12Framebuffer*>(state.framebuffer);
+		D3D12DescriptorSet* descriptorSet = static_cast<D3D12DescriptorSet*>(state.descriptorSet);
 
 		BindGraphicsPipeline(pso);
 		BindFramebuffer(pso, framebuffer);
+		BindDescriptorSet(descriptorSet);
 
 		D3D12VertexBuffer* vertexBuffer = static_cast<D3D12VertexBuffer*>(state.vertexBuffer);
 		m_commandList->IASetVertexBuffers(0,1, &vertexBuffer->View());
@@ -228,6 +233,56 @@ namespace INF::GFX
 
 		m_commandList->OMSetRenderTargets(renderTargetCount, RTVs.data(), false, fb->GetDesc().depthAttachment.texture ? &DSV : nullptr);
 	}
+
+	void D3D12CommandList::BindDescriptorSet(D3D12DescriptorSet* set)
+	{
+		//TODO we should only set the heaps if they changed
+		ID3D12DescriptorHeap* heaps[1] = { m_device->SRVDescriptoHeap().Heap() };
+		m_commandList->SetDescriptorHeaps(1, heaps);
+
+		std::array<const StageDescriptorSetDesc*, 3> stages
+		{
+			&set->GetDesc().VS,
+			& set->GetDesc().PS,
+			& set->GetDesc().ALL,
+		};
+
+		for (const StageDescriptorSetDesc* stage : stages)
+		{
+			for (const DescriptorSetItem& setItem : *stage)
+			{
+				if(setItem.slot == UINT_MAX)
+					continue;
+
+				uint32_t rootIndex = set->GetRootParamIndex(setItem);
+
+				switch (setItem.type)
+				{
+				case ResourceType::TEXTURE_SRV:
+					throw std::logic_error("The method or operation is not implemented.");
+					break;
+				case ResourceType::BUFFER_SRV:
+					throw std::logic_error("The method or operation is not implemented.");
+					break;
+				case ResourceType::CONSTANTBUFFER:
+				{
+					D3D12Buffer* buffer = static_cast<D3D12Buffer*>(setItem.resourceHandle.buffer);
+					D3D12BufferView* view = static_cast<D3D12BufferView*>(buffer->GetView());
+
+					m_commandList->SetGraphicsRootDescriptorTable(rootIndex, view->GPU);
+					break;
+				}
+				case ResourceType::SAMPLER:
+					throw std::logic_error("The method or operation is not implemented.");
+					break;
+				default:
+					INF_ASSERT(false, "set item type not supported")
+					break;
+				}
+			}
+		}
+	}
+
 
 	void D3D12CommandList::CopyBuffer(IBuffer* dest, uint32_t destOffset, IBuffer* src, uint32_t srcOffset, size_t size)
 	{

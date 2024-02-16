@@ -3,6 +3,7 @@
 #include "directx/d3dx12_root_signature.h"
 #include "core/Assert.h"
 #include "graphics/d3d12/D3D12Defines.h"
+#include <format>
 
 using namespace INF::GFX;
 
@@ -129,4 +130,69 @@ D3D12DescriptorLayout::D3D12DescriptorLayout(ID3D12Device* device, const Descrip
 const INF::GFX::DescriptorLayoutDesc& D3D12DescriptorLayout::GetDesc() const
 {
 	return m_desc;
+}
+
+void GetRootParamtersForState(const StageBindingDescriptorDesc& stageLayoutDesc, const StageDescriptorSetDesc& stageSetDesc, std::unordered_map<DescriptorLayoutItem, uint32_t>& layoutRootIndexMap)
+{
+	//Search for matching slots in the layout and set
+	for (int i = 0; i < MaxBindingsPerStage; ++i)
+	{
+		const DescriptorLayoutItem& layoutItem = stageLayoutDesc.at(i);
+		if (layoutItem.slot == UINT_MAX)
+			continue;
+
+		auto it = layoutRootIndexMap.find(layoutItem);
+		INF_ASSERT(it == layoutRootIndexMap.end(), std::format("Duplicate descriptor in layout with the same slot and type: slot{}, type{}", layoutItem.slot, (uint8_t)layoutItem.type));
+		if (it == layoutRootIndexMap.end())
+		{
+			layoutRootIndexMap.emplace(layoutItem, layoutItem.slot);
+		}
+	}
+
+	for (int i = 0; i < MaxBindingsPerStage; ++i)
+	{
+		const DescriptorSetItem& setItem = stageSetDesc.at(i);
+		if (setItem.slot == UINT_MAX)
+			continue;
+
+		//check if found in layout
+		DescriptorLayoutItem layoutItem{ setItem.slot, setItem.type, setItem.registerSpace };
+		auto found = layoutRootIndexMap.find(layoutItem);
+		INF_ASSERT(found != layoutRootIndexMap.end(), std::format("Descriptor set item not found in layout: slot{}, type{}", setItem.slot, (uint8_t)setItem.type));
+		if(found == layoutRootIndexMap.end())
+			continue;
+
+	}
+}
+
+D3D12DescriptorSet::D3D12DescriptorSet(ID3D12Device* device, IDescriptorLayout* layout, const DescriptorSetDesc& setDesc) : m_desc(setDesc), m_layout(layout)
+{
+	INF_ASSERT(layout, "Layout can't be null");
+
+	GetRootParamtersForState(layout->GetDesc().VS, setDesc.VS, m_layoutRootIndexMap);
+	GetRootParamtersForState(layout->GetDesc().PS, setDesc.PS, m_layoutRootIndexMap);
+	GetRootParamtersForState(layout->GetDesc().ALL, setDesc.ALL, m_layoutRootIndexMap);
+}
+
+
+uint32_t D3D12DescriptorSet::GetRootParamIndex(const DescriptorSetItem& setItem)
+{
+	DescriptorLayoutItem layoutItem{ setItem.slot, setItem.type, setItem.registerSpace };
+	auto found = m_layoutRootIndexMap.find(layoutItem);
+	INF_ASSERT(found != m_layoutRootIndexMap.end(), std::format("Descriptor set item not found in layout: slot{}, type{}", setItem.slot, (uint8_t)setItem.type));
+	if (found != m_layoutRootIndexMap.end())
+		return found->second;
+
+	return UINT_MAX;
+}
+
+
+const DescriptorSetDesc& D3D12DescriptorSet::GetDesc() const
+{
+	return m_desc;
+}
+
+IDescriptorLayout* D3D12DescriptorSet::GetLayout() const
+{
+	return m_layout;
 }

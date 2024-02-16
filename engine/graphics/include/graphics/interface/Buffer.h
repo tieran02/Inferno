@@ -28,10 +28,18 @@ namespace INF::GFX
 		CpuVisible access = CpuVisible::NONE;
 	};
 
+	class IBufferView
+	{
+		Format format;
+	};
+
 	class IBuffer
 	{
 	public:
+		virtual ~IBuffer() = default;
+
 		virtual BufferDesc GetDesc() = 0;
+		virtual IBufferView* GetView() = 0;
 	};
 
 	using BufferHandle = std::shared_ptr<IBuffer>;

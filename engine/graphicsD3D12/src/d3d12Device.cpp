@@ -150,7 +150,7 @@ namespace INF::GFX
 
 	CommandListeHandle D3D12Device::CreateCommandList(CommandQueue queueType)
 	{
-		return CommandListeHandle(new D3D12CommandList(m_device.Get(), m_graphicsCommandAllocator, queueType));
+		return CommandListeHandle(new D3D12CommandList(this, m_graphicsCommandAllocator, queueType));
 	}
 
 	uint64_t D3D12Device::ExecuteCommandLists(const ICommandList* commandLists, uint32_t commandListCount)
@@ -185,7 +185,7 @@ namespace INF::GFX
 		return FramebufferHandle(new D3D12Framebuffer(desc));
 	}
 
-	Microsoft::WRL::ComPtr<ID3D12PipelineState> D3D12Device::CreatePipelineState(const GraphicsPipelineDesc& state, IFramebuffer* fb)
+	Microsoft::WRL::ComPtr<ID3D12PipelineState> D3D12Device::CreatePipelineState(const GraphicsPipelineDesc& state, IFramebuffer* fb, ID3D12RootSignature* rootSignature)
 	{
 		D3D12_GRAPHICS_PIPELINE_STATE_DESC desc = {};
 
@@ -226,6 +226,8 @@ namespace INF::GFX
 		desc.InputLayout.pInputElementDescs = inputStates.data();
 		desc.SampleMask = ~0u;
 
+		desc.pRootSignature = rootSignature;
+
 		Microsoft::WRL::ComPtr<ID3D12PipelineState> pipelineState;
 		VerifySuccess(m_device->CreateGraphicsPipelineState(&desc, IID_PPV_ARGS(&pipelineState)));
 
@@ -234,16 +236,21 @@ namespace INF::GFX
 	
 	GraphicsPipelineHandle D3D12Device::CreateGraphicsPipeline(const GraphicsPipelineDesc& desc, IFramebuffer* fb)
 	{
-		auto pso = CreatePipelineState(desc, fb);
-
 		//Get root sig from descriptor layout handle
 		D3D12DescriptorLayout* layout = static_cast<D3D12DescriptorLayout*>(desc.descriptorLayout.get());
+
+		auto pso = CreatePipelineState(desc, fb, layout->RootSignature());
 		return GraphicsPipelineHandle(new D3D12GraphicsPipeline(desc, pso, layout->RootSignature(), fb));
 	}
 
 	DescriptorLayoutHandle D3D12Device::CreateDescriptorLayout(const DescriptorLayoutDesc desc)
 	{
 		return DescriptorLayoutHandle(new D3D12DescriptorLayout(m_device.Get(), desc));
+	}
+
+	DescriptorSetHandle D3D12Device::CreateDescriptorSet(const DescriptorSetDesc& desc, IDescriptorLayout* layout)
+	{
+		return DescriptorSetHandle(new D3D12DescriptorSet(m_device.Get(), layout, desc));
 	}
 
 	BufferHandle D3D12Device::CreateBuffer(const BufferDesc& desc)

@@ -26,6 +26,7 @@ namespace INF::GFX
 		virtual FramebufferHandle CreateFramebuffer(const FramebufferDesc& desc) = 0;
 		virtual GraphicsPipelineHandle CreateGraphicsPipeline(const GraphicsPipelineDesc& desc, IFramebuffer* fb) = 0;
 		virtual DescriptorLayoutHandle CreateDescriptorLayout(const DescriptorLayoutDesc desc) = 0;
+		virtual DescriptorSetHandle CreateDescriptorSet(const DescriptorSetDesc& desc, IDescriptorLayout* layout) = 0;
 
 		virtual BufferHandle CreateBuffer(const BufferDesc& desc) = 0;
 		virtual VertexBufferHandle CreateVertexBuffer(const VertexBufferDesc& desc) = 0;

@@ -8,6 +8,8 @@ namespace INF::GFX
 {
 	class D3D12GraphicsPipeline;
 	class D3D12Framebuffer;
+	class D3D12DescriptorSet;
+	class D3D12Device;
 
 	class D3D12Queue
 	{
@@ -30,7 +32,7 @@ namespace INF::GFX
 	class D3D12CommandList : public ICommandList
 	{
 	public:
-		D3D12CommandList(ID3D12Device* d3dDevice, const Microsoft::WRL::ComPtr<ID3D12CommandAllocator>& commandAllocator, CommandQueue queueType);
+		D3D12CommandList(D3D12Device* d3dDevice, const Microsoft::WRL::ComPtr<ID3D12CommandAllocator>& commandAllocator, CommandQueue queueType);
 
 		void Open() override;
 		void Close() override;
@@ -54,8 +56,10 @@ namespace INF::GFX
 
 		void BindGraphicsPipeline(D3D12GraphicsPipeline* pso);
 		void BindFramebuffer(D3D12GraphicsPipeline* pso, D3D12Framebuffer* fb);
+		void BindDescriptorSet(D3D12DescriptorSet* set);
 
 		Microsoft::WRL::ComPtr<ID3D12CommandAllocator> m_commandAllocator; //Ref to the command allocator
 		Microsoft::WRL::ComPtr<ID3D12GraphicsCommandList> m_commandList;
+		D3D12Device* m_device;
 	};
 }

@@ -112,6 +112,10 @@ namespace INF::GFX
 		IGraphicsPipeline* pipeline;
 		IFramebuffer* framebuffer;
 
+		//Descriptor set contains the vies to the actual GPU resources such as textures/buffers
+		//Descriptor set inputs need to match the descriptor layout that was used to create the graphics pipeline
+		IDescriptorSet* descriptorSet;
+
 		IVertexBuffer* vertexBuffer;
 		IIndexBuffer* indexBuffer;
 	};

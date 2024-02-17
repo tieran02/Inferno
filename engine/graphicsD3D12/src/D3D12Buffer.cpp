@@ -73,7 +73,7 @@ D3D12Buffer::D3D12Buffer(D3D12Device* device, const BufferDesc& desc) : m_desc(d
 		m_view.CPU = device->SRVDescriptoHeap().GetCPUHandle(m_view.descriptorIndex);
 		m_view.GPU = device->SRVDescriptoHeap().GetGPUHandle(m_view.descriptorIndex);
 
-		D3D12_CONSTANT_BUFFER_VIEW_DESC viewDesc = { m_resource->GetGPUVirtualAddress(), bufferDesc.Width };
+		D3D12_CONSTANT_BUFFER_VIEW_DESC viewDesc = { m_resource->GetGPUVirtualAddress(), (UINT)bufferDesc.Width };
 		m_device->Device()->CreateConstantBufferView(&viewDesc, m_view.CPU);
 	}
 }

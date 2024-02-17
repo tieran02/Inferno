@@ -109,13 +109,13 @@ int main()
 
 	GFX::GraphicsPipelineHandle pipeline = device->CreateGraphicsPipeline(pipelineDesc, framebuffers[0].get());
 
-	GFX::Viewport viewport(0, 0, deviceInfo.backBufferWidth, deviceInfo.backBufferHeight);
+	GFX::Viewport viewport(0, 0, (float)deviceInfo.backBufferWidth, (float)deviceInfo.backBufferHeight);
 	GFX::Rect scissor(0, 0, deviceInfo.backBufferWidth, deviceInfo.backBufferHeight);
 
 	//staging buffer
 	GFX::BufferDesc indexStagingBufferDesc;
 	indexStagingBufferDesc.access = GFX::CpuVisible::WRITE;
-	indexStagingBufferDesc.byteSize = sizeof(uint16_t) * indices.size();
+	indexStagingBufferDesc.byteSize = static_cast<uint32_t>(sizeof(uint16_t) * indices.size());
 	indexStagingBufferDesc.usage = GFX::BufferUsage::GENERIC;
 	GFX::BufferHandle indexStagingBuffer = device->CreateBuffer(indexStagingBufferDesc);
 	void* dest = device->MapBuffer(indexStagingBuffer.get());
@@ -125,13 +125,13 @@ int main()
 	GFX::IndexBufferDesc indexBufferDesc;
 	indexBufferDesc.access = GFX::CpuVisible::NONE;
 	indexBufferDesc.format = GFX::Format::R16_UINT;
-	indexBufferDesc.byteSize = sizeof(uint16_t) * indices.size();
+	indexBufferDesc.byteSize = static_cast<uint32_t>(sizeof(uint16_t) * indices.size());
 	GFX::IndexBufferHandle indexBuffer = device->CreateIndexBuffer(indexBufferDesc);
 
 	//staging buffer
 	GFX::BufferDesc vertexStagingBufferDesc;
 	vertexStagingBufferDesc.access = GFX::CpuVisible::WRITE;
-	vertexStagingBufferDesc.byteSize = sizeof(vertex) * verts.size();
+	vertexStagingBufferDesc.byteSize = static_cast<uint32_t>(sizeof(vertex) * verts.size());
 	vertexStagingBufferDesc.usage = GFX::BufferUsage::GENERIC;
 	GFX::BufferHandle vertexStagingBuffer = device->CreateBuffer(vertexStagingBufferDesc);
 	dest = device->MapBuffer(vertexStagingBuffer.get());
@@ -140,7 +140,7 @@ int main()
 	//create vertex buffer
 	GFX::VertexBufferDesc vertexBufferDesc;
 	vertexBufferDesc.access = GFX::CpuVisible::NONE;
-	vertexBufferDesc.byteSize = sizeof(vertex) * verts.size();
+	vertexBufferDesc.byteSize = static_cast<uint32_t>(sizeof(vertex) * verts.size());
 	vertexBufferDesc.strideInBytes = sizeof(vertex);
 	GFX::VertexBufferHandle vertexBuffer = device->CreateVertexBuffer(vertexBufferDesc);
 

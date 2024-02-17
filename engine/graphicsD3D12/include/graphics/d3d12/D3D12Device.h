@@ -15,6 +15,7 @@ namespace INF::GFX
 	class D3D12DescriptorHeap
 	{
 	public:
+		D3D12DescriptorHeap();
 		bool CreateResources(ID3D12Device* device, D3D12_DESCRIPTOR_HEAP_TYPE heapType, uint32_t descriptorCount, bool shaderVisible);
 		DescriptorIndex AllocateDescriptor();
 		void ReleaseDescriptor(DescriptorIndex);

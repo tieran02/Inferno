@@ -124,6 +124,9 @@ const ITextureView* D3D12Texture::GetView(ITextureView::ViewType type)
 	default:
 		break;
 	}
+
+	INF_ASSERT(false, "Failed to get texture view");
+	return nullptr;
 }
 
 D3D12Framebuffer::D3D12Framebuffer(const FramebufferDesc& desc) : m_desc(desc), m_info(desc)

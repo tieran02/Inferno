@@ -48,6 +48,18 @@ namespace INF::GFX
 	using DescriptorLayoutHandle = std::shared_ptr<IDescriptorLayout>;
 
 
+	union ResourceHandle
+	{
+		ITexture* texture;
+		IBuffer* buffer;
+		ISampler* sampler;
+
+		ResourceHandle() : texture(nullptr) {}
+		ResourceHandle(ITexture* _texture) : texture(_texture) {}
+		ResourceHandle(IBuffer* _buffer) : buffer(_buffer) {}
+		ResourceHandle(ISampler* _sampler) : sampler(_sampler) {}
+	};
+
 	//The DescriptorSetItem is what actually binds a resource to the pipeline
 	struct DescriptorSetItem
 	{
@@ -55,57 +67,55 @@ namespace INF::GFX
 		ResourceType type = ResourceType::TEXTURE_SRV;;
 		uint32_t registerSpace = 0;
 		Format format = Format::UNKNOWN;
-
-		union
-		{
-			ITexture* texture;
-			IBuffer* buffer;
-			ISampler* sampler;
-		} resourceHandle;
+		ResourceHandle resourceHandle;
 
 		static inline DescriptorSetItem SRV(uint32_t slot, ITexture* texture, Format format = Format::UNKNOWN, uint32_t registerSpace = 0)
 		{
-			DescriptorSetItem result;
-			result.slot = slot;
-			result.type = ResourceType::TEXTURE_SRV;
-			result.registerSpace = registerSpace;
-			result.resourceHandle.texture = texture;
-			result.format = format;
-			return result;
+			return DescriptorSetItem
+			{
+				.slot = slot,
+				.type = ResourceType::TEXTURE_SRV,
+				.registerSpace = registerSpace,
+				.format = format,
+				.resourceHandle = ResourceHandle(texture),
+			};
 		};
 
 		static inline DescriptorSetItem SRV(uint32_t slot, IBuffer* buffer, Format format = Format::UNKNOWN, uint32_t registerSpace = 0)
 		{
-			DescriptorSetItem result;
-			result.slot = slot;
-			result.type = ResourceType::BUFFER_SRV;
-			result.registerSpace = registerSpace;
-			result.resourceHandle.buffer = buffer;
-			result.format = format;
-			return result;
+			return DescriptorSetItem
+			{
+				.slot = slot,
+				.type = ResourceType::BUFFER_SRV,
+				.registerSpace = registerSpace,
+				.format = format,
+				.resourceHandle = ResourceHandle(buffer),
+			};
 		};
 
 		static inline DescriptorSetItem ConstantBuffer(uint32_t slot, IBuffer* buffer, uint32_t registerSpace = 0)
 		{
-			DescriptorSetItem result;
-			result.slot = slot;
-			result.type = ResourceType::CONSTANTBUFFER;
-			result.registerSpace = registerSpace;
-			result.resourceHandle.buffer = buffer;
-			result.format = Format::UNKNOWN;
-			return result;
+			return DescriptorSetItem
+			{
+				.slot = slot,
+				.type = ResourceType::CONSTANTBUFFER,
+				.registerSpace = registerSpace,
+				.format = Format::UNKNOWN,
+				.resourceHandle = ResourceHandle(buffer),
+			};
 		};
 
 		static inline DescriptorSetItem Sampler(uint32_t slot, ISampler* sampler, uint32_t registerSpace = 0)
 		{
-			DescriptorSetItem result;
-			result.slot = slot;
-			result.type = ResourceType::SAMPLER;
-			result.registerSpace = registerSpace;
-			result.resourceHandle.sampler = sampler;
-			result.format = Format::UNKNOWN;
-			return result;
-		}
+			return DescriptorSetItem
+			{
+				.slot = slot,
+				.type = ResourceType::SAMPLER,
+				.registerSpace = registerSpace,
+				.format = Format::UNKNOWN,
+				.resourceHandle = ResourceHandle(sampler),
+			};
+		};
 	};
 	using StageDescriptorSetDesc = std::array<DescriptorSetItem, MaxBindingsPerStage>;
 

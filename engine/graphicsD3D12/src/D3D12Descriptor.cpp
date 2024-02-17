@@ -16,6 +16,8 @@ struct StageDescriptorLayout
 
 struct StageDescriptorLayoutItem
 {
+	StageDescriptorLayoutItem() : LayoutItem(), range(), Stage(ShaderType::AllGraphics) {}
+
 	DescriptorLayoutItem LayoutItem;
 	D3D12_DESCRIPTOR_RANGE1 range;
 	ShaderType Stage;
@@ -104,7 +106,8 @@ D3D12DescriptorLayout::D3D12DescriptorLayout(ID3D12Device* device, const Descrip
 		param.DescriptorTable.NumDescriptorRanges = 1;
 		param.DescriptorTable.pDescriptorRanges = &srv.range;
 
-		m_stageLayoutRootIndexMap[static_cast<uint8_t>(srv.Stage)].emplace(srv.LayoutItem, rootParameters.size() - 1);
+		LayoutRootIndexMap& layoutRootIndexMap = m_stageLayoutRootIndexMap[static_cast<uint8_t>(srv.Stage)];
+		layoutRootIndexMap.emplace(srv.LayoutItem, static_cast<uint32_t>(rootParameters.size() - 1));
 	}
 
 	for (const auto& sampler : outSamplerRanges)
@@ -116,7 +119,8 @@ D3D12DescriptorLayout::D3D12DescriptorLayout(ID3D12Device* device, const Descrip
 		param.DescriptorTable.NumDescriptorRanges = 1;
 		param.DescriptorTable.pDescriptorRanges = &sampler.range;
 
-		m_stageLayoutRootIndexMap[static_cast<uint8_t>(sampler.Stage)].emplace(sampler.LayoutItem, rootParameters.size() - 1);
+		LayoutRootIndexMap& layoutRootIndexMap = m_stageLayoutRootIndexMap[static_cast<uint8_t>(sampler.Stage)];
+		layoutRootIndexMap.emplace(sampler.LayoutItem, static_cast<uint32_t>(rootParameters.size() - 1));
 	}
 
 	D3D12_VERSIONED_ROOT_SIGNATURE_DESC rsDesc = {};
@@ -186,7 +190,7 @@ void GetRootParamtersForState(const StageBindingDescriptorDesc& stageLayoutDesc,
 	}
 }
 
-D3D12DescriptorSet::D3D12DescriptorSet(ID3D12Device* device, IDescriptorLayout* layout, const DescriptorSetDesc& setDesc) : m_desc(setDesc), m_layout(layout)
+D3D12DescriptorSet::D3D12DescriptorSet(IDescriptorLayout* layout, const DescriptorSetDesc& setDesc) : m_desc(setDesc), m_layout(layout)
 {
 	INF_ASSERT(layout, "Layout can't be null");
 

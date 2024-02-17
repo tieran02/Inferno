@@ -25,7 +25,7 @@ namespace INF::GFX
 	class D3D12DescriptorSet : public IDescriptorSet
 	{
 	public:
-		D3D12DescriptorSet(ID3D12Device* device, IDescriptorLayout* layout, const DescriptorSetDesc& setDesc);
+		D3D12DescriptorSet(IDescriptorLayout* layout, const DescriptorSetDesc& setDesc);
 
 		const DescriptorSetDesc& GetDesc() const override;
 		IDescriptorLayout* GetLayout() const override;

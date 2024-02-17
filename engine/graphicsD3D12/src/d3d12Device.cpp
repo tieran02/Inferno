@@ -13,6 +13,12 @@
 
 namespace INF::GFX
 {
+
+	D3D12DescriptorHeap::D3D12DescriptorHeap() : m_heapType(D3D12_DESCRIPTOR_HEAP_TYPE_CBV_SRV_UAV)
+	{
+
+	}
+
 	bool D3D12DescriptorHeap::CreateResources(ID3D12Device* device, D3D12_DESCRIPTOR_HEAP_TYPE heapType, uint32_t descriptorCount, bool shaderVisible)
 	{
 		m_heap = nullptr;
@@ -33,8 +39,6 @@ namespace INF::GFX
 
 		for (int i = 0; i < m_descriptors.size(); ++i)
 		{
-			D3D12Descritpor handle;
-
 			m_descriptors[i].Cpu = D3D12_CPU_DESCRIPTOR_HANDLE(cpuStart.ptr + (i * descriptorSize));
 
 			if (shaderVisible)
@@ -156,7 +160,7 @@ namespace INF::GFX
 	uint64_t D3D12Device::ExecuteCommandLists(const ICommandList* commandLists, uint32_t commandListCount)
 	{
 		const D3D12CommandList* d3d12CommandLists = static_cast<const D3D12CommandList*>(commandLists);
-		return m_graphicsQueue->ExecuteCommandLists(d3d12CommandLists->D3D(), 1);
+		return m_graphicsQueue->ExecuteCommandLists(d3d12CommandLists->D3D(), commandListCount);
 	}
 
 	void D3D12Device::ImmediateSubmit(ImmediateSubmitFn ImmediateFn)
@@ -165,7 +169,7 @@ namespace INF::GFX
 		cmd->Open();
 		ImmediateFn(cmd.get());
 		cmd->Close();
-		uint64_t waitFenceVal = ExecuteCommandLists(cmd.get(), 1);
+		ExecuteCommandLists(cmd.get(), 1);
 		WaitForIdle();
 	}
 
@@ -214,7 +218,7 @@ namespace INF::GFX
 
 		//Create the input layout
 		std::vector<D3D12_INPUT_ELEMENT_DESC> inputStates(state.inputLayoutDesc.size());
-		desc.InputLayout.NumElements = inputStates.size();
+		desc.InputLayout.NumElements = (UINT)inputStates.size();
 		for (int i = 0; i < state.inputLayoutDesc.size(); ++i)
 		{
 			inputStates[i].SemanticName = state.inputLayoutDesc[i].semanticName.c_str();
@@ -250,7 +254,7 @@ namespace INF::GFX
 
 	DescriptorSetHandle D3D12Device::CreateDescriptorSet(const DescriptorSetDesc& desc, IDescriptorLayout* layout)
 	{
-		return DescriptorSetHandle(new D3D12DescriptorSet(m_device.Get(), layout, desc));
+		return DescriptorSetHandle(new D3D12DescriptorSet(layout, desc));
 	}
 
 	BufferHandle D3D12Device::CreateBuffer(const BufferDesc& desc)

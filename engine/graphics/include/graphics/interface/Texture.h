@@ -99,10 +99,12 @@ namespace INF::GFX
 		uint32_t width = 0;
 		uint32_t height = 0;
 
-		FramebufferInfo()
-		{ }
+		FramebufferInfo() : colorFormats{ Format::UNKNOWN }
+		{ 
+			
+		}
 
-		FramebufferInfo(const FramebufferDesc& desc)
+		FramebufferInfo(const FramebufferDesc& desc) : colorFormats{ Format::UNKNOWN }
 		{
 			if (desc.depthAttachment.texture != nullptr)
 			{

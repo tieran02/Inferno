@@ -333,7 +333,7 @@ namespace INF::GFX
 		D3D12Texture* destTexture = static_cast<D3D12Texture*>(dest);
 		Transition(destTexture->Resource(), destTexture->GetDesc().initialState, (GFX::TRANSITION_STATES_FLAGS)GFX::TRANSITION_STATES::COPY_DEST);
 
-		const size_t uploadBufferSize = (bitmap.Size() + D3D12_TEXTURE_DATA_PITCH_ALIGNMENT) & ~D3D12_TEXTURE_DATA_PITCH_ALIGNMENT; // size is required to be 256-byte aligned.
+		const uint32_t uploadBufferSize = (static_cast<uint32_t>(bitmap.Size()) + D3D12_TEXTURE_DATA_PITCH_ALIGNMENT) & ~D3D12_TEXTURE_DATA_PITCH_ALIGNMENT; // size is required to be 256-byte aligned.
 
 		BufferDesc uploadBufferDesc;
 		uploadBufferDesc.access = CpuVisible::WRITE;

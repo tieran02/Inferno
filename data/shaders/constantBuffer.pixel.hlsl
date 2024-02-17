@@ -1,5 +1,6 @@
 struct PixelInput
 {
+    float2 uv : TEXCOORD;
     float3 color : COLOR;
 };
 
@@ -13,7 +14,9 @@ SamplerState samp : register(s0);
 
 PixelOutput main(PixelInput pixelInput)
 {
+    float3 textureColour = g_texture.Sample(samp, pixelInput.uv).rgb;
+
     PixelOutput output;
-    output.attachment0 = float4(pixelInput.color, 1.0);
+    output.attachment0 = float4(textureColour, 1.0);
     return output;
 }

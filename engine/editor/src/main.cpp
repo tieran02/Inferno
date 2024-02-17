@@ -21,13 +21,14 @@ using namespace INF;
 struct vertex
 {
 	alignas(16) glm::vec2 pos;
+	alignas(16) glm::vec2 uv;
 	alignas(16) glm::vec3 color;
 };
 
 std::array<vertex, 3> verts{
-	vertex{{0.0, 0.5},			{1.0f, 0.0, 0.0f}},
-	vertex{{0.5, -0.5},			{0.0f, 1.0, 0.0f}},
-	vertex{{-0.5, -0.5},		{0.0f, 0.0, 1.0f}},
+	vertex{{0.0, 0.5},	 {0.5, 0.0},	{ 1.0f, 0.0, 0.0f }},
+	vertex{{0.5, -0.5},	 {1.0, 1.0},	{0.0f, 1.0, 0.0f}},
+	vertex{{-0.5, -0.5}, {0.0, 1.0},	{0.0f, 0.0, 1.0f}},
 };
 std::array<uint16_t, 3> indices{
 	0,1,2
@@ -101,6 +102,7 @@ int main()
 	pipelineDesc.descriptorLayout = descriptorHandle;
 
 	pipelineDesc.inputLayoutDesc.emplace_back("POSITION", GFX::Format::RGBA32_FLOAT);
+	pipelineDesc.inputLayoutDesc.emplace_back("TEXCOORD", GFX::Format::RGBA32_FLOAT);
 	pipelineDesc.inputLayoutDesc.emplace_back("COLOR", GFX::Format::RGBA32_FLOAT);
 
 

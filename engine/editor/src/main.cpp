@@ -15,6 +15,7 @@
 #include <glm/gtc/matrix_transform.hpp>
 #include <glm/gtc/type_ptr.hpp>
 #include "graphics/Bitmap.h"
+#include "core/Transform.h"
 
 using namespace INF;
 
@@ -203,12 +204,17 @@ int main()
 		shouldClose = true;
 	});
 
+	INF::Transform transform;
 	while (!shouldClose)
 	{
 		typedef std::chrono::high_resolution_clock clock;
 		typedef std::chrono::duration<float, std::milli> duration;
 		static clock::time_point start = clock::now();
 		float elapsed = (duration(clock::now() - start)).count();
+
+		transform.SetPosition(glm::vec3(sinf(elapsed * 0.001f), 0.0f, 0.0f));
+		transform.Rotate(glm::vec3(0.0f,1.0f,0.0f), 0.01f);
+		transform.UpdateTransform();
 
 		GFX::GraphicsState graphicsState;
 		graphicsState.pipeline = pipeline.get();
@@ -229,7 +235,7 @@ int main()
 		cmd->ClearColor(deviceManager->GetCurrentBackBufferTexture(), GFX::Color(0.2f, 0.2f, 0.2f, 1.0f));
 		//cmd->ClearColor(deviceManager->GetCurrentBackBufferTexture(), GFX::Color((sinf(elapsed * 0.01f) + 1) * 0.5f, 0.5f, 0.2f, 1.0f));
 
-		matrixData->model = glm::rotate(glm::mat4(1.0f), (float)elapsed * 0.001f, glm::vec3(0, 1, 0));
+		matrixData->model = transform.GetWorldMatrix();
 		cmd->Draw(3, 1, 0, 0);
 
 

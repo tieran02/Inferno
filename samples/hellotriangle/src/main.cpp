@@ -108,7 +108,13 @@ int main()
 			shouldClose = true;
 	}
 
-
+	pipeline.reset();
+	descriptorLayoutHandle.reset();
+	pixelShader.reset();
+	vertexShader.reset();
+	framebuffers.clear();
+	cmd.reset();
+	deviceManager.reset();
 	Log::Info("Closing editor");
 
 }

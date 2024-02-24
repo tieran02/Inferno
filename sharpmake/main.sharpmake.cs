@@ -6,7 +6,6 @@ using Inferno.Samples;
 [module: Sharpmake.Include("engineDefs.sharpmake.cs")]
 [module: Sharpmake.Include("core.sharpmake.cs")]
 [module: Sharpmake.Include("graphics.sharpmake.cs")]
-[module: Sharpmake.Include("editor.sharpmake.cs")]
 [module: Sharpmake.Include("thirdparty.sharpmake.cs")]
 [module: Sharpmake.Include("shaders.sharpmake.cs")]
 [module: Sharpmake.Include("samples.sharpmake.cs")]
@@ -41,15 +40,7 @@ public class InfernoSolution : Solution
         // Puts the generated solution in the /generated folder too.
         conf.SolutionPath = Defines.Paths.INFERNO_PROJECTS;;
 
-        // Adds the project described by BasicsProject into the solution.
-        // Note that this is done in the configuration, so you can generate
-        // solutions that contain different projects based on their target.
-        //
-        // You could, for example, exclude a project that only supports 64-bit
-        // from the 32-bit targets.
-        conf.AddProject<EditorProject>(target);
-		conf.AddProject<ShaderCustomBuild>(target);
-
+        //Only have sample project now, till an editor is implemented
         SampleProject.AddSampleProjects(conf, target);
     }
 }

@@ -11,11 +11,15 @@ namespace Inferno.Samples
         static public void AddSampleProjects(Solution.Configuration conf, Target target)
         {
             conf.AddProject<SampleHelloTriangle>(target);
+            conf.AddProject<SampleConstantBuffer>(target);
         }
 
+
+        protected readonly string SampleRootDir;
         public SampleProject(string projectName) : base(projectName)
         {
-            SourceRootPath = $"{INFERNO_SAMPLES}/{projectName}";
+            SampleRootDir = $"{INFERNO_SAMPLES}/{projectName}";
+            SourceRootPath = $"{SampleRootDir}/src";
         }
 
         public override void ConfigureAll(Project.Configuration conf, Target target)
@@ -34,24 +38,42 @@ namespace Inferno.Samples
             conf.PrecompSource = "";
 
             conf.ProjectPath = Path.Combine($"{Defines.Paths.INFERNO_PROJECTS}/samples", Name);
+
+            conf.VcxprojUserFile = new();
+            conf.VcxprojUserFile.LocalDebuggerWorkingDirectory = SampleRootDir;
         }
     }
 
     [Generate]
     public class SampleHelloTriangle : SampleProject
     {
-        readonly string SampleRootDir;
         public SampleHelloTriangle() : base("hellotriangle")
         {
-            SampleRootDir = $"{INFERNO_SAMPLES}/{Name}";
         }
 
         public override void ConfigureAll(Project.Configuration conf, Target target)
         {
             base.ConfigureAll(conf, target);
 
-            string inDataFolder = $"{SampleRootDir}/data/shaders";
-            string outDataFolder = $"{conf.ProjectPath}/data/shaders";
+            string inDataFolder = $"{SampleRootDir}/src/shaders";
+            string outDataFolder = $"{SampleRootDir}/data/shaders";
+            ShaderUtil.CompileShadersPreBuild(conf,inDataFolder,outDataFolder);
+        }
+    }
+
+    [Generate]
+    public class SampleConstantBuffer : SampleProject
+    {
+        public SampleConstantBuffer() : base("constantbuffer")
+        {
+        }
+
+        public override void ConfigureAll(Project.Configuration conf, Target target)
+        {
+            base.ConfigureAll(conf, target);
+
+            string inDataFolder = $"{SampleRootDir}/src/shaders";
+            string outDataFolder = $"{SampleRootDir}/data/shaders";
             ShaderUtil.CompileShadersPreBuild(conf,inDataFolder,outDataFolder);
         }
     }

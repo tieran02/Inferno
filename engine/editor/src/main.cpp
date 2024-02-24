@@ -16,6 +16,7 @@
 #include <glm/gtc/type_ptr.hpp>
 #include "graphics/Bitmap.h"
 #include "core/Transform.h"
+#include "graphics/View.h"
 
 using namespace INF;
 
@@ -37,9 +38,9 @@ std::array<uint16_t, 3> indices{
 
 struct ConstantBufferStruct 
 {
-	glm::mat4 model;
-	glm::mat4 view;
-	glm::mat4 projection;
+	glm::mat4 model{ 1 };
+	glm::mat4 view{ 1 };;
+	glm::mat4 projection{ 1 };;
 } cbVS;
 
 int main()
@@ -110,8 +111,7 @@ int main()
 
 	GFX::GraphicsPipelineHandle pipeline = device->CreateGraphicsPipeline(pipelineDesc, framebuffers[0].get());
 
-	GFX::Viewport viewport(0, 0, (float)deviceInfo.backBufferWidth, (float)deviceInfo.backBufferHeight);
-	GFX::Rect scissor(0, 0, deviceInfo.backBufferWidth, deviceInfo.backBufferHeight);
+	
 
 	//staging buffer
 	GFX::BufferDesc indexStagingBufferDesc;
@@ -179,9 +179,14 @@ int main()
 	
 	ConstantBufferStruct* matrixData = (ConstantBufferStruct*)device->MapBuffer(constantBuffer.get());
 	memcpy(dest, &cbVS, constantBufferDesc.byteSize);
-	matrixData->projection = glm::perspective(70.0f, (float)deviceInfo.backBufferWidth / (float)deviceInfo.backBufferHeight, 0.1f, 100.0f);
-	matrixData->model = { glm::identity<glm::mat4>() };
-	matrixData->view = { glm::lookAt(glm::vec3(0.0f, 0.0f, 3.0f), glm::vec3(0.0f, 0.0f, 0.1f),glm::vec3(0,1,0)) };
+	GFX::View view(70.0f, (float)deviceInfo.backBufferWidth / (float)deviceInfo.backBufferHeight, 0.1f, 100.0);
+	view.SetViewport(GFX::Viewport(0, 0, (float)deviceInfo.backBufferWidth, (float)deviceInfo.backBufferHeight));
+	view.SetScissor(GFX::Rect(0, 0, deviceInfo.backBufferWidth, deviceInfo.backBufferHeight));
+	view.SetPosition(glm::vec3(0.0f, 0.0f, 3.0f));
+	view.LookAt(glm::vec3(0.0f, 0.0f, 0.1f), glm::vec3(0, 1, 0));
+
+	matrixData->projection = view.GetProjectionMatrix();
+	matrixData->view = view.GetViewMatrix();
 
 
 	GFX::SamplerDesc samplerDesc;
@@ -215,6 +220,27 @@ int main()
 		transform.SetPosition(glm::vec3(sinf(elapsed * 0.001f), 0.0f, 0.0f));
 		transform.Rotate(glm::vec3(0.0f,1.0f,0.0f), 0.01f);
 		transform.UpdateTransform();
+		matrixData->model = transform.GetWorldMatrix();
+
+		//move camera with WASD
+		if (input.IsKeyDown(KeyCode::A))
+		{
+			view.Translate(-VectorRight * 0.1f);
+		}
+		if(input.IsKeyDown(KeyCode::D))
+		{
+			view.Translate(VectorRight * 0.1f);
+		}
+		if (input.IsKeyDown(KeyCode::W))
+		{
+			view.Translate(VectorUp * 0.1f);
+		}
+		if (input.IsKeyDown(KeyCode::S))
+		{
+			view.Translate(-VectorUp * 0.1f);
+		}
+		matrixData->view = view.GetViewMatrix();
+
 
 		GFX::GraphicsState graphicsState;
 		graphicsState.pipeline = pipeline.get();
@@ -222,26 +248,22 @@ int main()
 		graphicsState.descriptorSet = descriptorSet.get();
 		graphicsState.vertexBuffer = vertexBuffer.get();
 		graphicsState.indexBuffer = indexBuffer.get();
+		graphicsState.view = &view;
 
 		window->PollEvents();
 		input.Update();
 
 		cmd->Open();
-		cmd->SetViewport(viewport);
-		cmd->SetScissor(scissor);
+		
 		cmd->SetGraphicsState(graphicsState);
-
-
+		
 		cmd->ClearColor(deviceManager->GetCurrentBackBufferTexture(), GFX::Color(0.2f, 0.2f, 0.2f, 1.0f));
-		//cmd->ClearColor(deviceManager->GetCurrentBackBufferTexture(), GFX::Color((sinf(elapsed * 0.01f) + 1) * 0.5f, 0.5f, 0.2f, 1.0f));
-
-		matrixData->model = transform.GetWorldMatrix();
+		
 		cmd->Draw(3, 1, 0, 0);
-
 
 		//transition to present for swapchain
 		cmd->Transition(deviceManager->GetCurrentBackBufferTexture(), (GFX::TRANSITION_STATES_FLAGS)GFX::TRANSITION_STATES::RENDER_TARGET, (GFX::TRANSITION_STATES_FLAGS)GFX::TRANSITION_STATES::PRESENT);
-
+		
 		cmd->Close();
 
 		device->ExecuteCommandLists(cmd.get(), 1);

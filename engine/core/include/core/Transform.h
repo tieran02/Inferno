@@ -4,6 +4,10 @@
 
 namespace INF
 {
+	constexpr glm::vec3 VectorUp = glm::vec3(0, 1, 0);
+	constexpr glm::vec3 VectorRight = glm::vec3(1, 0, 0);
+	constexpr glm::vec3 VectorForward = glm::vec3(0, 0, 1);
+
 	struct Transform
 	{
 	public:

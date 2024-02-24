@@ -107,6 +107,7 @@ namespace INF::GFX
 	class IFramebuffer;
 	class IVertexBuffer;
 	class IIndexBuffer;
+	class View;
 	struct GraphicsState
 	{
 		IGraphicsPipeline* pipeline;
@@ -118,5 +119,7 @@ namespace INF::GFX
 
 		IVertexBuffer* vertexBuffer;
 		IIndexBuffer* indexBuffer;
+
+		View* view;
 	};
 }

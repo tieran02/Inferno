@@ -8,6 +8,7 @@
 #include "graphics/d3d12/D3D12Descriptor.h"
 #include "graphics/d3d12/D3D12Device.h"
 #include "graphics/Bitmap.h"
+#include "graphics/View.h"
 
 namespace INF::GFX
 {
@@ -145,6 +146,9 @@ namespace INF::GFX
 
 	void D3D12CommandList::SetGraphicsState(const GraphicsState& state)
 	{
+		SetViewport(state.view->GetViewport());
+		SetScissor(state.view->GetScissor());
+
 		D3D12GraphicsPipeline* pso = static_cast<D3D12GraphicsPipeline*>(state.pipeline);
 		D3D12Framebuffer* framebuffer = static_cast<D3D12Framebuffer*>(state.framebuffer);
 		D3D12DescriptorSet* descriptorSet = static_cast<D3D12DescriptorSet*>(state.descriptorSet);

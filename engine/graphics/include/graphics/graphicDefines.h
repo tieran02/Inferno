@@ -29,6 +29,7 @@ namespace INF::GFX
 		float MinDepth;
 		float MaxDepth;
 
+		Viewport() = default;
 		Viewport(float x, float y, float width, float height, float minDepth = 0.0f, float maxDepth = 1.0f) :
 			X(x), Y(y), Width(width), Height(height), MinDepth(minDepth), MaxDepth(maxDepth) {}
 	};
@@ -40,6 +41,7 @@ namespace INF::GFX
 		uint32_t Right;
 		uint32_t Bottom;
 
+		Rect() = default;
 		Rect(uint32_t left, uint32_t top, uint32_t right, uint32_t bottom) : Left(left), Top(top), Right(right), Bottom(bottom) {}
 	};
 

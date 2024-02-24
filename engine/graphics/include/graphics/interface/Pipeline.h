@@ -110,16 +110,16 @@ namespace INF::GFX
 	class View;
 	struct GraphicsState
 	{
-		IGraphicsPipeline* pipeline;
-		IFramebuffer* framebuffer;
+		IGraphicsPipeline* pipeline{ nullptr };
+		IFramebuffer* framebuffer{ nullptr };
 
 		//Descriptor set contains the vies to the actual GPU resources such as textures/buffers
 		//Descriptor set inputs need to match the descriptor layout that was used to create the graphics pipeline
-		IDescriptorSet* descriptorSet;
+		IDescriptorSet* descriptorSet{ nullptr };
 
-		IVertexBuffer* vertexBuffer;
-		IIndexBuffer* indexBuffer;
+		IVertexBuffer* vertexBuffer{ nullptr };
+		IIndexBuffer* indexBuffer{ nullptr };
 
-		View* view;
+		const View* view{ nullptr };
 	};
 }

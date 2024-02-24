@@ -155,13 +155,17 @@ namespace INF::GFX
 
 		BindGraphicsPipeline(pso);
 		BindFramebuffer(pso, framebuffer);
-		BindDescriptorSet(descriptorSet);
+
+		if(descriptorSet)
+			BindDescriptorSet(descriptorSet);
 
 		D3D12VertexBuffer* vertexBuffer = static_cast<D3D12VertexBuffer*>(state.vertexBuffer);
-		m_commandList->IASetVertexBuffers(0,1, &vertexBuffer->View());
+		if(vertexBuffer)
+			m_commandList->IASetVertexBuffers(0,1, &vertexBuffer->View());
 
 		D3D12IndexBuffer* indexBuffer = static_cast<D3D12IndexBuffer*>(state.indexBuffer);
-		m_commandList->IASetIndexBuffer(&indexBuffer->View());
+		if (indexBuffer)
+			m_commandList->IASetIndexBuffer(&indexBuffer->View());
 	}
 
 	void D3D12CommandList::SetViewport(const Viewport& viewport)

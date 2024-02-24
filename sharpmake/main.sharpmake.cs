@@ -1,6 +1,7 @@
 using System.IO; // For Path.Combine
 using Sharpmake; // Contains the entire Sharpmake object library.
 using Inferno;
+using Inferno.Samples;
 
 [module: Sharpmake.Include("engineDefs.sharpmake.cs")]
 [module: Sharpmake.Include("core.sharpmake.cs")]
@@ -8,6 +9,7 @@ using Inferno;
 [module: Sharpmake.Include("editor.sharpmake.cs")]
 [module: Sharpmake.Include("thirdparty.sharpmake.cs")]
 [module: Sharpmake.Include("shaders.sharpmake.cs")]
+[module: Sharpmake.Include("samples.sharpmake.cs")]
 
 namespace Inferno
 {
@@ -47,6 +49,8 @@ public class InfernoSolution : Solution
         // from the 32-bit targets.
         conf.AddProject<EditorProject>(target);
 		conf.AddProject<ShaderCustomBuild>(target);
+
+        SampleProject.AddSampleProjects(conf, target);
     }
 }
 

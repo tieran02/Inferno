@@ -28,6 +28,7 @@ namespace Inferno
             static public readonly string INFERNO_EDITOR = Path.Combine(INFERNO_ENGINE, @"editor\");
             static public readonly string INFERNO_EDITOR_SRC = Path.Combine(INFERNO_ENGINE, @"editor\src");
             static public readonly string INFERNO_EDITOR_INC = Path.Combine(INFERNO_ENGINE, @"editor\include");
+
         } 
     }
 
@@ -41,6 +42,8 @@ namespace Inferno
         public override void ConfigureAll(Project.Configuration conf, Target target)
         {
             base.ConfigureAll(conf, target);
+
+            conf.SolutionFolder = "Inferno";
             
             conf.IncludePaths.Add(Path.Combine(Defines.Paths.INFERNO_ENGINE, @"pch"));
             conf.PrecompHeader = Path.Combine(@"infPCH.h");
@@ -59,6 +62,8 @@ namespace Inferno
         {
             base.ConfigureAll(conf, target);
             
+            conf.SolutionFolder = "Inferno";
+
             conf.IncludePaths.Add(Path.Combine(Defines.Paths.INFERNO_ENGINE, @"pch"));
             conf.PrecompHeader = Path.Combine(@"infPCH.h");
             conf.PrecompSource = Path.Combine(@"infPCH.cpp");
@@ -70,6 +75,13 @@ namespace Inferno
         public InfernoThridPartyLib(string projectName) : base(projectName, Project.Configuration.OutputType.Lib)
         {
 
+        }
+
+        public override void ConfigureAll(Project.Configuration conf, Target target)
+        {
+            base.ConfigureAll(conf, target);
+            
+            conf.SolutionFolder = "ThirdParty";
         }
     }
 

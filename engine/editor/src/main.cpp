@@ -275,6 +275,8 @@ int main()
 		if (input.IsKeyRelease(KeyCode::Escape))
 			shouldClose = true;
 	}
+
+
 	Log::Info("Closing editor");
 
 }

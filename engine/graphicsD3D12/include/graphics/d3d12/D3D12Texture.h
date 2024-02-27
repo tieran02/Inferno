@@ -22,7 +22,7 @@ namespace INF::GFX
 		const TextureDesc& GetDesc() const override;
 
 		static TextureHandle CreateTexture(D3D12Device* ownerDevice, const TextureDesc& desc);
-		static TextureHandle CreateTextureFromResource(D3D12Device* ownerDevice, Microsoft::WRL::ComPtr<ID3D12Resource> resource, const TextureDesc& desc);
+		static TextureHandle CreateTextureFromResource(D3D12Device* ownerDevice, const Microsoft::WRL::ComPtr<ID3D12Resource>& resource, const TextureDesc& desc);
 		ID3D12Resource* Resource() const { return m_resource.Get(); }
 
 		const ITextureView* GetView(ITextureView::ViewType type) override;

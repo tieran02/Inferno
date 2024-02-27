@@ -12,6 +12,7 @@ namespace Inferno.Samples
         {
             conf.AddProject<SampleHelloTriangle>(target);
             conf.AddProject<SampleConstantBuffer>(target);
+            conf.AddProject<SampleRenderPass>(target);
         }
 
 
@@ -65,6 +66,23 @@ namespace Inferno.Samples
     public class SampleConstantBuffer : SampleProject
     {
         public SampleConstantBuffer() : base("constantbuffer")
+        {
+        }
+
+        public override void ConfigureAll(Project.Configuration conf, Target target)
+        {
+            base.ConfigureAll(conf, target);
+
+            string inDataFolder = $"{SampleRootDir}/src/shaders";
+            string outDataFolder = $"{SampleRootDir}/data/shaders";
+            ShaderUtil.CompileShadersPreBuild(conf,inDataFolder,outDataFolder);
+        }
+    }
+
+    [Generate]
+    public class SampleRenderPass : SampleProject
+    {
+        public SampleRenderPass() : base("renderpass")
         {
         }
 

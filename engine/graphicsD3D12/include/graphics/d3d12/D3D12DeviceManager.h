@@ -17,6 +17,7 @@ namespace INF::GFX
 		~D3D12DeviceManager();
 		bool CreateDeviceAndSwapChain(IWindow* window, const DeviceCreationParameters& createInfo) override;
 
+		void BeginFrame() override;
 		void Present() override;
 
 		IDevice* GetDevice() override;
@@ -30,10 +31,15 @@ namespace INF::GFX
 		DeviceCreationParameters m_createInfo;
 
 		std::unique_ptr<D3D12Device> m_device;
-		D3D12QueueHandle m_graphicsQueue;
+		D3D12Queue* m_graphicsQueue;
 
 		Microsoft::WRL::ComPtr<IDXGISwapChain3> m_swapchain;
 		std::vector<TextureHandle> m_swapchainTextures;
+
+		Microsoft::WRL::ComPtr<ID3D12Fence> m_frameFence; //fence for present
+		std::vector<HANDLE> m_frameFenceEvents;
+		UINT64 m_frameCount = 1;
+
 		uint32_t m_currentSwapchainBuffer;
 	};
 }

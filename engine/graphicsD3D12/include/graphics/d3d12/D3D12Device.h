@@ -40,6 +40,7 @@ namespace INF::GFX
 	{
 	public:
 		D3D12Device(const DeviceCreationParameters& createInfo);
+		~D3D12Device();
 
 		ShaderHandle CreateShader(const ShaderDesc& desc) override;
 
@@ -70,7 +71,7 @@ namespace INF::GFX
 		IDXGIFactory4* Factory() { return m_dxgiFactory.Get(); }
 		IDXGIAdapter1* Adapter() { return m_adapter.Get(); }
 		ID3D12Device*  Device() { return  m_device.Get(); }
-		D3D12QueueHandle GetGraphicsQueue() { return m_graphicsQueue; }
+		D3D12Queue* GetGraphicsQueue() { return m_graphicsQueue.get(); }
 
 		D3D12DescriptorHeap& SRVDescriptoHeap() { return m_SRVDescriptorHeap; }
 		D3D12DescriptorHeap& RTVDescriptoHeap() { return m_RTVDescriptorHeap; }

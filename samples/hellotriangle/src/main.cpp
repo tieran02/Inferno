@@ -85,6 +85,8 @@ int main()
 		window->PollEvents();
 		input.Update();
 
+		deviceManager->BeginFrame();
+
 		cmd->Open();
 		
 		cmd->SetGraphicsState(graphicsState);
@@ -108,13 +110,7 @@ int main()
 			shouldClose = true;
 	}
 
-	pipeline.reset();
-	descriptorLayoutHandle.reset();
-	pixelShader.reset();
-	vertexShader.reset();
-	framebuffers.clear();
-	cmd.reset();
-	deviceManager.reset();
+	device->WaitForIdle();
 	Log::Info("Closing editor");
 
 }

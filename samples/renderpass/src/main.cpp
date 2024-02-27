@@ -253,8 +253,6 @@ int main()
 		window->PollEvents();
 		input.Update();
 
-		deviceManager->BeginFrame();
-
 		cmd->Open();
 
 		cmd->SetGraphicsState(graphicsState);

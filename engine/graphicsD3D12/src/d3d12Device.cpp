@@ -90,6 +90,12 @@ namespace INF::GFX
 
 	}
 
+
+	D3D12Device::~D3D12Device()
+	{
+
+	}
+
 	void D3D12Device::CreateDebugController()
 	{
 		Microsoft::WRL::ComPtr<ID3D12Debug> dc;
@@ -154,7 +160,7 @@ namespace INF::GFX
 
 	CommandListeHandle D3D12Device::CreateCommandList(CommandQueue queueType)
 	{
-		return CommandListeHandle(new D3D12CommandList(this, m_graphicsCommandAllocator, queueType));
+		return CommandListeHandle(new D3D12CommandList(this, m_graphicsCommandAllocator.Get(), queueType));
 	}
 
 	uint64_t D3D12Device::ExecuteCommandLists(const ICommandList* commandLists, uint32_t commandListCount)

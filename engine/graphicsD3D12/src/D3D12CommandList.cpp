@@ -81,14 +81,14 @@ namespace INF::GFX
 		return LastCompletedInstance;
 	}
 
-	D3D12CommandList::D3D12CommandList(D3D12Device* d3dDevice, const Microsoft::WRL::ComPtr<ID3D12CommandAllocator>& commandAllocator, CommandQueue queueType)
+	D3D12CommandList::D3D12CommandList(D3D12Device* d3dDevice, ID3D12CommandAllocator* commandAllocator, CommandQueue queueType)
 	{
 		m_device = d3dDevice;
 		m_commandAllocator = commandAllocator;
 		switch (queueType)
 		{
 		case INF::GFX::CommandQueue::GRAPHICS:
-			VerifySuccess(d3dDevice->Device()->CreateCommandList(0, D3D12_COMMAND_LIST_TYPE_DIRECT, commandAllocator.Get(), nullptr, IID_PPV_ARGS(&m_commandList)));
+			VerifySuccess(d3dDevice->Device()->CreateCommandList(0, D3D12_COMMAND_LIST_TYPE_DIRECT, commandAllocator, nullptr, IID_PPV_ARGS(&m_commandList)));
 			break;
 		case INF::GFX::CommandQueue::COMPUTE:
 			throw std::logic_error("The method or operation is not implemented.");
@@ -108,7 +108,7 @@ namespace INF::GFX
 	void D3D12CommandList::Open()
 	{
 		m_commandAllocator->Reset();
-		m_commandList->Reset(m_commandAllocator.Get(), nullptr);
+		m_commandList->Reset(m_commandAllocator, nullptr);
 		m_referencedBuffers.clear();
 	}
 

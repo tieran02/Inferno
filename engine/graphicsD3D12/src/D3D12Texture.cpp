@@ -73,7 +73,7 @@ TextureHandle D3D12Texture::CreateTexture(D3D12Device* ownerDevice, const Textur
 }
 
 
-TextureHandle D3D12Texture::CreateTextureFromResource(D3D12Device* ownerDevice, Microsoft::WRL::ComPtr<ID3D12Resource> resource, const TextureDesc& desc)
+TextureHandle D3D12Texture::CreateTextureFromResource(D3D12Device* ownerDevice, const Microsoft::WRL::ComPtr<ID3D12Resource>& resource, const TextureDesc& desc)
 {
 	TextureHandle handle = TextureHandle(new D3D12Texture(ownerDevice,desc));
 	static_cast<D3D12Texture*>(handle.get())->m_resource = resource;

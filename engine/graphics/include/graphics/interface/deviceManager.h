@@ -40,6 +40,7 @@ namespace INF::GFX
 		virtual ITexture* GetCurrentBackBufferTexture() = 0;
 		virtual ITexture* GetBackBufferTexture(uint32_t backbufferIndex) = 0;
 
+		virtual void BeginFrame() = 0;
 		virtual void Present() = 0;
 	};
 

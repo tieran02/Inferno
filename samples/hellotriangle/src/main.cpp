@@ -95,9 +95,6 @@ int main()
 		
 		cmd->Draw(3, 1, 0, 0);
 
-		//transition to present for swapchain
-		cmd->Transition(deviceManager->GetCurrentBackBufferTexture(), (GFX::TRANSITION_STATES_FLAGS)GFX::TRANSITION_STATES::RENDER_TARGET, (GFX::TRANSITION_STATES_FLAGS)GFX::TRANSITION_STATES::PRESENT);
-		
 		cmd->Close();
 
 		device->ExecuteCommandLists(cmd.get(), 1);

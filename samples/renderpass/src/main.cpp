@@ -153,9 +153,7 @@ int main()
 
 		
 		//need better barrier managment
-		cmd->Transition(deviceManager->GetCurrentBackBufferTexture(), (GFX::TRANSITION_STATES_FLAGS)GFX::TRANSITION_STATES::PRESENT, (GFX::TRANSITION_STATES_FLAGS)GFX::TRANSITION_STATES::RENDER_TARGET);
 		cmd->ClearColor(deviceManager->GetCurrentBackBufferTexture(), GFX::Color(0.2f, 0.2f, 0.2f, 1.0f));
-		cmd->Transition(deviceManager->GetCurrentBackBufferTexture(), (GFX::TRANSITION_STATES_FLAGS)GFX::TRANSITION_STATES::RENDER_TARGET, (GFX::TRANSITION_STATES_FLAGS)GFX::TRANSITION_STATES::PRESENT);
 
 
 		forwardPass.Prepare(cmd.get(), view, meshes.data(), meshes.size());
@@ -165,7 +163,6 @@ int main()
 		forwardPass.Render(cmd.get(), backBuffer);
 
 		//transition to present for swapchain
-		cmd->Transition(deviceManager->GetCurrentBackBufferTexture(), (GFX::TRANSITION_STATES_FLAGS)GFX::TRANSITION_STATES::RENDER_TARGET, (GFX::TRANSITION_STATES_FLAGS)GFX::TRANSITION_STATES::PRESENT);
 		cmd->Close();
 		device->ExecuteCommandLists(cmd.get(), 1);
 		deviceManager->Present();

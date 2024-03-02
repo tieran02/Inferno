@@ -153,7 +153,7 @@ int main()
 	textureDesc.width = bitmap.Width();
 	textureDesc.height = bitmap.Height();
 	textureDesc.format = bitmap.GetFormat();
-	textureDesc.name = "Test texture";
+	textureDesc.name = L"Test texture";
 	textureDesc.initialState = (GFX::TRANSITION_STATES_FLAGS)GFX::TRANSITION_STATES::PIXEL_SHADER_RESOURCE;
 	GFX::TextureHandle texture = device->CreateTexture(textureDesc);
 
@@ -262,9 +262,6 @@ int main()
 		cmd->ClearColor(deviceManager->GetCurrentBackBufferTexture(), GFX::Color(0.2f, 0.2f, 0.2f, 1.0f));
 
 		cmd->Draw(3, 1, 0, 0);
-
-		//transition to present for swapchain
-		cmd->Transition(deviceManager->GetCurrentBackBufferTexture(), (GFX::TRANSITION_STATES_FLAGS)GFX::TRANSITION_STATES::RENDER_TARGET, (GFX::TRANSITION_STATES_FLAGS)GFX::TRANSITION_STATES::PRESENT);
 
 		cmd->Close();
 

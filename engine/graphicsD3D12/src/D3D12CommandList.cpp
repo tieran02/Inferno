@@ -114,11 +114,19 @@ namespace INF::GFX
 
 	void D3D12CommandList::Close()
 	{
+		//transition all resources to initial state 
+		for (const auto& state : m_textureStates)
+		{
+			TRANSITION_STATES_FLAGS initialState = state.first->GetDesc().initialState;
+			if(initialState != state.second)
+				TransitionResource(static_cast<D3D12Texture*>(state.first)->Resource(), state.second, initialState);
+		}
+		m_textureStates.clear();
+
 		m_commandList->Close();
 	}
 
-
-	void D3D12CommandList::Transition(ID3D12Resource* resource, TRANSITION_STATES_FLAGS from, TRANSITION_STATES_FLAGS to)
+	void D3D12CommandList::TransitionResource(ID3D12Resource* resource, TRANSITION_STATES_FLAGS from, TRANSITION_STATES_FLAGS to)
 	{
 		D3D12_RESOURCE_BARRIER renderTargetBarrier;
 		renderTargetBarrier.Type = D3D12_RESOURCE_BARRIER_TYPE_TRANSITION;
@@ -132,13 +140,21 @@ namespace INF::GFX
 		m_commandList->ResourceBarrier(1, &renderTargetBarrier);
 	}
 
-	void D3D12CommandList::Transition(ITexture* texture, TRANSITION_STATES_FLAGS from, TRANSITION_STATES_FLAGS to)
+	void D3D12CommandList::Transition(ITexture* texture, TRANSITION_STATES_FLAGS to)
 	{
-		Transition(static_cast<D3D12Texture*>(texture)->Resource(), from, to);
+		//Get from state
+		auto from = GetTextureState(texture);
+		if (from == to)
+			return;
+
+		TransitionResource(static_cast<D3D12Texture*>(texture)->Resource(), from, to);
+		m_textureStates[texture] = to;
 	}
 
 	void D3D12CommandList::ClearColor(ITexture* texture, const Color& color)
 	{
+		Transition(texture, (TRANSITION_STATES_FLAGS)TRANSITION_STATES::RENDER_TARGET);
+
 		const D3D12TextureView* textureView = (const D3D12TextureView*)texture->GetView(ITextureView::ViewType::RENDER_TARGET);
 		INF_ASSERT(textureView, "Invalid Texture view");
 		m_commandList->ClearRenderTargetView(textureView->CPU, &color.R, 0, nullptr);
@@ -209,8 +225,8 @@ namespace INF::GFX
 
 		for (const auto& attachment : fb->GetDesc().colorAttachments)
 		{
-			if(attachment.texture)
-				Transition(attachment.texture, (TRANSITION_STATES_FLAGS)attachment.texture->GetDesc().initialState, (TRANSITION_STATES_FLAGS)TRANSITION_STATES::RENDER_TARGET);
+			if (attachment.texture)
+				Transition(attachment.texture, (TRANSITION_STATES_FLAGS)TRANSITION_STATES::RENDER_TARGET);
 		}
 
 		if (fb->GetDesc().depthAttachment.texture)
@@ -221,7 +237,7 @@ namespace INF::GFX
 			if (state.depthStencilState.depthWriteEnable == true || state.depthStencilState.stencilWriteMask != 0)
 				resourceState = TRANSITION_STATES::DEPTH_WRITE;
 
-			Transition(attachment, (TRANSITION_STATES_FLAGS)attachment->GetDesc().initialState, (TRANSITION_STATES_FLAGS)resourceState);
+			Transition(attachment, (TRANSITION_STATES_FLAGS)resourceState);
 		}
 
 		std::array<D3D12_CPU_DESCRIPTOR_HANDLE, MAX_RENDER_TARGETS> RTVs;
@@ -319,16 +335,16 @@ namespace INF::GFX
 			return;
 
 		if (d3d12Src->GetDesc().access == CpuVisible::NONE)
-			Transition(d3d12Src->Resource(), d3d12Src->GetDesc().initialState, (GFX::TRANSITION_STATES_FLAGS)GFX::TRANSITION_STATES::COPY_SOURCE);
+			TransitionResource(d3d12Src->Resource(), d3d12Src->GetDesc().initialState, (GFX::TRANSITION_STATES_FLAGS)GFX::TRANSITION_STATES::COPY_SOURCE);
 
-		Transition(d3d12Dest->Resource(), d3d12Dest->GetDesc().initialState, (GFX::TRANSITION_STATES_FLAGS)GFX::TRANSITION_STATES::COPY_DEST);
+		TransitionResource(d3d12Dest->Resource(), d3d12Dest->GetDesc().initialState, (GFX::TRANSITION_STATES_FLAGS)GFX::TRANSITION_STATES::COPY_DEST);
 
 		m_commandList->CopyBufferRegion(d3d12Dest->Resource(), destOffset, d3d12Src->Resource(), srcOffset, size);
 
 		if (d3d12Src->GetDesc().access == CpuVisible::NONE)
-			Transition(d3d12Src->Resource(), (GFX::TRANSITION_STATES_FLAGS)GFX::TRANSITION_STATES::COPY_SOURCE, d3d12Src->GetDesc().initialState);
+			TransitionResource(d3d12Src->Resource(), (GFX::TRANSITION_STATES_FLAGS)GFX::TRANSITION_STATES::COPY_SOURCE, d3d12Src->GetDesc().initialState);
 
-		Transition(d3d12Dest->Resource(), (GFX::TRANSITION_STATES_FLAGS)GFX::TRANSITION_STATES::COPY_DEST, d3d12Dest->GetDesc().initialState);
+		TransitionResource(d3d12Dest->Resource(), (GFX::TRANSITION_STATES_FLAGS)GFX::TRANSITION_STATES::COPY_DEST, d3d12Dest->GetDesc().initialState);
 	}
 
 	void D3D12CommandList::Draw(uint32_t vertexCount, uint32_t instanceCount, uint32_t firstVertex, uint32_t firstInstance)
@@ -344,7 +360,7 @@ namespace INF::GFX
 	void D3D12CommandList::WriteTexture(ITexture* dest, const Bitmap& bitmap)
 	{
 		D3D12Texture* destTexture = static_cast<D3D12Texture*>(dest);
-		Transition(destTexture->Resource(), destTexture->GetDesc().initialState, (GFX::TRANSITION_STATES_FLAGS)GFX::TRANSITION_STATES::COPY_DEST);
+		TransitionResource(destTexture->Resource(), destTexture->GetDesc().initialState, (GFX::TRANSITION_STATES_FLAGS)GFX::TRANSITION_STATES::COPY_DEST);
 
 		const uint32_t uploadBufferSize = (static_cast<uint32_t>(bitmap.Size()) + D3D12_TEXTURE_DATA_PITCH_ALIGNMENT) & ~D3D12_TEXTURE_DATA_PITCH_ALIGNMENT; // size is required to be 256-byte aligned.
 
@@ -364,8 +380,21 @@ namespace INF::GFX
 
 		UpdateSubresources(m_commandList.Get(), destTexture->Resource(), static_cast<D3D12Buffer*>(uploadBuffer.get())->Resource(), 0, 0, 1, &textureData);
 
-		Transition(destTexture->Resource(), (GFX::TRANSITION_STATES_FLAGS)GFX::TRANSITION_STATES::COPY_DEST, destTexture->GetDesc().initialState);
+		TransitionResource(destTexture->Resource(), (GFX::TRANSITION_STATES_FLAGS)GFX::TRANSITION_STATES::COPY_DEST, destTexture->GetDesc().initialState);
 
+	}
+
+	TRANSITION_STATES_FLAGS D3D12CommandList::GetTextureState(ITexture* texture)
+	{
+		auto it = m_textureStates.find(texture);
+		
+		if (it == m_textureStates.end())
+		{
+			//Texture state isn't tracked for this texture, create initial state for tracking
+			it = m_textureStates.emplace(texture, texture->GetDesc().initialState).first;
+		}
+
+		return it->second;
 	}
 
 }

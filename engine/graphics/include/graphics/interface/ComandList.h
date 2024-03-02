@@ -17,7 +17,6 @@ namespace INF::GFX
 		virtual void Open() = 0;
 		virtual void Close() = 0;
 
-		virtual void Transition(ITexture* texture, TRANSITION_STATES_FLAGS from, TRANSITION_STATES_FLAGS to) = 0;
 		virtual void ClearColor(ITexture* texture, const Color& color) = 0;
 
 		virtual void SetGraphicsState(const GraphicsState& state) = 0;

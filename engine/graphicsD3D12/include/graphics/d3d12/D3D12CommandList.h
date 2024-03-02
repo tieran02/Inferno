@@ -38,7 +38,6 @@ namespace INF::GFX
 		void Open() override;
 		void Close() override;
 
-		void Transition(ITexture* texture, TRANSITION_STATES_FLAGS from, TRANSITION_STATES_FLAGS to) override;
 		void ClearColor(ITexture* texture, const Color& color) override;
 
 		void SetGraphicsState(const GraphicsState& state) override;
@@ -55,7 +54,9 @@ namespace INF::GFX
 		ID3D12GraphicsCommandList* D3D() const { return m_commandList.Get(); }
 
 	private:
-		void Transition(ID3D12Resource* resource, TRANSITION_STATES_FLAGS from, TRANSITION_STATES_FLAGS to);
+		void TransitionResource(ID3D12Resource* resource, TRANSITION_STATES_FLAGS from, TRANSITION_STATES_FLAGS to);
+		TRANSITION_STATES_FLAGS GetTextureState(ITexture* texture);
+		void Transition(ITexture* texture, TRANSITION_STATES_FLAGS to);
 
 		void BindGraphicsPipeline(D3D12GraphicsPipeline* pso);
 		void BindFramebuffer(D3D12GraphicsPipeline* pso, D3D12Framebuffer* fb);
@@ -65,6 +66,8 @@ namespace INF::GFX
 		Microsoft::WRL::ComPtr<ID3D12GraphicsCommandList> m_commandList;
 
 		std::vector<BufferHandle> m_referencedBuffers;
+
+		std::unordered_map<ITexture*, TRANSITION_STATES_FLAGS> m_textureStates;
 
 		D3D12Device* m_device;
 	};

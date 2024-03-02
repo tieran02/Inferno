@@ -93,7 +93,7 @@ namespace INF::GFX
 
 	D3D12Device::~D3D12Device()
 	{
-
+		WaitForIdle();
 	}
 
 	void D3D12Device::CreateDebugController()

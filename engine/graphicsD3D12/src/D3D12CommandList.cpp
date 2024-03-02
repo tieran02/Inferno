@@ -107,7 +107,7 @@ namespace INF::GFX
 
 	void D3D12CommandList::Open()
 	{
-		m_commandAllocator->Reset();
+		//m_commandAllocator->Reset();
 		m_commandList->Reset(m_commandAllocator, nullptr);
 		m_referencedBuffers.clear();
 	}
@@ -122,6 +122,14 @@ namespace INF::GFX
 				TransitionResource(static_cast<D3D12Texture*>(state.first)->Resource(), state.second, initialState);
 		}
 		m_textureStates.clear();
+
+		for (const auto& state : m_bufferStates)
+		{
+			TRANSITION_STATES_FLAGS initialState = state.first->GetDesc().initialState;
+			if (initialState != state.second)
+				TransitionResource(static_cast<D3D12Buffer*>(state.first)->Resource(), state.second, initialState);
+		}
+		m_bufferStates.clear();
 
 		m_commandList->Close();
 	}
@@ -149,6 +157,17 @@ namespace INF::GFX
 
 		TransitionResource(static_cast<D3D12Texture*>(texture)->Resource(), from, to);
 		m_textureStates[texture] = to;
+	}
+
+	void D3D12CommandList::Transition(IBuffer* buffer, TRANSITION_STATES_FLAGS to)
+	{
+		//Get from state
+		auto from = GetBufferState(buffer);
+		if (from == to)
+			return;
+
+		TransitionResource(static_cast<D3D12Buffer*>(buffer)->Resource(), from, to);
+		m_bufferStates[buffer] = to;
 	}
 
 	void D3D12CommandList::ClearColor(ITexture* texture, const Color& color)
@@ -330,21 +349,24 @@ namespace INF::GFX
 		D3D12Buffer* d3d12Dest = static_cast<D3D12Buffer*>(dest);
 		D3D12Buffer* d3d12Src = static_cast<D3D12Buffer*>(src);
 
+		GFX::TRANSITION_STATES_FLAGS destState = GetBufferState(d3d12Dest);
+		GFX::TRANSITION_STATES_FLAGS srcState = GetBufferState(d3d12Src);
+
 		INF_ASSERT(d3d12Dest->GetDesc().access == CpuVisible::NONE, "destination is CPU visible and can't be copied");
 		if (d3d12Dest->GetDesc().access != CpuVisible::NONE)
 			return;
 
 		if (d3d12Src->GetDesc().access == CpuVisible::NONE)
-			TransitionResource(d3d12Src->Resource(), d3d12Src->GetDesc().initialState, (GFX::TRANSITION_STATES_FLAGS)GFX::TRANSITION_STATES::COPY_SOURCE);
+			Transition(d3d12Src, (GFX::TRANSITION_STATES_FLAGS)GFX::TRANSITION_STATES::COPY_SOURCE);
 
-		TransitionResource(d3d12Dest->Resource(), d3d12Dest->GetDesc().initialState, (GFX::TRANSITION_STATES_FLAGS)GFX::TRANSITION_STATES::COPY_DEST);
+		Transition(d3d12Dest, (GFX::TRANSITION_STATES_FLAGS)GFX::TRANSITION_STATES::COPY_DEST);
 
 		m_commandList->CopyBufferRegion(d3d12Dest->Resource(), destOffset, d3d12Src->Resource(), srcOffset, size);
 
 		if (d3d12Src->GetDesc().access == CpuVisible::NONE)
-			TransitionResource(d3d12Src->Resource(), (GFX::TRANSITION_STATES_FLAGS)GFX::TRANSITION_STATES::COPY_SOURCE, d3d12Src->GetDesc().initialState);
+			Transition(d3d12Src, srcState);
 
-		TransitionResource(d3d12Dest->Resource(), (GFX::TRANSITION_STATES_FLAGS)GFX::TRANSITION_STATES::COPY_DEST, d3d12Dest->GetDesc().initialState);
+		Transition(d3d12Dest, destState);
 	}
 
 	void D3D12CommandList::Draw(uint32_t vertexCount, uint32_t instanceCount, uint32_t firstVertex, uint32_t firstInstance)
@@ -360,8 +382,9 @@ namespace INF::GFX
 	void D3D12CommandList::WriteTexture(ITexture* dest, const Bitmap& bitmap)
 	{
 		D3D12Texture* destTexture = static_cast<D3D12Texture*>(dest);
-		TransitionResource(destTexture->Resource(), destTexture->GetDesc().initialState, (GFX::TRANSITION_STATES_FLAGS)GFX::TRANSITION_STATES::COPY_DEST);
+		GFX::TRANSITION_STATES_FLAGS destState = GetTextureState(destTexture);
 
+		Transition(destTexture, (GFX::TRANSITION_STATES_FLAGS)GFX::TRANSITION_STATES::COPY_DEST);
 		const uint32_t uploadBufferSize = (static_cast<uint32_t>(bitmap.Size()) + D3D12_TEXTURE_DATA_PITCH_ALIGNMENT) & ~D3D12_TEXTURE_DATA_PITCH_ALIGNMENT; // size is required to be 256-byte aligned.
 
 		BufferDesc uploadBufferDesc;
@@ -380,8 +403,7 @@ namespace INF::GFX
 
 		UpdateSubresources(m_commandList.Get(), destTexture->Resource(), static_cast<D3D12Buffer*>(uploadBuffer.get())->Resource(), 0, 0, 1, &textureData);
 
-		TransitionResource(destTexture->Resource(), (GFX::TRANSITION_STATES_FLAGS)GFX::TRANSITION_STATES::COPY_DEST, destTexture->GetDesc().initialState);
-
+		Transition(destTexture, destState);
 	}
 
 	TRANSITION_STATES_FLAGS D3D12CommandList::GetTextureState(ITexture* texture)
@@ -392,6 +414,19 @@ namespace INF::GFX
 		{
 			//Texture state isn't tracked for this texture, create initial state for tracking
 			it = m_textureStates.emplace(texture, texture->GetDesc().initialState).first;
+		}
+
+		return it->second;
+	}
+
+	TRANSITION_STATES_FLAGS D3D12CommandList::GetBufferState(IBuffer* buffer)
+	{
+		auto it = m_bufferStates.find(buffer);
+
+		if (it == m_bufferStates.end())
+		{
+			//Texture state isn't tracked for this texture, create initial state for tracking
+			it = m_bufferStates.emplace(buffer, buffer->GetDesc().initialState).first;
 		}
 
 		return it->second;

@@ -167,7 +167,7 @@ int main()
 		device->ExecuteCommandLists(cmd.get(), 1);
 		deviceManager->Present();
 
-		device->WaitForIdle();
+		//device->WaitForIdle();
 
 		if (input.IsKeyRelease(KeyCode::Escape))
 			shouldClose = true;

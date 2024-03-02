@@ -57,6 +57,8 @@ namespace INF::GFX
 		void TransitionResource(ID3D12Resource* resource, TRANSITION_STATES_FLAGS from, TRANSITION_STATES_FLAGS to);
 		TRANSITION_STATES_FLAGS GetTextureState(ITexture* texture);
 		void Transition(ITexture* texture, TRANSITION_STATES_FLAGS to);
+		TRANSITION_STATES_FLAGS GetBufferState(IBuffer* buffer);
+		void Transition(IBuffer* buffer, TRANSITION_STATES_FLAGS to);
 
 		void BindGraphicsPipeline(D3D12GraphicsPipeline* pso);
 		void BindFramebuffer(D3D12GraphicsPipeline* pso, D3D12Framebuffer* fb);
@@ -68,6 +70,7 @@ namespace INF::GFX
 		std::vector<BufferHandle> m_referencedBuffers;
 
 		std::unordered_map<ITexture*, TRANSITION_STATES_FLAGS> m_textureStates;
+		std::unordered_map<IBuffer*, TRANSITION_STATES_FLAGS> m_bufferStates;
 
 		D3D12Device* m_device;
 	};

@@ -22,7 +22,7 @@ void IGeometryPass::Render(ICommandList* commandList, IFramebuffer* framebuffer)
 
 		state.vertexBuffer = meshInfo->buffer.vertexBuffer.get();
 		state.indexBuffer = meshInfo->buffer.indexBuffer.get();
-		OnMeshInstanceRender(instance);
+		OnMeshInstanceRender(i, state);
 
 		commandList->SetGraphicsState(state);
 

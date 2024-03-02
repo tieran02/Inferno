@@ -12,6 +12,14 @@ struct ConstantBufferStruct
 	glm::mat4 projection{ 1 };;
 };
 
+struct PersistantMappedBuffer
+{
+	ConstantBufferStruct* m_matrixData;
+	BufferHandle m_constantBuffer;
+
+	DescriptorSetHandle m_descriptorHandle;
+};
+
 
 class ForwardPass : public IGeometryPass
 {
@@ -24,17 +32,15 @@ public:
 	void SetState(GraphicsState& state) override;
 
 	void GetMeshInstances(MeshInstance**& instances, uint32_t& meshCount) override;
-	void OnMeshInstanceRender(const MeshInstance* instance) override;
+	void OnMeshInstanceRender(uint32_t meshInstanceIndex, GraphicsState& state) override;
 
 private:
 	void CreatePipeline(GFX::IDevice* device, IFramebuffer* fb);
 
 	GraphicsPipelineHandle m_pipeline;
 	DescriptorLayoutHandle m_descriptorHandle;
-	DescriptorSetHandle m_descriptorSet;
+	std::vector<PersistantMappedBuffer> m_matrixBuffers;
 
-	ConstantBufferStruct* m_matrixData;
-	BufferHandle m_constantBuffer;
 	SamplerHandle m_sampler;
 	TextureHandle m_texture;
 	MeshInstance** m_meshInstances;

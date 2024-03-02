@@ -22,7 +22,7 @@ namespace INF::GFX
 	struct BufferDesc
 	{
 		uint32_t byteSize = 0;
-		const char* name = nullptr;
+		std::string name;
 		TRANSITION_STATES_FLAGS initialState = (TRANSITION_STATES_FLAGS)TRANSITION_STATES::COMMON;
 		BufferUsage usage = BufferUsage::GENERIC;
 		CpuVisible access = CpuVisible::NONE;
@@ -49,7 +49,7 @@ namespace INF::GFX
 	{
 		uint32_t byteSize = 0;
 		uint32_t strideInBytes = 0;
-		const char* name = nullptr;
+		std::string name;
 		CpuVisible access = CpuVisible::NONE;
 	};
 
@@ -65,7 +65,7 @@ namespace INF::GFX
 	{
 		uint32_t byteSize = 0;
 		Format format = Format::R16_UINT;
-		const char* name = nullptr;
+		std::string name;
 		CpuVisible access = CpuVisible::NONE;
 	};
 

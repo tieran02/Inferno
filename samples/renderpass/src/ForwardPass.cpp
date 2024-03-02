@@ -13,21 +13,27 @@ ForwardPass::ForwardPass()
 
 void ForwardPass::Init(GFX::IDevice* device, IFramebuffer* fb)
 {
-	//Create a descriptor set that contains the actual buffer to be bound
-	GFX::BufferDesc constantBufferDesc;
-	constantBufferDesc.usage = GFX::BufferUsage::CONSTANT;
-	constantBufferDesc.access = GFX::CpuVisible::WRITE;
-	constantBufferDesc.byteSize = sizeof(ConstantBufferStruct);
-	constantBufferDesc.name = "Constant Buffer";
-	m_constantBuffer = device->CreateBuffer(constantBufferDesc);
+	//Pre allocate constant buffers for the max object count
+	constexpr uint32_t MAX_OBJECT_COUNT = 32;
+
+	m_matrixBuffers.resize(MAX_OBJECT_COUNT);
+	for (int i; i < MAX_OBJECT_COUNT; i++)
+	{
+		GFX::BufferDesc constantBufferDesc;
+		constantBufferDesc.usage = GFX::BufferUsage::CONSTANT;
+		constantBufferDesc.access = GFX::CpuVisible::WRITE;
+		constantBufferDesc.byteSize = sizeof(ConstantBufferStruct);
+		constantBufferDesc.name = std::format("MatrixConstantBuffer_{0}", i);
+
+		m_matrixBuffers[i].m_constantBuffer = device->CreateBuffer(constantBufferDesc);
+		m_matrixBuffers[i].m_matrixData = (ConstantBufferStruct*)device->MapBuffer(m_matrixBuffers[i].m_constantBuffer.get());
+	}
 
 	m_view.SetViewport(GFX::Viewport(0, 0, (float)fb->GetInfo().width, (float)fb->GetInfo().height));
 	m_view.SetScissor(GFX::Rect(0, 0, fb->GetInfo().width, fb->GetInfo().height));
 	m_view.SetPosition(glm::vec3(0.0f, 0.0f, 3.0f));
 	m_view.LookAt(glm::vec3(0.0f, 0.0f, 0.1f), glm::vec3(0, 1, 0));
 
-	void* dest;
-	m_matrixData = (ConstantBufferStruct*)device->MapBuffer(m_constantBuffer.get());
 
 	GFX::SamplerDesc samplerDesc;
 	m_sampler = device->CreateSampler(samplerDesc);
@@ -94,11 +100,16 @@ void ForwardPass::CreatePipeline(GFX::IDevice* device, IFramebuffer* fb)
 
 	m_pipeline = device->CreateGraphicsPipeline(pipelineDesc, fb);
 
-	GFX::DescriptorSetDesc descriptorSetDesc;
-	descriptorSetDesc.VS[0] = GFX::DescriptorSetItem::ConstantBuffer(0, m_constantBuffer.get());
-	descriptorSetDesc.PS[0] = GFX::DescriptorSetItem::SRV(0, m_texture.get());
-	descriptorSetDesc.PS[1] = GFX::DescriptorSetItem::Sampler(0, m_sampler.get());
-	m_descriptorSet = device->CreateDescriptorSet(descriptorSetDesc, m_descriptorHandle.get());
+
+	for (int i = 0; i < m_matrixBuffers.size(); i++)
+	{
+		GFX::DescriptorSetDesc descriptorSetDesc;
+		descriptorSetDesc.VS[0] = GFX::DescriptorSetItem::ConstantBuffer(0, m_matrixBuffers[i].m_constantBuffer.get());
+		descriptorSetDesc.PS[0] = GFX::DescriptorSetItem::SRV(0, m_texture.get());
+		descriptorSetDesc.PS[1] = GFX::DescriptorSetItem::Sampler(0, m_sampler.get());
+		m_matrixBuffers[i].m_descriptorHandle = device->CreateDescriptorSet(descriptorSetDesc, m_descriptorHandle.get());
+	}
+	
 
 }
 
@@ -113,10 +124,6 @@ void ForwardPass::SetState(GraphicsState& state)
 {
 	state.pipeline = m_pipeline.get();
 	state.view = &m_view;
-	state.descriptorSet = m_descriptorSet.get();
-
-	m_matrixData->projection = m_view.GetProjectionMatrix();
-	m_matrixData->view = m_view.GetViewMatrix();
 }
 
 void ForwardPass::GetMeshInstances(MeshInstance**& instances, uint32_t& meshCount)
@@ -125,7 +132,13 @@ void ForwardPass::GetMeshInstances(MeshInstance**& instances, uint32_t& meshCoun
 	meshCount = m_meshCount;
 }
 
-void ForwardPass::OnMeshInstanceRender(const MeshInstance* instance)
+void ForwardPass::OnMeshInstanceRender(uint32_t meshInstanceIndex, GraphicsState& state)
 {
-	m_matrixData->model = instance->transform.GetWorldMatrix();
+	INF_ASSERT(meshInstanceIndex < m_matrixBuffers.size(), "Exceeded MAX_OBJECT_COUNT");
+	//View and projection should really be in thier own buffer as its not per mesh
+	m_matrixBuffers[meshInstanceIndex].m_matrixData->projection = m_view.GetProjectionMatrix();
+	m_matrixBuffers[meshInstanceIndex].m_matrixData->view = m_view.GetViewMatrix();
+	m_matrixBuffers[meshInstanceIndex].m_matrixData->model = m_meshInstances[meshInstanceIndex]->transform.GetWorldMatrix();
+
+	state.descriptorSet = m_matrixBuffers[meshInstanceIndex].m_descriptorHandle.get();
 }

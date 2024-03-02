@@ -44,7 +44,7 @@ namespace INF::GFX
 		virtual void SetState(GraphicsState& state) = 0;
 		virtual void GetMeshInstances(MeshInstance**& instances, uint32_t& meshCount) = 0;
 
-		virtual void OnMeshInstanceRender(const MeshInstance* instance) {}
+		virtual void OnMeshInstanceRender(uint32_t meshInstanceIndex, GraphicsState& state) {}
 
 		virtual void Render(ICommandList* commandList, IFramebuffer* framebuffer);
 	};

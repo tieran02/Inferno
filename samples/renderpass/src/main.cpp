@@ -121,8 +121,13 @@ int main()
 	MeshInstance meshInstance;
 	meshInstance.mesh = &meshInfo;
 	meshInstance.instanceOffset = 0;
+
+	MeshInstance meshInstance1;
+	meshInstance1.mesh = &meshInfo;
+	meshInstance1.instanceOffset = 0;
+
 	
-	std::array<MeshInstance*, 1> meshes{&meshInstance};
+	std::array<MeshInstance*, 2> meshes{&meshInstance, &meshInstance1};
 	while (!shouldClose)
 	{
 		window->PollEvents();
@@ -133,9 +138,14 @@ int main()
 		static clock::time_point start = clock::now();
 		float elapsed = (duration(clock::now() - start)).count();
 
-		meshInstance.transform.SetPosition(glm::vec3(sinf(elapsed * 0.001f), 0.0f, 0.0f));
+		glm::vec3 posOffset = glm::vec3(sinf(elapsed * 0.001f), 0.0f, 0.0f);
+		meshInstance.transform.SetPosition(posOffset);
 		meshInstance.transform.Rotate(glm::vec3(0.0f, 1.0f, 0.0f), 0.01f);
 		meshInstance.transform.UpdateTransform();
+
+		meshInstance1.transform.SetPosition(-posOffset);
+		meshInstance1.transform.Rotate(glm::vec3(0.0f, 1.0f, 0.0f), 0.01f);
+		meshInstance1.transform.UpdateTransform();
 
 		deviceManager->BeginFrame();
 

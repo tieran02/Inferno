@@ -7,18 +7,18 @@ namespace INF::GFX
 {
 	struct MeshBuffer
 	{
-		BufferHandle indexBuffer;
-		BufferHandle vertexBuffer;
+		IndexBufferHandle indexBuffer;
+		VertexBufferHandle vertexBuffer;
 	};
 
 	struct MeshInfo
 	{
 		std::string name;
 		MeshBuffer buffer;
-		uint32_t indexOffset;
-		uint32_t vertexOffset;
-		uint32_t numIndices;
-		uint32_t numVertices;
+		uint32_t indexOffset{ 0 };
+		uint32_t vertexOffset{ 0 };
+		uint32_t numIndices{ 0 };
+		uint32_t numVertices{ 0 };
 	};
 
 	struct MeshInstance
@@ -31,18 +31,14 @@ namespace INF::GFX
 	class IRenderPass
 	{
 	public:
+		virtual void Render(ICommandList* commandList, IFramebuffer* framebuffer) = 0;
+
 		virtual std::string_view GetName() = 0;
 	};
 
 	class IGeometryPass : public IRenderPass
 	{
-		virtual void Prepare(ICommandList* commandList, const View& view) = 0;
-		virtual void SetPipeline(GraphicsState& state) = 0;
-		void Render(ICommandList* commandList, const View& view, IFramebuffer* framebuffer, std::vector<MeshInstance*>& meshInstances);
-	};
-
-	class IFullscreenPass : public IRenderPass
-	{
-
+	public:
+		virtual void Prepare(ICommandList* commandList, const View& view, MeshInstance** meshInstances, uint32_t meshCount) = 0;
 	};
 }

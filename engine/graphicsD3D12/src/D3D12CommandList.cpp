@@ -146,15 +146,20 @@ namespace INF::GFX
 
 	void D3D12CommandList::SetGraphicsState(const GraphicsState& state)
 	{
-		SetViewport(state.view->GetViewport());
-		SetScissor(state.view->GetScissor());
+		if (state.view) 
+		{
+			SetViewport(state.view->GetViewport());
+			SetScissor(state.view->GetScissor());
+		}
 
 		D3D12GraphicsPipeline* pso = static_cast<D3D12GraphicsPipeline*>(state.pipeline);
 		D3D12Framebuffer* framebuffer = static_cast<D3D12Framebuffer*>(state.framebuffer);
 		D3D12DescriptorSet* descriptorSet = static_cast<D3D12DescriptorSet*>(state.descriptorSet);
 
-		BindGraphicsPipeline(pso);
-		BindFramebuffer(pso, framebuffer);
+		if(pso)
+			BindGraphicsPipeline(pso);
+		if (pso && framebuffer)
+			BindFramebuffer(pso, framebuffer);
 
 		if(descriptorSet)
 			BindDescriptorSet(descriptorSet);
@@ -205,7 +210,7 @@ namespace INF::GFX
 		for (const auto& attachment : fb->GetDesc().colorAttachments)
 		{
 			if(attachment.texture)
-				Transition(attachment.texture, (TRANSITION_STATES_FLAGS)TRANSITION_STATES::COMMON, (TRANSITION_STATES_FLAGS)TRANSITION_STATES::RENDER_TARGET);
+				Transition(attachment.texture, (TRANSITION_STATES_FLAGS)attachment.texture->GetDesc().initialState, (TRANSITION_STATES_FLAGS)TRANSITION_STATES::RENDER_TARGET);
 		}
 
 		if (fb->GetDesc().depthAttachment.texture)
@@ -216,7 +221,7 @@ namespace INF::GFX
 			if (state.depthStencilState.depthWriteEnable == true || state.depthStencilState.stencilWriteMask != 0)
 				resourceState = TRANSITION_STATES::DEPTH_WRITE;
 
-			Transition(attachment, (TRANSITION_STATES_FLAGS)TRANSITION_STATES::COMMON, (TRANSITION_STATES_FLAGS)resourceState);
+			Transition(attachment, (TRANSITION_STATES_FLAGS)attachment->GetDesc().initialState, (TRANSITION_STATES_FLAGS)resourceState);
 		}
 
 		std::array<D3D12_CPU_DESCRIPTOR_HANDLE, MAX_RENDER_TARGETS> RTVs;

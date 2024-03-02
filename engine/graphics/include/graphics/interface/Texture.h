@@ -18,7 +18,7 @@ namespace INF::GFX
 		Format format = Format::UNKNOWN;
 		TextureDimension dimension = TextureDimension::Texture2D;
 		TRANSITION_STATES_FLAGS initialState = (TRANSITION_STATES_FLAGS)TRANSITION_STATES::COMMON;
-		const char* name = nullptr;
+		const wchar_t* name = nullptr;
 	};
 
 	class ITextureView

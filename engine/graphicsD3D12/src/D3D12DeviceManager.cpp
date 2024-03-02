@@ -112,7 +112,7 @@ bool D3D12DeviceManager::CreateDeviceAndSwapChain(IWindow* window, const DeviceC
 		textureDesc.width = swapchainDesc.Width;
 		textureDesc.height = swapchainDesc.Height;
 		textureDesc.format = createInfo.swapChainFormat;
-		textureDesc.name = "SwapChainBuffer";
+		textureDesc.name = L"SwapChainBuffer";
 		m_swapchainTextures[n] = D3D12Texture::CreateTextureFromResource(m_device.get(), resource, textureDesc);
 
 		//Get the view straightaway as we know this will be used as a render target

@@ -40,5 +40,12 @@ namespace INF::GFX
 	{
 	public:
 		virtual void Prepare(ICommandList* commandList, const View& view, MeshInstance** meshInstances, uint32_t meshCount) = 0;
+
+		virtual void SetState(GraphicsState& state) = 0;
+		virtual void GetMeshInstances(MeshInstance**& instances, uint32_t& meshCount) = 0;
+
+		virtual void OnMeshInstanceRender(const MeshInstance* instance) {}
+
+		virtual void Render(ICommandList* commandList, IFramebuffer* framebuffer);
 	};
 }

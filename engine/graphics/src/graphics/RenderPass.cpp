@@ -4,3 +4,28 @@
 #include "graphics/interface/Texture.h"
 
 using namespace INF::GFX;
+
+void IGeometryPass::Render(ICommandList* commandList, IFramebuffer* framebuffer)
+{
+	GraphicsState state;
+	SetState(state);
+	state.framebuffer = framebuffer;
+
+	MeshInstance** meshInstances;
+	uint32_t meshCount = 0;
+	GetMeshInstances(meshInstances, meshCount);
+
+	for (int i = 0; i < meshCount; ++i)
+	{
+		const MeshInstance* instance = meshInstances[i];
+		const MeshInfo* meshInfo = instance->mesh;
+
+		state.vertexBuffer = meshInfo->buffer.vertexBuffer.get();
+		state.indexBuffer = meshInfo->buffer.indexBuffer.get();
+		OnMeshInstanceRender(instance);
+
+		commandList->SetGraphicsState(state);
+
+		commandList->Draw(meshInfo->numVertices, 1, meshInfo->vertexOffset, instance->instanceOffset);
+	}
+}

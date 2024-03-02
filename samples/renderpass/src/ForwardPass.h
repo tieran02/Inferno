@@ -21,7 +21,10 @@ public:
 
 	std::string_view GetName() override { return "ForwardPass"; }
 	void Prepare(ICommandList* commandList, const View& view, MeshInstance** meshInstances, uint32_t meshCount) override;
-	void Render(ICommandList* commandList, IFramebuffer* framebuffer) override;
+	void SetState(GraphicsState& state) override;
+
+	void GetMeshInstances(MeshInstance**& instances, uint32_t& meshCount) override;
+	void OnMeshInstanceRender(const MeshInstance* instance) override;
 
 private:
 	void CreatePipeline(GFX::IDevice* device, IFramebuffer* fb);

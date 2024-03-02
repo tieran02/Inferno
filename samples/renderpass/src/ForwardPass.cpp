@@ -109,31 +109,23 @@ void ForwardPass::Prepare(ICommandList* commandList, const View& view, MeshInsta
 	m_view = view;
 }
 
-void ForwardPass::Render(ICommandList* commandList, IFramebuffer* framebuffer)
+void ForwardPass::SetState(GraphicsState& state)
 {
-	GraphicsState state;
-	state.framebuffer = framebuffer;
 	state.pipeline = m_pipeline.get();
 	state.view = &m_view;
 	state.descriptorSet = m_descriptorSet.get();
 
 	m_matrixData->projection = m_view.GetProjectionMatrix();
 	m_matrixData->view = m_view.GetViewMatrix();
-
-	for (int i = 0; i < m_meshCount; ++i)
-	{
-		MeshInstance* instance = m_meshInstances[i];
-		MeshInfo* meshInfo = instance->mesh;
-
-		state.vertexBuffer = meshInfo->buffer.vertexBuffer.get();
-		state.indexBuffer = meshInfo->buffer.indexBuffer.get();
-		
-		m_matrixData->model = instance->transform.GetWorldMatrix();
-
-		commandList->SetGraphicsState(state);
-
-		commandList->Draw(meshInfo->numVertices, 1, meshInfo->vertexOffset, instance->instanceOffset);
-	}
 }
 
+void ForwardPass::GetMeshInstances(MeshInstance**& instances, uint32_t& meshCount)
+{
+	instances = m_meshInstances;
+	meshCount = m_meshCount;
+}
 
+void ForwardPass::OnMeshInstanceRender(const MeshInstance* instance)
+{
+	m_matrixData->model = instance->transform.GetWorldMatrix();
+}

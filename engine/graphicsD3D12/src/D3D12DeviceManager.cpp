@@ -32,6 +32,7 @@ D3D12DeviceManager::~D3D12DeviceManager()
 	//m_FrameFence->Release();
 	m_frameFence = nullptr;
 
+	m_frameBufferMemory.clear();
 	m_swapchainTextures.clear();
 
 	int ref = m_swapchain->Release();

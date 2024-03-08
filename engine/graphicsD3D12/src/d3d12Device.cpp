@@ -1,6 +1,7 @@
 #pragma once
 #include "infPCH.h"
 #include "graphics/d3d12/d3d12Device.h"
+#include "graphics/d3d12/D3D12DeviceManager.h"
 #include "graphics/d3d12/D3D12Defines.h"
 #include "graphics/d3d12/D3D12Shader.h"
 #include <wrl/client.h>
@@ -77,7 +78,7 @@ namespace INF::GFX
 		return m_descriptors.at(index).Gpu;
 	}
 
-	D3D12Device::D3D12Device(const DeviceCreationParameters& createInfo)
+	D3D12Device::D3D12Device(const DeviceCreationParameters& createInfo, D3D12DeviceManager* deviceManager) : m_deviceManager(deviceManager)
 	{
 		if(createInfo.enableDebugValidation)
 			CreateDebugController();
@@ -95,6 +96,12 @@ namespace INF::GFX
 	{
 		WaitForIdle();
 	}
+
+	IDeviceManager* D3D12Device::GetDeviceManager() const
+	{
+		return static_cast<IDeviceManager*>(m_deviceManager);
+	}
+
 
 	void D3D12Device::CreateDebugController()
 	{
@@ -357,5 +364,4 @@ namespace INF::GFX
 
 		m_device->CreateShaderResourceView(static_cast<D3D12Texture*>(texture)->Resource(), &viewDesc, m_SRVDescriptorHeap.GetCPUHandle(descriptorIndex));
 	}
-
 }

@@ -6,6 +6,7 @@
 #include "graphics/d3d12/D3D12CommandList.h"
 #include "graphics/d3d12/D3D12Texture.h"
 #include <dxgidebug.h>
+#include "graphics/d3d12/D3D12Buffer.h"
 
 using namespace INF::GFX;
 
@@ -80,7 +81,7 @@ ITexture* D3D12DeviceManager::GetBackBufferTexture(uint32_t backbufferIndex)
 
 bool D3D12DeviceManager::CreateDeviceAndSwapChain(IWindow* window, const DeviceCreationParameters& createInfo)
 {
-	m_device = std::unique_ptr<D3D12Device>(new D3D12Device(createInfo));
+	m_device = std::unique_ptr<D3D12Device>(new D3D12Device(createInfo, this));
 	m_graphicsQueue = m_device->GetGraphicsQueue();
 
 	DXGI_SWAP_CHAIN_DESC1 swapchainDesc = {};
@@ -130,6 +131,16 @@ bool D3D12DeviceManager::CreateDeviceAndSwapChain(IWindow* window, const DeviceC
 		m_frameFenceEvents.push_back(CreateEvent(NULL, false, true, NULL));
 	}
 
+
+	//create the frame memory 
+	constexpr size_t frameMemorySize = 4096;
+	m_frameBufferMemory.resize(createInfo.swapChainBufferCount);
+	for (UINT bufferIndex = 0; bufferIndex < createInfo.swapChainBufferCount; bufferIndex++)
+	{
+		m_frameBufferMemory[bufferIndex] = FrameBufferMemory::Create(m_device.get(), frameMemorySize);
+		m_frameBufferMemory[bufferIndex]->SetName(std::format(L"FrameMemory_{0}", bufferIndex).c_str());
+	}
+
 	return true;
 }
 
@@ -141,6 +152,8 @@ void D3D12DeviceManager::BeginFrame()
 	WaitForSingleObject(m_frameFenceEvents[m_currentSwapchainBuffer], INFINITE);
 
 	m_currentSwapchainBuffer = m_swapchain->GetCurrentBackBufferIndex();
+
+	m_frameBufferMemory[m_currentSwapchainBuffer]->Reset();
 }
 
 void D3D12DeviceManager::Present()
@@ -152,5 +165,10 @@ void D3D12DeviceManager::Present()
 	m_frameCount++;
 
 	m_device->GetGraphicsQueue()->EndFrame();
+}
+
+FrameBufferMemory* D3D12DeviceManager::GetFrameBufferMemory()
+{
+	return m_frameBufferMemory[m_currentSwapchainBuffer].get();
 }
 

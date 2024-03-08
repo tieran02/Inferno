@@ -9,6 +9,7 @@
 #include "graphics/d3d12/D3D12Device.h"
 #include "graphics/Bitmap.h"
 #include "graphics/View.h"
+#include "graphics/d3d12/D3D12DeviceManager.h"
 
 namespace INF::GFX
 {
@@ -411,6 +412,40 @@ namespace INF::GFX
 		}
 	}
 
+	void D3D12CommandList::WriteBuffer(IBuffer* dest, const void* src, size_t size, size_t destOffset /*= 0*/)
+	{
+		D3D12Buffer* d3d12Dest = static_cast<D3D12Buffer*>(dest);
+		D3D12DeviceManager* deviceManager = static_cast<D3D12DeviceManager*>(m_device->GetDeviceManager());
+		FrameBufferMemory* frameBuffer = deviceManager->GetFrameBufferMemory();
+
+		void* cpuVA;
+		D3D12_GPU_VIRTUAL_ADDRESS gpuVA;
+		ID3D12Resource* uploadBuffer;
+		size_t offsetInUploadBuffer;
+		DescriptorIndex descriptorIndex;
+
+		if (!frameBuffer->Allocate(size, &uploadBuffer, &offsetInUploadBuffer, &cpuVA, &gpuVA, D3D12_CONSTANT_BUFFER_DATA_PLACEMENT_ALIGNMENT, descriptorIndex))
+		{
+			INF_ASSERT(false, "Failed to allocate memory from current FrameBufferMemory");
+			return;
+		}
+
+		memcpy(cpuVA, src, size);
+
+		if (dest->GetDesc().onlyValidDuringCommandList)
+		{
+			d3d12Dest->CreateConstantBufferView(descriptorIndex, gpuVA);
+		}
+		else
+		{
+			GFX::TRANSITION_STATES_FLAGS destState = GetBufferState(d3d12Dest);
+			Transition(d3d12Dest, (GFX::TRANSITION_STATES_FLAGS)GFX::TRANSITION_STATES::COPY_DEST);
+
+			m_commandList->CopyBufferRegion(d3d12Dest->Resource(), destOffset, uploadBuffer, offsetInUploadBuffer, size);
+
+			Transition(d3d12Dest, destState);
+		}
+	}
 
 	void D3D12CommandList::CopyBuffer(IBuffer* dest, uint32_t destOffset, IBuffer* src, uint32_t srcOffset, size_t size)
 	{
@@ -499,5 +534,4 @@ namespace INF::GFX
 
 		return it->second;
 	}
-
 }

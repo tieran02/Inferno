@@ -23,6 +23,7 @@ namespace INF::GFX
 		virtual void SetViewport(const Viewport& viewport) = 0;
 		virtual void SetScissor(const Rect& scissor) = 0;
 
+		virtual void WriteBuffer(IBuffer* dest, const void* src, size_t size, size_t destOffset = 0) = 0;
 		virtual void CopyBuffer(IBuffer* dest, uint32_t destOffset, IBuffer* src, uint32_t srcOffset, size_t size) = 0;
 		virtual void WriteTexture(ITexture* dest, const Bitmap& bitmap) = 0;
 

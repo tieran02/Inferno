@@ -13,6 +13,7 @@
 namespace INF::GFX
 {
 	class IDevice;
+	class IDeviceManager;
 	using DeviceHandle = std::unique_ptr<IDevice>;
 
 	using ImmediateSubmitFn = std::function<void(ICommandList* cmd)>;
@@ -21,6 +22,8 @@ namespace INF::GFX
 	{
 	public:
 		virtual ~IDevice() = default;
+		virtual IDeviceManager* GetDeviceManager() const = 0;
+
 		virtual ShaderHandle CreateShader(const ShaderDesc& desc) = 0;
 
 		virtual FramebufferHandle CreateFramebuffer(const FramebufferDesc& desc) = 0;

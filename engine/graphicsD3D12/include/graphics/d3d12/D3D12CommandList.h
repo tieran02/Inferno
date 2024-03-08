@@ -59,6 +59,7 @@ namespace INF::GFX
 		void SetViewport(const Viewport& viewport) override;
 		void SetScissor(const Rect& scissor) override;
 
+		void WriteBuffer(IBuffer* dest, const void* src, size_t size, size_t destOffset = 0) override;
 		void CopyBuffer(IBuffer* dest, uint32_t destOffset, IBuffer* src, uint32_t srcOffset, size_t size) override;
 		void WriteTexture(ITexture* dest, const Bitmap& bitmap) override;
 

@@ -17,16 +17,21 @@ D3D12Buffer::D3D12Buffer(D3D12Device* device, const BufferDesc& desc) : m_desc(d
 	case BufferUsage::GENERIC:
 	case BufferUsage::VERTEX:
 	case BufferUsage::INDEX:
-		bufferDesc.Width = desc.byteSize;
+		m_desc.byteSize = desc.byteSize;
 		break;
 	case BufferUsage::CONSTANT:
-		bufferDesc.Width = desc.byteSize + (CONSTANT_BUFFER_ALINGMENT - (desc.byteSize % CONSTANT_BUFFER_ALINGMENT)); //Constant buffers are 256 alligned
+		m_desc.byteSize = desc.byteSize + (CONSTANT_BUFFER_ALINGMENT - (desc.byteSize % CONSTANT_BUFFER_ALINGMENT)); //Constant buffers are 256 alligned
 		break;
 	default:
 		INF_ASSERT(false, "Usage not supported");
 		break;
 	}
 
+	//For D3D12 buffers with this will not create a d3d12 resource on creation, instead use commandList->WriteBuffer to allocate memory from a preallocated chunk.
+	if (desc.onlyValidDuringCommandList)
+		return;
+
+	bufferDesc.Width = m_desc.byteSize;
 	bufferDesc.Height = 1;
 	bufferDesc.DepthOrArraySize = 1;
 	bufferDesc.MipLevels = 1;
@@ -94,6 +99,17 @@ D3D12Buffer::~D3D12Buffer()
 		m_device->SRVDescriptoHeap().ReleaseDescriptor(m_view.descriptorIndex);
 }
 
+void D3D12Buffer::CreateConstantBufferView(DescriptorIndex descriptorIndex, D3D12_GPU_VIRTUAL_ADDRESS gpuVirtualAddress)
+{
+	//INF_ASSERT(m_view.descriptorIndex == DescriptorIndexInvalid, "Buffer already has a view");
+	m_view.descriptorIndex = descriptorIndex;
+	m_view.CPU = m_device->SRVDescriptoHeap().GetCPUHandle(descriptorIndex);
+	m_view.GPU = m_device->SRVDescriptoHeap().GetGPUHandle(descriptorIndex);
+
+	D3D12_CONSTANT_BUFFER_VIEW_DESC viewDesc = { gpuVirtualAddress, (UINT)m_desc.byteSize };
+	m_device->Device()->CreateConstantBufferView(&viewDesc, m_view.CPU);
+}
+
 BufferDesc ConvertVertexDesc(const VertexBufferDesc& desc)
 {
 	BufferDesc bufferDesc;
@@ -147,4 +163,91 @@ IndexBufferDesc D3D12IndexBuffer::GetDesc()
 IBuffer* D3D12IndexBuffer::GetBuffer()
 {
 	return &m_buffer;
+}
+
+std::shared_ptr<FrameBufferMemory> FrameBufferMemory::Create(D3D12Device* device, size_t size) 
+{
+	return std::shared_ptr<FrameBufferMemory>(new FrameBufferMemory(device, size));
+}
+
+FrameBufferMemory::FrameBufferMemory(D3D12Device* device, size_t size) : m_device(device)
+{
+	//Align the size to fit into the ALIGNMENT
+	size = (size + ALIGNMENT - 1) & ~(ALIGNMENT - 1);
+
+	D3D12_HEAP_PROPERTIES heapProps = {};
+	heapProps.Type = D3D12_HEAP_TYPE_UPLOAD;
+
+	D3D12_RESOURCE_DESC bufferDesc = {};
+	bufferDesc.Dimension = D3D12_RESOURCE_DIMENSION_BUFFER;
+	bufferDesc.Width = size;
+	bufferDesc.Height = 1;
+	bufferDesc.DepthOrArraySize = 1;
+	bufferDesc.MipLevels = 1;
+	bufferDesc.SampleDesc.Count = 1;
+	bufferDesc.Layout = D3D12_TEXTURE_LAYOUT_ROW_MAJOR;
+
+	VerifySuccess(device->Device()->CreateCommittedResource(
+		&heapProps,
+		D3D12_HEAP_FLAG_NONE,
+		&bufferDesc,
+		D3D12_RESOURCE_STATE_GENERIC_READ,
+		NULL,
+		IID_PPV_ARGS(&m_buffer)));
+
+	VerifySuccess(m_buffer->Map(0, nullptr, &m_cpuVirtualAddres));
+
+
+	m_bufferSize = size;
+	m_gpuVirtualAddress = m_buffer->GetGPUVirtualAddress();
+}
+
+FrameBufferMemory::~FrameBufferMemory()
+{
+	if (m_buffer && m_cpuVirtualAddres)
+	{
+		m_buffer->Unmap(0, nullptr);
+		m_cpuVirtualAddres = nullptr;
+	}
+}
+
+bool FrameBufferMemory::Allocate(size_t size, ID3D12Resource** pBuffer, size_t* pOffset, void** pCpuVA, D3D12_GPU_VIRTUAL_ADDRESS* pGpuVA, uint32_t alignment, DescriptorIndex& descriptorIndex)
+{
+	size_t dest = (m_freeDataLocation + alignment - 1) & ~(alignment - 1);
+
+	INF_ASSERT(dest + size <= m_bufferSize, "Failed to allocate buffer inside FrameBufferMemory, not enough memory");
+	if (dest + size > m_bufferSize)
+		return false;
+
+	if (pCpuVA) 
+		*pCpuVA = (char*)m_cpuVirtualAddres + dest;
+	if (pGpuVA) 
+		*pGpuVA = m_gpuVirtualAddress + dest;
+	if (pBuffer) 
+		*pBuffer = m_buffer.Get();
+	if (pOffset) 
+		*pOffset = dest;
+
+	m_descriptorIndices.push_back(m_device->SRVDescriptoHeap().AllocateDescriptor());
+	descriptorIndex = m_descriptorIndices.back();
+
+	m_freeDataLocation = dest + size;
+	return true;
+}
+
+void FrameBufferMemory::SetName(const wchar_t* name)
+{
+	if (m_buffer)
+		m_buffer->SetName(name);
+}
+
+void FrameBufferMemory::Reset()
+{
+	m_freeDataLocation = 0;
+
+	for (DescriptorIndex index : m_descriptorIndices)
+	{
+		m_device->SRVDescriptoHeap().ReleaseDescriptor(index);
+	}
+	m_descriptorIndices.clear();
 }

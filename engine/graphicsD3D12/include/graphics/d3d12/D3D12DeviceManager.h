@@ -9,7 +9,7 @@
 
 namespace INF::GFX
 {
-
+	class FrameBufferMemory;
 	class D3D12DeviceManager : public IDeviceManager
 	{
 	public:
@@ -27,6 +27,7 @@ namespace INF::GFX
 		ITexture* GetCurrentBackBufferTexture() override;
 		ITexture* GetBackBufferTexture(uint32_t backbufferIndex) override;
 
+		FrameBufferMemory* GetFrameBufferMemory();
 	private:
 		DeviceCreationParameters m_createInfo;
 
@@ -39,6 +40,8 @@ namespace INF::GFX
 		Microsoft::WRL::ComPtr<ID3D12Fence> m_frameFence; //fence for present
 		std::vector<HANDLE> m_frameFenceEvents;
 		UINT64 m_frameCount = 0;
+
+		std::vector<std::shared_ptr<FrameBufferMemory>> m_frameBufferMemory;
 
 		uint32_t m_currentSwapchainBuffer;
 	};

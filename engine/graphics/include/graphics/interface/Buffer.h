@@ -26,6 +26,11 @@ namespace INF::GFX
 		TRANSITION_STATES_FLAGS initialState = (TRANSITION_STATES_FLAGS)TRANSITION_STATES::COMMON;
 		BufferUsage usage = BufferUsage::GENERIC;
 		CpuVisible access = CpuVisible::NONE;
+
+		//When onlyValidDuringCommandList then the data would only exist within the command list
+		//This can be useful for buffers that change between each frame such as constant buffers such with view matrix.
+		//For D3D12 buffers with this will not create a d3d12 resource on creation, instead use commandList->WriteBuffer to allocate memory from a preallocated chunk.
+		bool onlyValidDuringCommandList = false; 
 	};
 
 	class IBufferView

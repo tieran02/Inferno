@@ -175,18 +175,18 @@ int main()
 	constantBufferDesc.access = GFX::CpuVisible::WRITE;
 	constantBufferDesc.byteSize = sizeof(ConstantBufferStruct);
 	constantBufferDesc.name = "Constant Buffer";
+	constantBufferDesc.onlyValidDuringCommandList = true;
 	GFX::BufferHandle constantBuffer = device->CreateBuffer(constantBufferDesc);
 
-	ConstantBufferStruct* matrixData = (ConstantBufferStruct*)device->MapBuffer(constantBuffer.get());
-	memcpy(dest, &cbVS, constantBufferDesc.byteSize);
+	ConstantBufferStruct matrixData;
 	GFX::View view(70.0f, (float)deviceInfo.backBufferWidth / (float)deviceInfo.backBufferHeight, 0.1f, 100.0);
 	view.SetViewport(GFX::Viewport(0, 0, (float)deviceInfo.backBufferWidth, (float)deviceInfo.backBufferHeight));
 	view.SetScissor(GFX::Rect(0, 0, deviceInfo.backBufferWidth, deviceInfo.backBufferHeight));
 	view.SetPosition(glm::vec3(0.0f, 0.0f, 3.0f));
 	view.LookAt(glm::vec3(0.0f, 0.0f, 0.1f), glm::vec3(0, 1, 0));
 
-	matrixData->projection = view.GetProjectionMatrix();
-	matrixData->view = view.GetViewMatrix();
+	matrixData.projection = view.GetProjectionMatrix();
+	matrixData.view = view.GetViewMatrix();
 
 
 	GFX::SamplerDesc samplerDesc;
@@ -220,7 +220,7 @@ int main()
 		transform.SetPosition(glm::vec3(sinf(elapsed * 0.001f), 0.0f, 0.0f));
 		transform.Rotate(glm::vec3(0.0f, 1.0f, 0.0f), 0.01f);
 		transform.UpdateTransform();
-		matrixData->model = transform.GetWorldMatrix();
+		matrixData.model = transform.GetWorldMatrix();
 
 		//move camera with WASD
 		if (input.IsKeyDown(KeyCode::A))
@@ -239,8 +239,17 @@ int main()
 		{
 			view.Translate(-VectorUp * 0.1f);
 		}
-		matrixData->view = view.GetViewMatrix();
+		matrixData.view = view.GetViewMatrix();
 
+
+		window->PollEvents();
+		input.Update();
+
+		deviceManager->BeginFrame();
+
+		cmd->Open();
+
+		cmd->WriteBuffer(constantBuffer.get(), &matrixData, sizeof(matrixData));
 
 		GFX::GraphicsState graphicsState;
 		graphicsState.pipeline = pipeline.get();
@@ -250,13 +259,6 @@ int main()
 		graphicsState.indexBuffer = indexBuffer.get();
 		graphicsState.view = &view;
 
-		window->PollEvents();
-		input.Update();
-
-		deviceManager->BeginFrame();
-
-		cmd->Open();
-
 		cmd->SetGraphicsState(graphicsState);
 
 		cmd->ClearColor(deviceManager->GetCurrentBackBufferTexture(), GFX::Color(0.2f, 0.2f, 0.2f, 1.0f));
@@ -264,12 +266,10 @@ int main()
 		cmd->Draw(3, 1, 0, 0);
 
 		cmd->Close();
-
-		device->ExecuteCommandLists(cmd.get(), 1);
-
+		device->ExecuteCommandLists(cmd.get());
 		deviceManager->Present();
 
-		device->WaitForIdle();
+		//device->WaitForIdle();
 
 		if (input.IsKeyRelease(KeyCode::Escape))
 			shouldClose = true;

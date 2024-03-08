@@ -24,9 +24,9 @@ void ForwardPass::Init(GFX::IDevice* device, IFramebuffer* fb)
 		constantBufferDesc.access = GFX::CpuVisible::WRITE;
 		constantBufferDesc.byteSize = sizeof(ConstantBufferStruct);
 		constantBufferDesc.name = std::format("MatrixConstantBuffer_{0}", i);
+		constantBufferDesc.onlyValidDuringCommandList = true;
 
 		m_matrixBuffers[i].m_constantBuffer = device->CreateBuffer(constantBufferDesc);
-		m_matrixBuffers[i].m_matrixData = (ConstantBufferStruct*)device->MapBuffer(m_matrixBuffers[i].m_constantBuffer.get());
 	}
 
 	m_view.SetViewport(GFX::Viewport(0, 0, (float)fb->GetInfo().width, (float)fb->GetInfo().height));
@@ -118,6 +118,20 @@ void ForwardPass::Prepare(ICommandList* commandList, const View& view, MeshInsta
 	m_meshInstances = meshInstances;
 	m_meshCount = meshCount;
 	m_view = view;
+
+	//View and projection should really be in thier own buffer as its not per mesh
+	for (int i = 0; i < meshCount; ++i)
+	{
+		const MeshInstance* instance = meshInstances[i];
+		const MeshInfo* meshInfo = instance->mesh;
+
+		cbVS.projection = m_view.GetProjectionMatrix();
+		cbVS.view = m_view.GetViewMatrix();
+		cbVS.model = m_meshInstances[i]->transform.GetWorldMatrix();
+
+		commandList->WriteBuffer(m_matrixBuffers[i].m_constantBuffer.get(), &cbVS, sizeof(cbVS));
+	}
+
 }
 
 void ForwardPass::SetState(GraphicsState& state)
@@ -135,10 +149,5 @@ void ForwardPass::GetMeshInstances(MeshInstance**& instances, uint32_t& meshCoun
 void ForwardPass::OnMeshInstanceRender(uint32_t meshInstanceIndex, GraphicsState& state)
 {
 	INF_ASSERT(meshInstanceIndex < m_matrixBuffers.size(), "Exceeded MAX_OBJECT_COUNT");
-	//View and projection should really be in thier own buffer as its not per mesh
-	m_matrixBuffers[meshInstanceIndex].m_matrixData->projection = m_view.GetProjectionMatrix();
-	m_matrixBuffers[meshInstanceIndex].m_matrixData->view = m_view.GetViewMatrix();
-	m_matrixBuffers[meshInstanceIndex].m_matrixData->model = m_meshInstances[meshInstanceIndex]->transform.GetWorldMatrix();
-
 	state.descriptorSet = m_matrixBuffers[meshInstanceIndex].m_descriptorHandle.get();
 }

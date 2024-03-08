@@ -14,7 +14,6 @@ struct ConstantBufferStruct
 
 struct PersistantMappedBuffer
 {
-	ConstantBufferStruct* m_matrixData;
 	BufferHandle m_constantBuffer;
 
 	DescriptorSetHandle m_descriptorHandle;

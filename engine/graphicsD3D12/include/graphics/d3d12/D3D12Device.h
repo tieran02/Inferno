@@ -8,6 +8,7 @@
 
 namespace INF::GFX
 {
+	class D3D12DeviceManager;
 	class ITexture;
 	using DescriptorIndex = uint32_t;
 	constexpr DescriptorIndex DescriptorIndexInvalid = UINT_MAX;
@@ -39,9 +40,10 @@ namespace INF::GFX
 	class D3D12Device : public IDevice
 	{
 	public:
-		D3D12Device(const DeviceCreationParameters& createInfo);
+		D3D12Device(const DeviceCreationParameters& createInfo, D3D12DeviceManager* deviceManager );
 		~D3D12Device();
 
+		IDeviceManager* GetDeviceManager() const override;
 		ShaderHandle CreateShader(const ShaderDesc& desc) override;
 
 		FramebufferHandle CreateFramebuffer(const FramebufferDesc& desc) override;
@@ -83,6 +85,8 @@ namespace INF::GFX
 		void CreateAdapter();
 		void CreateGraphicsQueue();
 		void CreateDescriptorHeaps();
+
+		D3D12DeviceManager* m_deviceManager;
 
 		//Device members
 		Microsoft::WRL::ComPtr<ID3D12Debug1> m_debugController;

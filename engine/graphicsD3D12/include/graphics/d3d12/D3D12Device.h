@@ -60,7 +60,7 @@ namespace INF::GFX
 		TextureHandle CreateTexture(const TextureDesc& desc) override;
 
 		CommandListeHandle CreateCommandList(CommandQueue queueType) override;
-		uint64_t ExecuteCommandLists(const ICommandList* commandLists, uint32_t commandListCount) override;
+		uint64_t ExecuteCommandLists(ICommandList* commandList) override;
 		void ImmediateSubmit(ImmediateSubmitFn ImmediateFn) override;
 
 		void WaitForIdle() override;
@@ -81,7 +81,7 @@ namespace INF::GFX
 		void CreateDebugController();
 		void CreateFactory();
 		void CreateAdapter();
-		void CreateGraphicsCommandAllocator();
+		void CreateGraphicsQueue();
 		void CreateDescriptorHeaps();
 
 		//Device members
@@ -92,7 +92,6 @@ namespace INF::GFX
 		Microsoft::WRL::ComPtr<ID3D12DebugDevice> m_debugDevice;
 
 		//Context members
-		Microsoft::WRL::ComPtr<ID3D12CommandAllocator> m_graphicsCommandAllocator;
 		D3D12QueueHandle m_graphicsQueue;
 
 		D3D12DescriptorHeap m_SRVDescriptorHeap;

@@ -47,29 +47,20 @@ namespace INF::GFX
 		}
 	}
 
-	uint64_t D3D12Queue::ExecuteCommandLists(ID3D12GraphicsCommandList* commandLists, uint32_t commandListCount)
+	uint64_t D3D12Queue::ExecuteCommandList(D3D12CommandList* commandList)
 	{
-		ID3D12CommandList* ppCommandLists[] = { static_cast<ID3D12CommandList*>(commandLists) };
-		Queue->ExecuteCommandLists(commandListCount, ppCommandLists);
+		ID3D12CommandList* ppCommandLists[] = { static_cast<ID3D12CommandList*>(commandList->D3D()) };
+		Queue->ExecuteCommandLists(1, ppCommandLists);
 		LastSubmittedInstance++;
 		Queue->Signal(Fence.Get(), LastSubmittedInstance);
 
+		m_commandListsInFlight.push(std::make_pair(commandList, LastSubmittedInstance));
 		return LastSubmittedInstance;
 	}
 
 	void D3D12Queue::Wait()
 	{
-		if (UpdateLastCompletedInstance() < LastSubmittedInstance)
-		{
-			// Test if the fence has been reached
-			if (Fence->GetCompletedValue() < LastSubmittedInstance)
-			{
-				// If it's not, wait for it to finish using an event
-				ResetEvent(m_fenceEvent);
-				Fence->SetEventOnCompletion(LastSubmittedInstance, m_fenceEvent);
-				WaitForSingleObject(m_fenceEvent, INFINITE);
-			}
-		}
+		ReleaseInFlight(true);
 	}
 
 	uint64_t D3D12Queue::UpdateLastCompletedInstance()
@@ -81,34 +72,111 @@ namespace INF::GFX
 		return LastCompletedInstance;
 	}
 
-	D3D12CommandList::D3D12CommandList(D3D12Device* d3dDevice, ID3D12CommandAllocator* commandAllocator, CommandQueue queueType)
+	void D3D12Queue::EndFrame()
 	{
-		m_device = d3dDevice;
-		m_commandAllocator = commandAllocator;
-		switch (queueType)
+		ReleaseInFlight(false);
+	}
+
+	void D3D12Queue::ReleaseInFlight(bool wait)
+	{
+		uint64_t lastcomplete = UpdateLastCompletedInstance();
+
+		if (wait)
 		{
-		case INF::GFX::CommandQueue::GRAPHICS:
-			VerifySuccess(d3dDevice->Device()->CreateCommandList(0, D3D12_COMMAND_LIST_TYPE_DIRECT, commandAllocator, nullptr, IID_PPV_ARGS(&m_commandList)));
-			break;
-		case INF::GFX::CommandQueue::COMPUTE:
-			throw std::logic_error("The method or operation is not implemented.");
-			break;
-		case INF::GFX::CommandQueue::COPY:
-			throw std::logic_error("The method or operation is not implemented.");
-			break;
-		default:
-			throw std::logic_error("The method or operation is not implemented.");
-			break;
+			if (lastcomplete < LastSubmittedInstance)
+			{
+				// Test if the fence has been reached
+				if (Fence->GetCompletedValue() < LastSubmittedInstance)
+				{
+					// If it's not, wait for it to finish using an event
+					ResetEvent(m_fenceEvent);
+					Fence->SetEventOnCompletion(LastSubmittedInstance, m_fenceEvent);
+					WaitForSingleObject(m_fenceEvent, INFINITE);
+					lastcomplete = UpdateLastCompletedInstance();
+				}
+			}
 		}
 
-		//Command lists start closed
-		Close();
+		while (!m_commandListsInFlight.empty())
+		{
+			const auto& pair = m_commandListsInFlight.front();
+			if (lastcomplete >= pair.second)
+			{
+				//in flight frame has finised, give it back to the command list
+				for (FrameCommandList& cmd : pair.first->m_commandLists)
+				{
+					ID3D12GraphicsCommandList* current = cmd.CommandList.Get();
+					ID3D12GraphicsCommandList* inflight = pair.first->D3D();
+					if (current == inflight)
+					{
+						pair.first->m_freeCommandLists.push(&cmd);
+						break;
+					}
+				}
+				m_commandListsInFlight.pop();
+
+			}
+			else
+			{
+				break;
+			}
+		}
 	}
+
+	D3D12CommandList::D3D12CommandList(D3D12Device* d3dDevice, CommandQueue queueType) : m_queueType(queueType)
+	{
+		m_device = d3dDevice;
+	}
+
+
+	D3D12CommandList::~D3D12CommandList()
+	{
+		m_commandList = nullptr;
+		m_freeCommandLists = {};
+		m_commandLists.clear();
+	}
+
 
 	void D3D12CommandList::Open()
 	{
-		//m_commandAllocator->Reset();
-		m_commandList->Reset(m_commandAllocator, nullptr);
+		FrameCommandList* commandList;
+		if (m_freeCommandLists.empty())
+		{
+			FrameCommandList frameCommandList;
+			VerifySuccess(m_device->Device()->CreateCommandAllocator(D3D12_COMMAND_LIST_TYPE_DIRECT, IID_PPV_ARGS(&frameCommandList.CommandAllocator)));
+
+			switch (m_queueType)
+			{
+			case INF::GFX::CommandQueue::GRAPHICS:
+				VerifySuccess(m_device->Device()->CreateCommandList(0, D3D12_COMMAND_LIST_TYPE_DIRECT, frameCommandList.CommandAllocator.Get(), nullptr, IID_PPV_ARGS(&frameCommandList.CommandList)));
+				break;
+			case INF::GFX::CommandQueue::COMPUTE:
+				throw std::logic_error("The method or operation is not implemented.");
+				break;
+			case INF::GFX::CommandQueue::COPY:
+				throw std::logic_error("The method or operation is not implemented.");
+				break;
+			default:
+				throw std::logic_error("The method or operation is not implemented.");
+				break;
+			}
+			frameCommandList.CommandList->Close();
+
+			m_commandLists.push_back(frameCommandList);
+			commandList = &m_commandLists.back();
+			commandList->CommandList->SetName(L"Test");
+		}
+		else
+		{
+			commandList = m_freeCommandLists.front();
+			m_freeCommandLists.pop();
+		}
+
+		commandList->CommandAllocator->Reset();
+
+		commandList->CommandList->Reset(commandList->CommandAllocator.Get(), nullptr);
+		m_commandList = commandList->CommandList.Get();
+
 		m_referencedBuffers.clear();
 	}
 
@@ -401,7 +469,7 @@ namespace INF::GFX
 		//add the temp upload buffer to referenced buffer so it doesn't get deleted until next command buffer open or command buffer destroyed
 		m_referencedBuffers.emplace_back(uploadBuffer);
 
-		UpdateSubresources(m_commandList.Get(), destTexture->Resource(), static_cast<D3D12Buffer*>(uploadBuffer.get())->Resource(), 0, 0, 1, &textureData);
+		UpdateSubresources(m_commandList, destTexture->Resource(), static_cast<D3D12Buffer*>(uploadBuffer.get())->Resource(), 0, 0, 1, &textureData);
 
 		Transition(destTexture, destState);
 	}

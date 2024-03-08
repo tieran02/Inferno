@@ -38,7 +38,7 @@ namespace INF::GFX
 		virtual TextureHandle CreateTexture(const TextureDesc& desc) = 0;
 
 		virtual CommandListeHandle CreateCommandList(CommandQueue queueType) = 0;
-		virtual uint64_t ExecuteCommandLists(const ICommandList* commandLists, uint32_t commandListCount) = 0;
+		virtual uint64_t ExecuteCommandLists(ICommandList* commandList) = 0;
 		virtual void ImmediateSubmit(ImmediateSubmitFn ImmediateFn) = 0;
 
 		virtual void WaitForIdle() = 0;

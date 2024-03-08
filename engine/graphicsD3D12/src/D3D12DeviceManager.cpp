@@ -18,6 +18,9 @@ D3D12DeviceManager::~D3D12DeviceManager()
 {
 	m_device->WaitForIdle();
 
+	for (auto e : m_frameFenceEvents)
+		SetEvent(e);
+
 	//Wait for present frames to finish
 	for (auto fenceEvent : m_frameFenceEvents)
 	{
@@ -39,7 +42,7 @@ D3D12DeviceManager::~D3D12DeviceManager()
 	Microsoft::WRL::ComPtr<IDXGIDebug1> dxgiDebug;
 	if (SUCCEEDED(DXGIGetDebugInterface1(0, IID_PPV_ARGS(&dxgiDebug))))
 	{
-		dxgiDebug->ReportLiveObjects(DXGI_DEBUG_ALL, DXGI_DEBUG_RLO_FLAGS(DXGI_DEBUG_RLO_SUMMARY | DXGI_DEBUG_RLO_IGNORE_INTERNAL));
+		dxgiDebug->ReportLiveObjects(DXGI_DEBUG_ALL, DXGI_DEBUG_RLO_FLAGS(DXGI_DEBUG_RLO_ALL | DXGI_DEBUG_RLO_IGNORE_INTERNAL));
 	}
 }
 
@@ -136,6 +139,8 @@ void D3D12DeviceManager::BeginFrame()
 
 	//Make sure the current swapchain buffer is finished its last present
 	WaitForSingleObject(m_frameFenceEvents[m_currentSwapchainBuffer], INFINITE);
+
+	m_currentSwapchainBuffer = m_swapchain->GetCurrentBackBufferIndex();
 }
 
 void D3D12DeviceManager::Present()
@@ -144,8 +149,8 @@ void D3D12DeviceManager::Present()
 
 	m_frameFence->SetEventOnCompletion(m_frameCount, m_frameFenceEvents[m_currentSwapchainBuffer]);
 	m_device->GetGraphicsQueue()->D3D()->Signal(m_frameFence.Get(), m_frameCount);
+	m_frameCount++;
 
-	m_currentSwapchainBuffer = (m_currentSwapchainBuffer + 1) % GetBackBufferCount();
-
+	m_device->GetGraphicsQueue()->EndFrame();
 }
 

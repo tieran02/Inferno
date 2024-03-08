@@ -38,7 +38,7 @@ namespace INF::GFX
 
 		Microsoft::WRL::ComPtr<ID3D12Fence> m_frameFence; //fence for present
 		std::vector<HANDLE> m_frameFenceEvents;
-		UINT64 m_frameCount = 1;
+		UINT64 m_frameCount = 0;
 
 		uint32_t m_currentSwapchainBuffer;
 	};

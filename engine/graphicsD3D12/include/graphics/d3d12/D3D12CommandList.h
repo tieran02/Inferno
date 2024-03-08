@@ -11,14 +11,16 @@ namespace INF::GFX
 	class D3D12Framebuffer;
 	class D3D12DescriptorSet;
 	class D3D12Device;
+	class D3D12CommandList;
 
 	class D3D12Queue
 	{
 	public:
 		D3D12Queue(ID3D12Device* d3dDevice, CommandQueue queueType);
 		~D3D12Queue();
-		uint64_t ExecuteCommandLists(ID3D12GraphicsCommandList* commandLists, uint32_t commandListCount);
+		uint64_t ExecuteCommandList(D3D12CommandList* commandList);
 		void Wait();
+		void EndFrame();
 		ID3D12CommandQueue* D3D() const { return Queue.Get(); }
 	private:
 		Microsoft::WRL::ComPtr<ID3D12CommandQueue> Queue;
@@ -27,13 +29,25 @@ namespace INF::GFX
 		uint64_t LastSubmittedInstance = 0;
 		uint64_t LastCompletedInstance = 0;
 		uint64_t UpdateLastCompletedInstance();
+		//End frame updates UpdateLastCompletedInstance and removes completed D3D12CommandList in m_commandListsInFlight
+		void ReleaseInFlight(bool wait);
+
+		std::queue<std::pair<D3D12CommandList*,uint64_t>> m_commandListsInFlight;
 	};
 	using D3D12QueueHandle = std::shared_ptr<D3D12Queue>;
+
+	struct FrameCommandList
+	{
+		Microsoft::WRL::ComPtr<ID3D12CommandAllocator> CommandAllocator;
+		Microsoft::WRL::ComPtr<ID3D12GraphicsCommandList> CommandList;
+	};
 
 	class D3D12CommandList : public ICommandList
 	{
 	public:
-		D3D12CommandList(D3D12Device* d3dDevice, ID3D12CommandAllocator* commandAllocator, CommandQueue queueType);
+		friend class D3D12Queue;
+		D3D12CommandList(D3D12Device* d3dDevice, CommandQueue queueType);
+		~D3D12CommandList();
 
 		void Open() override;
 		void Close() override;
@@ -51,7 +65,7 @@ namespace INF::GFX
 
 		void Draw(uint32_t vertexCount, uint32_t instanceCount, uint32_t firstVertex, uint32_t firstInstance) override;
 
-		ID3D12GraphicsCommandList* D3D() const { return m_commandList.Get(); }
+		ID3D12GraphicsCommandList* D3D() const { return m_commandList; }
 
 	private:
 		void TransitionResource(ID3D12Resource* resource, TRANSITION_STATES_FLAGS from, TRANSITION_STATES_FLAGS to);
@@ -64,8 +78,10 @@ namespace INF::GFX
 		void BindFramebuffer(D3D12GraphicsPipeline* pso, D3D12Framebuffer* fb);
 		void BindDescriptorSet(D3D12DescriptorSet* set);
 
-		ID3D12CommandAllocator* m_commandAllocator; //Ref to the command allocator
-		Microsoft::WRL::ComPtr<ID3D12GraphicsCommandList> m_commandList;
+		CommandQueue m_queueType;
+		std::vector<FrameCommandList> m_commandLists;
+		std::queue<FrameCommandList*> m_freeCommandLists;
+		ID3D12GraphicsCommandList* m_commandList;
 
 		std::vector<BufferHandle> m_referencedBuffers;
 

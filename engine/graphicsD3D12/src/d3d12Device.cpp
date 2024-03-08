@@ -85,7 +85,7 @@ namespace INF::GFX
 		CreateFactory();
 		CreateAdapter();
 
-		CreateGraphicsCommandAllocator();
+		CreateGraphicsQueue();
 		CreateDescriptorHeaps();
 
 	}
@@ -151,22 +151,20 @@ namespace INF::GFX
 		}
 	}
 
-	void D3D12Device::CreateGraphicsCommandAllocator()
+	void D3D12Device::CreateGraphicsQueue()
 	{
 		m_graphicsQueue = D3D12QueueHandle(new D3D12Queue(m_device.Get(), CommandQueue::GRAPHICS));
-
-		VerifySuccess(m_device->CreateCommandAllocator(D3D12_COMMAND_LIST_TYPE_DIRECT, IID_PPV_ARGS(&m_graphicsCommandAllocator)));
 	}
 
 	CommandListeHandle D3D12Device::CreateCommandList(CommandQueue queueType)
 	{
-		return CommandListeHandle(new D3D12CommandList(this, m_graphicsCommandAllocator.Get(), queueType));
+		return CommandListeHandle(new D3D12CommandList(this, queueType));
 	}
 
-	uint64_t D3D12Device::ExecuteCommandLists(const ICommandList* commandLists, uint32_t commandListCount)
+	uint64_t D3D12Device::ExecuteCommandLists(ICommandList* commandList)
 	{
-		const D3D12CommandList* d3d12CommandLists = static_cast<const D3D12CommandList*>(commandLists);
-		return m_graphicsQueue->ExecuteCommandLists(d3d12CommandLists->D3D(), commandListCount);
+		D3D12CommandList* d3d12CommandLists = static_cast<D3D12CommandList*>(commandList);
+		return m_graphicsQueue->ExecuteCommandList(d3d12CommandLists);
 	}
 
 	void D3D12Device::ImmediateSubmit(ImmediateSubmitFn ImmediateFn)
@@ -175,7 +173,7 @@ namespace INF::GFX
 		cmd->Open();
 		ImmediateFn(cmd.get());
 		cmd->Close();
-		ExecuteCommandLists(cmd.get(), 1);
+		ExecuteCommandLists(cmd.get());
 		WaitForIdle();
 	}
 

@@ -164,7 +164,7 @@ int main()
 
 		//transition to present for swapchain
 		cmd->Close();
-		device->ExecuteCommandLists(cmd.get(), 1);
+		device->ExecuteCommandLists(cmd.get());
 		deviceManager->Present();
 
 		//device->WaitForIdle();

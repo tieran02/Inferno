@@ -97,7 +97,7 @@ int main()
 
 		cmd->Close();
 
-		device->ExecuteCommandLists(cmd.get(), 1);
+		device->ExecuteCommandLists(cmd.get());
 
 		deviceManager->Present();
 

@@ -5,11 +5,15 @@
 using namespace INF;
 using namespace INF::GFX;
 
+struct ViewBufferStruct
+{
+	glm::mat4 view{ 1 };;
+	glm::mat4 projection{ 1 };;
+};
+
 struct ConstantBufferStruct
 {
 	glm::mat4 model{ 1 };
-	glm::mat4 view{ 1 };;
-	glm::mat4 projection{ 1 };;
 };
 
 struct PersistantMappedBuffer
@@ -37,7 +41,11 @@ private:
 	void CreatePipeline(GFX::IDevice* device, IFramebuffer* fb);
 
 	GraphicsPipelineHandle m_pipeline;
-	DescriptorLayoutHandle m_descriptorHandle;
+	DescriptorLayoutHandle m_viewDescriptorLayoutHandle;
+	DescriptorLayoutHandle m_meshDescriptorHandle;
+
+	BufferHandle m_viewConstantBuffer;
+	DescriptorSetHandle m_viewDescriptorHandle;
 	std::vector<PersistantMappedBuffer> m_matrixBuffers;
 
 	SamplerHandle m_sampler;

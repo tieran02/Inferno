@@ -5,6 +5,7 @@
 #include <wrl/client.h>
 #include <dxgi1_4.h>
 #include "graphics/d3d12/D3D12CommandList.h"
+#include "D3D12Descriptor.h"
 
 namespace INF::GFX
 {
@@ -102,5 +103,7 @@ namespace INF::GFX
 		D3D12DescriptorHeap m_RTVDescriptorHeap;
 		D3D12DescriptorHeap m_DSVDescriptorHeap;
 		D3D12DescriptorHeap m_SamplerDescriptorHeap;
+
+		D3D12DescriptorLayoutCache m_descriptorLayoutCache;
 	};
 }

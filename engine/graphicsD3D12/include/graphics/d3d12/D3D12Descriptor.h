@@ -5,21 +5,23 @@
 
 namespace INF::GFX
 {
-	using LayoutRootIndexMap = std::unordered_map<DescriptorLayoutItem, uint32_t>;
 	class D3D12DescriptorLayout : public IDescriptorLayout
 	{
 	public:
 		D3D12DescriptorLayout(ID3D12Device* device, const DescriptorLayoutDesc& desc);
 
 		const DescriptorLayoutDesc& GetDesc() const override;
-		ID3D12RootSignature* RootSignature() const { return m_rootSignature.Get(); }
 
-		uint32_t GetRootParamIndex(ShaderType stage, const DescriptorSetItem& setItem);
+		const std::vector<D3D12_ROOT_PARAMETER1>& RootParamters() const { return m_rootParameters; }
 	private:
-		DescriptorLayoutDesc m_desc;
-		Microsoft::WRL::ComPtr<ID3D12RootSignature> m_rootSignature;
+		void SetStageRanges(ShaderType type, const StageBindingDescriptorDesc& desc);
 
-		std::array<LayoutRootIndexMap, static_cast<uint8_t>(ShaderType::All)> m_stageLayoutRootIndexMap;
+		DescriptorLayoutDesc m_desc;
+
+		std::vector<std::pair<D3D12_DESCRIPTOR_RANGE1, ShaderType>> m_srvRanges;
+		std::vector<std::pair<D3D12_DESCRIPTOR_RANGE1, ShaderType>> m_samplerRanges;
+		std::vector<D3D12_ROOT_PARAMETER1> m_rootParameters;
+
 	};
 
 	class D3D12DescriptorSet : public IDescriptorSet
@@ -32,8 +34,23 @@ namespace INF::GFX
 	private:
 		DescriptorSetDesc m_desc;
 		IDescriptorLayout* m_layout;
+	};
 
-		std::unordered_map<DescriptorLayoutItem, uint32_t> m_layoutRootIndexMap;
-		//std::unordered_map<const DescriptorSetItem*, uint32_t> m_rootParamterIndexMap; //Key is set item that contains a ptr to the resource, value the root parameter index (slot)
+	class D3D12Device;
+	class D3D12DescriptorLayoutCache
+	{
+	public:
+		D3D12DescriptorLayoutCache(D3D12Device* device);
+
+		ID3D12RootSignature* GetRootSignature(const DescriptorLayoutGroup& set);
+		uint32_t GetRootParamterIndex(const DescriptorLayoutGroup& set, ShaderType stage, const DescriptorLayoutItem& layoutItem);
+	private:
+		D3D12Device* m_device;
+		size_t HashRootParamterIndex(const DescriptorLayoutGroup& set, ShaderType stage, const DescriptorLayoutItem& layoutItem);
+
+		//Size_t is the hash of DescriptorLayoutSet std::hash<DescriptorLayoutSet>
+		std::unordered_map<size_t, Microsoft::WRL::ComPtr<ID3D12RootSignature>> m_setRootSignatureMap;
+
+		std::unordered_map<size_t, uint32_t> m_rootParamterIndexMap;
 	};
 }

@@ -1,9 +1,14 @@
-cbuffer transformCB : register(b0)
+cbuffer viewCB : register(b0)
+{
+    row_major float4x4 viewMatrix : packoffset(c0);
+    row_major float4x4 projectionMatrix : packoffset(c4);
+};
+
+cbuffer transformCB : register(b1)
 {
     row_major float4x4 modelMatrix : packoffset(c0);
-    row_major float4x4 viewMatrix : packoffset(c4);
-    row_major float4x4 projectionMatrix : packoffset(c8);
 };
+
 struct VertexInput
 {
     float2 inPos : POSITION;

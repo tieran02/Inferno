@@ -4,6 +4,7 @@
 #include "directx/d3d12.h"
 #include "wrl/client.h"
 #include "graphics/interface/Buffer.h"
+#include "graphics/interface/Descriptor.h"
 
 namespace INF::GFX
 {
@@ -77,7 +78,8 @@ namespace INF::GFX
 
 		void BindGraphicsPipeline(D3D12GraphicsPipeline* pso);
 		void BindFramebuffer(D3D12GraphicsPipeline* pso, D3D12Framebuffer* fb);
-		void BindDescriptorSet(D3D12DescriptorSet* set);
+		void BindDescriptorSet(D3D12DescriptorSet* set, uint32_t rootIndexOffset = 0);
+		void BindDescriptorGroup(const DescriptorSetGroup& setGroup);
 
 		CommandQueue m_queueType;
 		std::vector<FrameCommandList> m_commandLists;

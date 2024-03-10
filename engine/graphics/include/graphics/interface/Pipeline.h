@@ -88,7 +88,7 @@ namespace INF::GFX
 		ShaderHandle VS;
 		ShaderHandle PS;
 
-		DescriptorLayoutHandle descriptorLayout;
+		DescriptorLayoutGroup descriptorLayoutSet;
 
 		BlendState blendState;
 		DepthStencilState depthStencilState;
@@ -115,7 +115,7 @@ namespace INF::GFX
 
 		//Descriptor set contains the vies to the actual GPU resources such as textures/buffers
 		//Descriptor set inputs need to match the descriptor layout that was used to create the graphics pipeline
-		IDescriptorSet* descriptorSet{ nullptr };
+		DescriptorSetGroup descriptorSetGroup;
 
 		IVertexBuffer* vertexBuffer{ nullptr };
 		IIndexBuffer* indexBuffer{ nullptr };

@@ -78,7 +78,7 @@ namespace INF::GFX
 		return m_descriptors.at(index).Gpu;
 	}
 
-	D3D12Device::D3D12Device(const DeviceCreationParameters& createInfo, D3D12DeviceManager* deviceManager) : m_deviceManager(deviceManager)
+	D3D12Device::D3D12Device(const DeviceCreationParameters& createInfo, D3D12DeviceManager* deviceManager) : m_deviceManager(deviceManager), m_descriptorLayoutCache(this)
 	{
 		if(createInfo.enableDebugValidation)
 			CreateDebugController();
@@ -252,10 +252,10 @@ namespace INF::GFX
 	GraphicsPipelineHandle D3D12Device::CreateGraphicsPipeline(const GraphicsPipelineDesc& desc, IFramebuffer* fb)
 	{
 		//Get root sig from descriptor layout handle
-		D3D12DescriptorLayout* layout = static_cast<D3D12DescriptorLayout*>(desc.descriptorLayout.get());
+		ID3D12RootSignature* rootSig = m_descriptorLayoutCache.GetRootSignature(desc.descriptorLayoutSet);
 
-		auto pso = CreatePipelineState(desc, fb, layout->RootSignature());
-		return GraphicsPipelineHandle(new D3D12GraphicsPipeline(desc, pso, layout->RootSignature(), fb));
+		auto pso = CreatePipelineState(desc, fb, rootSig);
+		return GraphicsPipelineHandle(new D3D12GraphicsPipeline(desc, pso, rootSig, fb));
 	}
 
 	DescriptorLayoutHandle D3D12Device::CreateDescriptorLayout(const DescriptorLayoutDesc desc)

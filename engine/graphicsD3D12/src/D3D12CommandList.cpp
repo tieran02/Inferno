@@ -258,15 +258,13 @@ namespace INF::GFX
 
 		D3D12GraphicsPipeline* pso = static_cast<D3D12GraphicsPipeline*>(state.pipeline);
 		D3D12Framebuffer* framebuffer = static_cast<D3D12Framebuffer*>(state.framebuffer);
-		D3D12DescriptorSet* descriptorSet = static_cast<D3D12DescriptorSet*>(state.descriptorSet);
 
 		if(pso)
 			BindGraphicsPipeline(pso);
 		if (pso && framebuffer)
 			BindFramebuffer(pso, framebuffer);
 
-		if(descriptorSet)
-			BindDescriptorSet(descriptorSet);
+		BindDescriptorGroup(state.descriptorSetGroup);
 
 		D3D12VertexBuffer* vertexBuffer = static_cast<D3D12VertexBuffer*>(state.vertexBuffer);
 		if(vertexBuffer)
@@ -353,7 +351,7 @@ namespace INF::GFX
 		m_commandList->OMSetRenderTargets(renderTargetCount, RTVs.data(), false, fb->GetDesc().depthAttachment.texture ? &DSV : nullptr);
 	}
 
-	void D3D12CommandList::BindDescriptorSet(D3D12DescriptorSet* set)
+	void D3D12CommandList::BindDescriptorSet(D3D12DescriptorSet* set, uint32_t rootIndexOffset)
 	{
 		//TODO we should only set the heaps if they changed
 		ID3D12DescriptorHeap* heaps[2] = { m_device->SRVDescriptoHeap().Heap(), m_device->SamplerDescriptoHeap().Heap()};
@@ -368,14 +366,13 @@ namespace INF::GFX
 
 
 		D3D12DescriptorLayout* layout = static_cast<D3D12DescriptorLayout*>(set->GetLayout());
+		uint32_t rootIndex = rootIndexOffset;
 		for (const auto& stage : stages)
 		{
 			for (const DescriptorSetItem& setItem : *stage.second)
 			{
 				if(setItem.slot == UINT_MAX)
 					continue;
-
-				uint32_t rootIndex = layout->GetRootParamIndex(stage.first,setItem);
 
 				switch (setItem.type)
 				{
@@ -408,7 +405,25 @@ namespace INF::GFX
 					INF_ASSERT(false, "set item type not supported")
 					break;
 				}
+
+				rootIndex++;
 			}
+		}
+	}
+
+
+	void D3D12CommandList::BindDescriptorGroup(const DescriptorSetGroup& setGroup)
+	{
+		uint32_t rootIndex = 0;
+		for (const auto& set : setGroup)
+		{
+			if(!set)
+				continue;
+
+			D3D12DescriptorSet* descriptorSet = static_cast<D3D12DescriptorSet*>(set.get());
+			D3D12DescriptorLayout* layout = static_cast<D3D12DescriptorLayout*>(descriptorSet->GetLayout());
+			BindDescriptorSet(descriptorSet, rootIndex);
+			rootIndex += static_cast<uint32_t>(layout->RootParamters().size());
 		}
 	}
 

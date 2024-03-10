@@ -101,7 +101,7 @@ int main()
 	pipelineDesc.depthStencilState.depthTestEnable = false;
 	pipelineDesc.depthStencilState.depthWriteEnable = false;
 	pipelineDesc.rasterState.cullMode = GFX::RasterCullMode::NONE;
-	pipelineDesc.descriptorLayout = descriptorHandle;
+	pipelineDesc.descriptorLayoutSet = { descriptorHandle };
 
 	pipelineDesc.inputLayoutDesc.emplace_back("POSITION", GFX::Format::RGBA32_FLOAT);
 	pipelineDesc.inputLayoutDesc.emplace_back("TEXCOORD", GFX::Format::RGBA32_FLOAT);
@@ -254,7 +254,7 @@ int main()
 		GFX::GraphicsState graphicsState;
 		graphicsState.pipeline = pipeline.get();
 		graphicsState.framebuffer = framebuffers[deviceManager->GetCurrentBackBufferIndex()].get();
-		graphicsState.descriptorSet = descriptorSet.get();
+		graphicsState.descriptorSetGroup = { descriptorSet };
 		graphicsState.vertexBuffer = vertexBuffer.get();
 		graphicsState.indexBuffer = indexBuffer.get();
 		graphicsState.view = &view;

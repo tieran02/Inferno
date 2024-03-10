@@ -57,7 +57,7 @@ int main()
 	pipelineDesc.depthStencilState.depthTestEnable = false;
 	pipelineDesc.depthStencilState.depthWriteEnable = false;
 	pipelineDesc.rasterState.cullMode = GFX::RasterCullMode::NONE;
-	pipelineDesc.descriptorLayout = descriptorLayoutHandle;
+	pipelineDesc.descriptorLayoutSet = { descriptorLayoutHandle };
 	GFX::GraphicsPipelineHandle pipeline = device->CreateGraphicsPipeline(pipelineDesc, framebuffers[0].get());
 
 	Input input;
@@ -77,15 +77,15 @@ int main()
 
 	while (!shouldClose)
 	{
-		GFX::GraphicsState graphicsState;
-		graphicsState.pipeline = pipeline.get();
-		graphicsState.framebuffer = framebuffers[deviceManager->GetCurrentBackBufferIndex()].get();
-		graphicsState.view = &view;
-
 		window->PollEvents();
 		input.Update();
 
 		deviceManager->BeginFrame();
+
+		GFX::GraphicsState graphicsState;
+		graphicsState.pipeline = pipeline.get();
+		graphicsState.framebuffer = framebuffers[deviceManager->GetCurrentBackBufferIndex()].get();
+		graphicsState.view = &view;
 
 		cmd->Open();
 		

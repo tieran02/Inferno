@@ -146,6 +146,24 @@ int main()
 		static clock::time_point start = clock::now();
 		float elapsed = (duration(clock::now() - start)).count();
 
+		//move camera with WASD
+		if (input.IsKeyDown(KeyCode::A))
+		{
+			view.Translate(-VectorRight * 0.01f);
+		}
+		if (input.IsKeyDown(KeyCode::D))
+		{
+			view.Translate(VectorRight * 0.01f);
+		}
+		if (input.IsKeyDown(KeyCode::W))
+		{
+			view.Translate(VectorUp * 0.01f);
+		}
+		if (input.IsKeyDown(KeyCode::S))
+		{
+			view.Translate(-VectorUp * 0.01f);
+		}
+
 		glm::vec3 posOffset = glm::vec3(sinf(elapsed * 0.001f), 0.0f, 0.0f);
 		meshInstance.transform.SetPosition(posOffset * 5.0f);
 		meshInstance.transform.Rotate(glm::vec3(0.0f, 1.0f, 0.0f), 0.005f);

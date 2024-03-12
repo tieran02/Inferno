@@ -11,9 +11,9 @@ cbuffer transformCB : register(b1)
 
 struct VertexInput
 {
-    float2 inPos : POSITION;
-    float2 inuv : TEXCOORD;
+    float3 inPos : POSITION;
     float3 inColor : COLOR;
+    float2 inuv : TEXCOORD;
 };
 
 struct VertexOutput
@@ -26,7 +26,7 @@ struct VertexOutput
 VertexOutput main(VertexInput vertexInput)
 {
     float3 inColor = vertexInput.inColor;
-    float4 position = mul(float4(vertexInput.inPos, 0.0, 1.0f), mul(modelMatrix, mul(viewMatrix, projectionMatrix)));
+    float4 position = mul(float4(vertexInput.inPos, 1.0f), mul(modelMatrix, mul(viewMatrix, projectionMatrix)));
 
     VertexOutput output;
     output.position = position;

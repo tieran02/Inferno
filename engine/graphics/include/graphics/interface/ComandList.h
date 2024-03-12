@@ -28,6 +28,7 @@ namespace INF::GFX
 		virtual void WriteTexture(ITexture* dest, const Bitmap& bitmap) = 0;
 
 		virtual void Draw(uint32_t vertexCount, uint32_t instanceCount, uint32_t firstVertex, uint32_t firstInstance) = 0;
+		virtual void DrawIndexed(uint32_t indexCount, uint32_t instanceCount, uint32_t startIndex, uint32_t firstVertex, uint32_t firstInstance) = 0;
 	};
 
 	using CommandListeHandle = std::unique_ptr<ICommandList>;

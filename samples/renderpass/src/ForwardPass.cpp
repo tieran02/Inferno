@@ -38,11 +38,6 @@ void ForwardPass::Init(GFX::IDevice* device, IFramebuffer* fb)
 	viewConstantBufferDesc.onlyValidDuringCommandList = true;
 	m_viewConstantBuffer = device->CreateBuffer(viewConstantBufferDesc);
 
-	m_view.SetViewport(GFX::Viewport(0, 0, (float)fb->GetInfo().width, (float)fb->GetInfo().height));
-	m_view.SetScissor(GFX::Rect(0, 0, fb->GetInfo().width, fb->GetInfo().height));
-	m_view.SetPosition(glm::vec3(0.0f, 0.0f, 3.0f));
-	m_view.LookAt(glm::vec3(0.0f, 0.0f, 0.1f), glm::vec3(0, 1, 0));
-
 
 	GFX::SamplerDesc samplerDesc;
 	m_sampler = device->CreateSampler(samplerDesc);
@@ -109,9 +104,9 @@ void ForwardPass::CreatePipeline(GFX::IDevice* device, IFramebuffer* fb)
 	pipelineDesc.rasterState.cullMode = GFX::RasterCullMode::NONE;
 	pipelineDesc.descriptorLayoutSet = { m_viewDescriptorLayoutHandle, m_meshDescriptorHandle};
 
-	pipelineDesc.inputLayoutDesc.emplace_back("POSITION", GFX::Format::RGBA32_FLOAT);
-	pipelineDesc.inputLayoutDesc.emplace_back("TEXCOORD", GFX::Format::RGBA32_FLOAT);
-	pipelineDesc.inputLayoutDesc.emplace_back("COLOR", GFX::Format::RGBA32_FLOAT);
+	pipelineDesc.inputLayoutDesc.emplace_back("POSITION", GFX::Format::RGB32_FLOAT);
+	pipelineDesc.inputLayoutDesc.emplace_back("COLOR", GFX::Format::RGB32_FLOAT);
+	pipelineDesc.inputLayoutDesc.emplace_back("TEXCOORD", GFX::Format::RG32_FLOAT);
 
 	m_pipeline = device->CreateGraphicsPipeline(pipelineDesc, fb);
 

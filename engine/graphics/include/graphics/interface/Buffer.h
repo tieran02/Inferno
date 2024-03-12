@@ -56,6 +56,8 @@ namespace INF::GFX
 		uint32_t strideInBytes = 0;
 		std::string name;
 		CpuVisible access = CpuVisible::NONE;
+
+		inline size_t VertexCount() const { return byteSize / strideInBytes; }
 	};
 
 	class IVertexBuffer
@@ -72,6 +74,8 @@ namespace INF::GFX
 		Format format = Format::R16_UINT;
 		std::string name;
 		CpuVisible access = CpuVisible::NONE;
+
+		inline size_t IndexCount() const { return byteSize / (format == Format::R32_UINT ? 4 : 2); }
 	};
 
 	class IIndexBuffer

@@ -237,6 +237,7 @@ namespace INF::GFX
 			inputStates[i].InputSlot = 0;
 			inputStates[i].Format = D3D12Format(state.inputLayoutDesc[i].format);
 			inputStates[i].AlignedByteOffset = D3D12_APPEND_ALIGNED_ELEMENT;
+			inputStates[i].InputSlotClass = D3D12_INPUT_CLASSIFICATION_PER_VERTEX_DATA;
 		}
 		desc.InputLayout.pInputElementDescs = inputStates.data();
 		desc.SampleMask = ~0u;

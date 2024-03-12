@@ -37,5 +37,13 @@
 			"type": "git",
 			"url": "https://github.com/nothings/stb.git"
 		}
+	},
+	{
+		"name": "tinygltf",
+		"source": {
+			"type": "git",
+			"url": "https://github.com/syoyo/tinygltf.git",
+			"revision": "v2.8.21"
+		}
 	}
 ]

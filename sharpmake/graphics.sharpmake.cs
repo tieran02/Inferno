@@ -27,7 +27,7 @@ namespace Inferno
             conf.IncludePaths.Add(GraphicsD3D12Lib.INFERNO_GRAPHICS_D3D12_INC);
             conf.IncludePaths.Add(Path.Combine(Defines.Paths.INFERNO_THIRD_PARTY, @"directxheaders/include"));
             conf.IncludePaths.Add(Path.Combine(Defines.Paths.INFERNO_THIRD_PARTY, @"stb"));
-            
+            conf.IncludePaths.Add(Path.Combine(Defines.Paths.INFERNO_THIRD_PARTY, @"tinygltf"));
         }
     }
 

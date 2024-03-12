@@ -66,6 +66,7 @@ namespace INF::GFX
 
 
 		void Draw(uint32_t vertexCount, uint32_t instanceCount, uint32_t firstVertex, uint32_t firstInstance) override;
+		void DrawIndexed(uint32_t indexCount, uint32_t instanceCount, uint32_t startIndex, uint32_t firstVertex, uint32_t firstInstance) override;
 
 		ID3D12GraphicsCommandList* D3D() const { return m_commandList; }
 

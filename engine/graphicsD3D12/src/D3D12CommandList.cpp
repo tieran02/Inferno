@@ -492,6 +492,11 @@ namespace INF::GFX
 		m_commandList->DrawInstanced(vertexCount, instanceCount, firstVertex, firstInstance);
 	}
 
+	void D3D12CommandList::DrawIndexed(uint32_t indexCount, uint32_t instanceCount, uint32_t startIndex, uint32_t firstVertex, uint32_t firstInstance)
+	{
+		m_commandList->DrawIndexedInstanced(indexCount, instanceCount, startIndex, firstVertex, firstInstance);
+	}
+
 	inline static uint32_t CalcSubresource(uint32_t MipSlice, uint32_t ArraySlice, uint32_t PlaneSlice, uint32_t MipLevels, uint32_t ArraySize)
 	{
 		return MipSlice + (ArraySlice * MipLevels) + (PlaneSlice * MipLevels * ArraySize);

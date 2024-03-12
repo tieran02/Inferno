@@ -99,7 +99,7 @@ inline DXGI_FORMAT D3D12Format(INF::GFX::Format format)
 	case INF::GFX::Format::RGB32_SINT:
 		return DXGI_FORMAT_R32G32_SINT;
 	case INF::GFX::Format::RGB32_FLOAT:
-		return DXGI_FORMAT_R32G32_FLOAT;
+		return DXGI_FORMAT_R32G32B32_FLOAT;
 	case INF::GFX::Format::RGBA32_UINT:
 		return DXGI_FORMAT_R32G32B32A32_UINT;
 	case INF::GFX::Format::RGBA32_SINT:

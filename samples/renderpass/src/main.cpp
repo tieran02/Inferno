@@ -2,56 +2,63 @@
 #include "Core.h"
 #include "graphics/Graphics.h"
 #include "ForwardPass.h"
+#include "graphics/MeshGenerator.h"
 
 struct vertex
 {
-	alignas(16) glm::vec2 pos;
-	alignas(16) glm::vec2 uv;
-	alignas(16) glm::vec3 color;
+	glm::vec3 pos;
+	glm::vec3 color;
+	glm::vec2 uv;
 };
 
-std::array<vertex, 3> verts{
-	vertex{{0.0, 0.5},	 {0.5, 0.0},	{ 1.0f, 0.0, 0.0f }},
-	vertex{{0.5, -0.5},	 {1.0, 1.0},	{0.0f, 1.0, 0.0f}},
-	vertex{{-0.5, -0.5}, {0.0, 1.0},	{0.0f, 0.0, 1.0f}},
-};
-std::array<uint16_t, 3> indices{
-	0,1,2
-};
+//std::array<vertex, 3> verts{
+//	vertex{{0.0, 0.5},	 {0.5, 0.0},	{ 1.0f, 0.0, 0.0f }},
+//	vertex{{0.5, -0.5},	 {1.0, 1.0},	{0.0f, 1.0, 0.0f}},
+//	vertex{{-0.5, -0.5}, {0.0, 1.0},	{0.0f, 0.0, 1.0f}},
+//};
+//std::array<uint16_t, 3> indices{
+//	0,1,2
+//};
 
 using namespace INF;
 
 void CreateVertexBuffer(GFX::IDevice* device, GFX::VertexBufferHandle& vertexBuffer, GFX::IndexBufferHandle& indexBuffer)
 {
+
+	MeshData triangleMeshData = GFX::MeshGenerator::QuadPrimative();
+	MeshDataBuffer packedVertexData;
+	MeshDataBuffer packedIndexData;
+	GFX::MeshGenerator::PackMesh(triangleMeshData, packedVertexData, packedIndexData, false, true, true);
+
 	//staging buffer
 	GFX::BufferDesc indexStagingBufferDesc;
 	indexStagingBufferDesc.access = GFX::CpuVisible::WRITE;
-	indexStagingBufferDesc.byteSize = static_cast<uint32_t>(sizeof(uint16_t) * indices.size());
+	indexStagingBufferDesc.byteSize = static_cast<uint32_t>(packedIndexData.size());
 	indexStagingBufferDesc.usage = GFX::BufferUsage::GENERIC;
 	GFX::BufferHandle indexStagingBuffer = device->CreateBuffer(indexStagingBufferDesc);
 	void* dest = device->MapBuffer(indexStagingBuffer.get());
-	memcpy(dest, indices.data(), indexStagingBufferDesc.byteSize);
+	memcpy(dest, packedIndexData.data(), indexStagingBufferDesc.byteSize);
 
 	//create index buffer
 	GFX::IndexBufferDesc indexBufferDesc;
 	indexBufferDesc.access = GFX::CpuVisible::NONE;
 	indexBufferDesc.format = GFX::Format::R16_UINT;
-	indexBufferDesc.byteSize = static_cast<uint32_t>(sizeof(uint16_t) * indices.size());
+	indexBufferDesc.byteSize = static_cast<uint32_t>(packedIndexData.size());
 	indexBuffer = device->CreateIndexBuffer(indexBufferDesc);
 
 	//staging buffer
 	GFX::BufferDesc vertexStagingBufferDesc;
 	vertexStagingBufferDesc.access = GFX::CpuVisible::WRITE;
-	vertexStagingBufferDesc.byteSize = static_cast<uint32_t>(sizeof(vertex) * verts.size());
+	vertexStagingBufferDesc.byteSize = static_cast<uint32_t>(packedVertexData.size());
 	vertexStagingBufferDesc.usage = GFX::BufferUsage::GENERIC;
 	GFX::BufferHandle vertexStagingBuffer = device->CreateBuffer(vertexStagingBufferDesc);
 	dest = device->MapBuffer(vertexStagingBuffer.get());
-	memcpy(dest, verts.data(), vertexStagingBufferDesc.byteSize);
+	memcpy(dest, packedVertexData.data(), vertexStagingBufferDesc.byteSize);
 
 	//create vertex buffer
 	GFX::VertexBufferDesc vertexBufferDesc;
 	vertexBufferDesc.access = GFX::CpuVisible::NONE;
-	vertexBufferDesc.byteSize = static_cast<uint32_t>(sizeof(vertex) * verts.size());
+	vertexBufferDesc.byteSize = static_cast<uint32_t>(packedVertexData.size());
 	vertexBufferDesc.strideInBytes = sizeof(vertex);
 	vertexBuffer = device->CreateVertexBuffer(vertexBufferDesc);
 
@@ -102,10 +109,11 @@ int main()
 			shouldClose = true;
 		});
 
-	GFX::View view;
+	GFX::View view(70.0f, (float)deviceInfo.backBufferWidth / (float)deviceInfo.backBufferHeight, 0.1f, 100.0);
 	view.SetViewport(GFX::Viewport(0, 0, deviceInfo.backBufferWidth, deviceInfo.backBufferHeight));
 	view.SetScissor(GFX::Rect(0, 0, deviceInfo.backBufferWidth, deviceInfo.backBufferHeight));
-
+	view.SetPosition(glm::vec3(0.0f, 2.0f, 10.0f));
+	view.LookAt(glm::vec3(0.0f, 0.0f, 0.1f), glm::vec3(0, 1, 0));
 
 	GFX::VertexBufferHandle vertexBuffer;
 	GFX::IndexBufferHandle indexBuffer;
@@ -115,8 +123,8 @@ int main()
 	meshInfo.buffer.vertexBuffer = vertexBuffer;
 	meshInfo.buffer.indexBuffer = indexBuffer;
 	meshInfo.indexOffset = 0;
-	meshInfo.numVertices = verts.size();
-	meshInfo.numIndices = indices.size();
+	meshInfo.numVertices = vertexBuffer->GetDesc().VertexCount();
+	meshInfo.numIndices = indexBuffer->GetDesc().IndexCount();
 
 	MeshInstance meshInstance;
 	meshInstance.mesh = &meshInfo;
@@ -139,12 +147,12 @@ int main()
 		float elapsed = (duration(clock::now() - start)).count();
 
 		glm::vec3 posOffset = glm::vec3(sinf(elapsed * 0.001f), 0.0f, 0.0f);
-		meshInstance.transform.SetPosition(posOffset);
-		meshInstance.transform.Rotate(glm::vec3(0.0f, 1.0f, 0.0f), 0.01f);
+		meshInstance.transform.SetPosition(posOffset * 5.0f);
+		meshInstance.transform.Rotate(glm::vec3(0.0f, 1.0f, 0.0f), 0.005f);
 		meshInstance.transform.UpdateTransform();
 
-		meshInstance1.transform.SetPosition(-posOffset);
-		meshInstance1.transform.Rotate(glm::vec3(0.0f, 1.0f, 0.0f), 0.01f);
+		meshInstance1.transform.SetPosition(-posOffset * 5.0f);
+		meshInstance1.transform.Rotate(glm::vec3(0.0f, 1.0f, 0.0f), 0.005f);
 		meshInstance1.transform.UpdateTransform();
 
 		deviceManager->BeginFrame();

@@ -26,6 +26,6 @@ void IGeometryPass::Render(ICommandList* commandList, IFramebuffer* framebuffer)
 
 		commandList->SetGraphicsState(state);
 
-		commandList->Draw(meshInfo->numVertices, 1, meshInfo->vertexOffset, instance->instanceOffset);
+		commandList->DrawIndexed(meshInfo->numIndices, 1, meshInfo->indexOffset, meshInfo->vertexOffset, instance->instanceOffset);
 	}
 }

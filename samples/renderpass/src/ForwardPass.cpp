@@ -99,8 +99,9 @@ void ForwardPass::CreatePipeline(GFX::IDevice* device, IFramebuffer* fb)
 	GFX::GraphicsPipelineDesc pipelineDesc;
 	pipelineDesc.VS = vertexShader;
 	pipelineDesc.PS = pixelShader;
-	pipelineDesc.depthStencilState.depthTestEnable = false;
-	pipelineDesc.depthStencilState.depthWriteEnable = false;
+	pipelineDesc.depthStencilState.depthTestEnable = true;
+	pipelineDesc.depthStencilState.depthWriteEnable = true;
+	pipelineDesc.depthStencilState.depthFunc = ComparisonFunc::LESS_OR_EQUAL;
 	pipelineDesc.rasterState.cullMode = GFX::RasterCullMode::NONE;
 	pipelineDesc.descriptorLayoutSet = { m_viewDescriptorLayoutHandle, m_meshDescriptorHandle};
 

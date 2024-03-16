@@ -18,6 +18,7 @@ namespace INF::GFX
 		virtual void Close() = 0;
 
 		virtual void ClearColor(ITexture* texture, const Color& color) = 0;
+		virtual void ClearDepth(ITexture* texture, float depth, uint8_t stencil) = 0;
 
 		virtual void SetGraphicsState(const GraphicsState& state) = 0;
 		virtual void SetViewport(const Viewport& viewport) = 0;

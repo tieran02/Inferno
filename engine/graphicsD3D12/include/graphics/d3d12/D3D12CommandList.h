@@ -54,6 +54,7 @@ namespace INF::GFX
 		void Close() override;
 
 		void ClearColor(ITexture* texture, const Color& color) override;
+		void ClearDepth(ITexture* texture, float depth, uint8_t stencil) override;
 
 		void SetGraphicsState(const GraphicsState& state) override;
 

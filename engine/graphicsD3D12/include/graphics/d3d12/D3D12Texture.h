@@ -33,6 +33,7 @@ namespace INF::GFX
 
 		D3D12TextureView m_rtv;
 		D3D12TextureView m_srv;
+		D3D12TextureView m_dsv;
 	};
 
 	class D3D12Sampler : public ISampler

@@ -70,6 +70,7 @@ namespace INF::GFX
 
 		void CreateRenderTargetView(DescriptorIndex descriptorIndex, ITexture* texture);
 		void CreateShaderResourceView(DescriptorIndex descriptorIndex, ITexture* texture);
+		void CreateDepthhaderView(DescriptorIndex descriptorIndex, ITexture* texture);
 
 		IDXGIFactory4* Factory() { return m_dxgiFactory.Get(); }
 		IDXGIAdapter1* Adapter() { return m_adapter.Get(); }

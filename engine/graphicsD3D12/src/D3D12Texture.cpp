@@ -49,6 +49,9 @@ D3D12_RESOURCE_DESC GetResourceDesc(const TextureDesc& desc)
 
 	resourceDesc.Flags = D3D12_RESOURCE_FLAG_NONE;
 
+	if(IsDepthFormat(desc.format))
+		resourceDesc.Flags |= D3D12_RESOURCE_FLAG_ALLOW_DEPTH_STENCIL;
+
 	return resourceDesc;
 }
 
@@ -60,12 +63,31 @@ TextureHandle D3D12Texture::CreateTexture(D3D12Device* ownerDevice, const Textur
 	D3D12_HEAP_PROPERTIES heapProps = {};
 	heapProps.Type = D3D12_HEAP_TYPE_DEFAULT;
 
+	bool supportsOptimizedClear = (desc.initialState & (TRANSITION_STATES_FLAGS)TRANSITION_STATES::RENDER_TARGET);
+	supportsOptimizedClear |= (desc.initialState & (TRANSITION_STATES_FLAGS)TRANSITION_STATES::DEPTH_READ);
+	supportsOptimizedClear |= (desc.initialState & (TRANSITION_STATES_FLAGS)TRANSITION_STATES::DEPTH_WRITE);
+
+	D3D12_CLEAR_VALUE optimizedClearValue = {};
+	optimizedClearValue.Format = D3D12Format(desc.format);
+	if (IsDepthFormat(desc.format)) 
+	{
+		optimizedClearValue.DepthStencil.Depth = 1.0f;
+		optimizedClearValue.DepthStencil.Stencil = 0;
+	}
+	else
+	{
+		optimizedClearValue.Color[0] = 0.0f;
+		optimizedClearValue.Color[1] = 0.0f;
+		optimizedClearValue.Color[2] = 0.0f;
+		optimizedClearValue.Color[3] = 0.0f;
+	}
+
 	VerifySuccess(ownerDevice->Device()->CreateCommittedResource(
 		&heapProps,
 		D3D12_HEAP_FLAG_NONE,
 		&resourceDesc,
 		D3D12TransitionFlags(desc.initialState),
-		nullptr,
+		supportsOptimizedClear ? &optimizedClearValue : nullptr,
 		IID_PPV_ARGS(&texture->m_resource)));
 
 	texture->m_resource->SetName(desc.name);
@@ -121,9 +143,19 @@ const ITextureView* D3D12Texture::GetView(ITextureView::ViewType type)
 			m_srv.type = ITextureView::ViewType::SHADER_RESOURCE;
 		}
 		return &m_srv;
-		break;
 	case INF::GFX::ITextureView::ViewType::DEPTH:
-		break;
+		if (m_dsv.descriptorIndex == DescriptorIndexInvalid)
+		{
+			m_dsv.descriptorIndex = m_ownerDevice->DSVDescriptoHeap().AllocateDescriptor();
+			m_dsv.CPU = m_ownerDevice->DSVDescriptoHeap().GetCPUHandle(m_dsv.descriptorIndex);
+			m_dsv.GPU = m_ownerDevice->DSVDescriptoHeap().GetGPUHandle(m_dsv.descriptorIndex);
+
+			m_ownerDevice->CreateDepthhaderView(m_dsv.descriptorIndex, this);
+
+			m_dsv.format = m_desc.format;
+			m_dsv.type = ITextureView::ViewType::DEPTH;
+		}
+		return &m_dsv;
 	default:
 		break;
 	}

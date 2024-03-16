@@ -25,7 +25,7 @@ using namespace INF;
 void CreateVertexBuffer(GFX::IDevice* device, GFX::VertexBufferHandle& vertexBuffer, GFX::IndexBufferHandle& indexBuffer)
 {
 
-	MeshData triangleMeshData = GFX::MeshGenerator::QuadPrimative();
+	MeshData triangleMeshData = GFX::MeshGenerator::CubePrimative();
 	MeshDataBuffer packedVertexData;
 	MeshDataBuffer packedIndexData;
 	GFX::MeshGenerator::PackMesh(triangleMeshData, packedVertexData, packedIndexData, false, true, true);
@@ -86,12 +86,22 @@ int main()
 	GFX::IDevice* device = deviceManager->GetDevice();
 	GFX::CommandListeHandle cmd = device->CreateCommandList(GFX::CommandQueue::GRAPHICS);
 
+	GFX::TextureDesc depthDesc;
+	depthDesc.width = deviceInfo.backBufferWidth;
+	depthDesc.height = deviceInfo.backBufferHeight;
+	depthDesc.format = GFX::Format::D32;
+	depthDesc.name = L"Depth";
+	depthDesc.initialState = (GFX::TRANSITION_STATES_FLAGS)GFX::TRANSITION_STATES::DEPTH_WRITE;
+	GFX::TextureHandle depthTexture = device->CreateTexture(depthDesc);
+
 	//framebuffer for each backbuffer
 	std::vector<GFX::FramebufferHandle> framebuffers(deviceManager->GetBackBufferCount());
 	for (int i = 0; i < framebuffers.size(); ++i)
 	{
 		GFX::FramebufferDesc fbDesc;
 		fbDesc.colorAttachments[0] = GFX::FramebufferAttachment(deviceManager->GetBackBufferTexture(i));
+		fbDesc.depthAttachment = GFX::FramebufferAttachment(depthTexture.get());
+
 		framebuffers[i] = device->CreateFramebuffer(fbDesc);
 	}
 
@@ -169,7 +179,9 @@ int main()
 		meshInstance.transform.Rotate(glm::vec3(0.0f, 1.0f, 0.0f), 0.005f);
 		meshInstance.transform.UpdateTransform();
 
-		meshInstance1.transform.SetPosition(-posOffset * 5.0f);
+		glm::vec3 pos1 = -posOffset * 5.0f;
+		pos1.z -= 5.0f;
+		meshInstance1.transform.SetPosition(pos1);
 		meshInstance1.transform.Rotate(glm::vec3(0.0f, 1.0f, 0.0f), 0.005f);
 		meshInstance1.transform.UpdateTransform();
 
@@ -179,6 +191,7 @@ int main()
 
 		
 		//need better barrier managment
+		cmd->ClearDepth(depthTexture.get(), 1.0f, 0);
 		cmd->ClearColor(deviceManager->GetCurrentBackBufferTexture(), GFX::Color(0.2f, 0.2f, 0.2f, 1.0f));
 
 

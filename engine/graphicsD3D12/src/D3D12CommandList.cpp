@@ -248,6 +248,19 @@ namespace INF::GFX
 		m_commandList->ClearRenderTargetView(textureView->CPU, &color.R, 0, nullptr);
 	}
 
+
+	void D3D12CommandList::ClearDepth(ITexture* texture, float depth, uint8_t stencil)
+	{
+		const D3D12TextureView* dsv = (const D3D12TextureView*)texture->GetView(ITextureView::ViewType::DEPTH);
+		INF_ASSERT(dsv, "Invalid Texture view");
+
+		D3D12_CLEAR_FLAGS flags = D3D12_CLEAR_FLAG_DEPTH;
+		if (texture->GetDesc().format == Format::D24S8 || texture->GetDesc().format == Format::D32S8)
+			flags |= D3D12_CLEAR_FLAG_STENCIL;
+
+		m_commandList->ClearDepthStencilView(dsv->CPU, flags, depth, stencil, 0, nullptr);
+	}
+
 	void D3D12CommandList::SetGraphicsState(const GraphicsState& state)
 	{
 		if (state.view) 

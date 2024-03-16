@@ -242,6 +242,21 @@ namespace INF::GFX
 
 		COUNT,
 	};
+	inline bool IsDepthFormat(Format format)
+	{
+		switch (format)
+		{
+		case Format::D16:
+		case Format::D24S8:
+		case Format::X24G8_UINT:
+		case Format::D32:
+		case Format::D32S8:
+		case Format::X32G8_UINT:
+			return true;
+		default:
+			return false;
+		}
+	}
 
 	using TRANSITION_STATES_FLAGS = uint16_t;
 	enum class TRANSITION_STATES : TRANSITION_STATES_FLAGS

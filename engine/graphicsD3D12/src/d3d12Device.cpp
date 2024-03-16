@@ -365,4 +365,17 @@ namespace INF::GFX
 
 		m_device->CreateShaderResourceView(static_cast<D3D12Texture*>(texture)->Resource(), &viewDesc, m_SRVDescriptorHeap.GetCPUHandle(descriptorIndex));
 	}
+
+	void D3D12Device::CreateDepthhaderView(DescriptorIndex descriptorIndex, ITexture* texture)
+	{
+		D3D12_DEPTH_STENCIL_VIEW_DESC depthStencilDesc = {};
+		const TextureDesc& textureDesc = texture->GetDesc();
+
+		depthStencilDesc.Format = D3D12Format(textureDesc.format);;
+		depthStencilDesc.ViewDimension = D3D12_DSV_DIMENSION_TEXTURE2D;
+		depthStencilDesc.Flags = D3D12_DSV_FLAG_NONE;
+
+		m_device->CreateDepthStencilView(static_cast<D3D12Texture*>(texture)->Resource(), &depthStencilDesc, m_DSVDescriptorHeap.GetCPUHandle(descriptorIndex));
+	}
+
 }

@@ -1,5 +1,6 @@
 #include "infPCH.h"
 #include "graphics/MeshGenerator.h"
+#include <math.h>
 
 using namespace INF::GFX;
 
@@ -201,6 +202,78 @@ MeshData MeshGenerator::CubePrimative()
 		meshData.Positions, meshData.TexCoords, meshData.Colours, meshData.Indices,
 		up * -hh, right * width, back * depth, widthSegments, depthSegments
 	);
+
+	return meshData;
+}
+
+MeshData MeshGenerator::UVSphere(uint32_t slices, uint32_t stacks, float radius)
+{
+	MeshData meshData;
+	const float lengthInv = 1.0f / radius;
+
+	const float sectorStep = 2 * PI / slices;
+	const float stackStep = PI / stacks;
+	float sectorAngle, stackAngle;
+
+	for (int i = 0; i <= stacks; ++i)
+	{
+		stackAngle = PI / 2 - i * stackStep;        // starting from pi/2 to -pi/2
+		float xy = radius * cosf(stackAngle);             // r * cos(u)
+		float y = radius * sinf(stackAngle);              // r * sin(u)
+
+		// add (sectorCount+1) vertices per stack
+		// first and last vertices have same position and normal, but different tex coords
+		for (int j = 0; j <= slices; ++j)
+		{
+			sectorAngle = j * sectorStep;           // starting from 0 to 2pi
+
+			// vertex position (x, y, z)
+			float x = xy * cosf(sectorAngle);             // r * cos(u) * cos(v)
+			float z = xy * sinf(sectorAngle);             // r * cos(u) * sin(v)
+			meshData.Positions.emplace_back(x, y, z);
+
+			// normalized vertex normal (nx, ny, nz)
+			float nx = x * lengthInv;
+			float ny = y * lengthInv;
+			float nz = z * lengthInv;
+			meshData.Normals.emplace_back(nx, ny, nz);
+
+
+			// vertex tex coord (s, t) range between [0, 1]
+			float u = (float)j / slices;
+			float v = (float)i / stacks;
+			meshData.TexCoords.emplace_back(1.0f - u, v);
+
+			meshData.Colours.emplace_back(0, 0, 0);
+		}
+	}
+
+	//now the indices
+	for (int i = 0; i < stacks; ++i)
+	{
+		float k1 = i * (slices + 1);     // beginning of current stack
+		float k2 = k1 + slices + 1;      // beginning of next stack
+
+		for (int j = 0; j < slices; ++j, ++k1, ++k2)
+		{
+			// 2 triangles per sector excluding first and last stacks
+			// k1 => k2 => k1+1
+			if (i != 0)
+			{
+				meshData.Indices.push_back(k1);
+				meshData.Indices.push_back(k2);
+				meshData.Indices.push_back(k1 + 1);
+			}
+
+			// k1+1 => k2 => k2+1
+			if (i != (stacks - 1))
+			{
+				meshData.Indices.push_back(k1 + 1);
+				meshData.Indices.push_back(k2);
+				meshData.Indices.push_back(k2 + 1);
+			}
+		}
+	}
 
 	return meshData;
 }

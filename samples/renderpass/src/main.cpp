@@ -16,7 +16,7 @@ using namespace INF;
 void CreateVertexBuffer(GFX::IDevice* device, GFX::VertexBufferHandle& vertexBuffer, GFX::IndexBufferHandle& indexBuffer)
 {
 
-	MeshData triangleMeshData = GFX::MeshGenerator::CubePrimative();
+	MeshData triangleMeshData = GFX::MeshGenerator::UVSphere(36,18);
 	MeshDataBuffer packedVertexData;
 	MeshDataBuffer packedIndexData;
 	GFX::MeshGenerator::PackMesh(triangleMeshData, packedVertexData, packedIndexData, false, true, true);

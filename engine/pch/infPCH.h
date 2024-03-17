@@ -15,3 +15,5 @@
 #include <bitset>
 #include <utility>
 #include <queue>
+
+#define PI       3.14159265358979323846   // pi

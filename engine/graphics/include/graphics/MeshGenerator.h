@@ -24,5 +24,6 @@ namespace INF::GFX
 		static MeshData TrianglePrimative();
 		static MeshData QuadPrimative();
 		static MeshData CubePrimative();
+		static MeshData UVSphere(uint32_t slices = 36, uint32_t stacks = 18, float radius = 1.0f);
 	};
 }

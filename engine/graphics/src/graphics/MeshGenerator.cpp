@@ -19,7 +19,7 @@ namespace
 				float rr = x * rInv;
 				vertices.push_back(origin + right * (rr - 0.5f) + up * (ru - 0.5f));
 				colours.push_back(right * (rr - 0.5f) + up * (ru - 0.5f));
-				uvs.push_back(glm::vec2(rr, -ru));
+				uvs.push_back(glm::vec2(1.0f - rr, 1.0f - ru));
 			}
 
 			if (y < uSegments - 1) {

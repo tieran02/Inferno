@@ -11,15 +11,6 @@ struct vertex
 	glm::vec2 uv;
 };
 
-//std::array<vertex, 3> verts{
-//	vertex{{0.0, 0.5},	 {0.5, 0.0},	{ 1.0f, 0.0, 0.0f }},
-//	vertex{{0.5, -0.5},	 {1.0, 1.0},	{0.0f, 1.0, 0.0f}},
-//	vertex{{-0.5, -0.5}, {0.0, 1.0},	{0.0f, 0.0, 1.0f}},
-//};
-//std::array<uint16_t, 3> indices{
-//	0,1,2
-//};
-
 using namespace INF;
 
 void CreateVertexBuffer(GFX::IDevice* device, GFX::VertexBufferHandle& vertexBuffer, GFX::IndexBufferHandle& indexBuffer)
@@ -122,7 +113,7 @@ int main()
 	GFX::View view(70.0f, (float)deviceInfo.backBufferWidth / (float)deviceInfo.backBufferHeight, 0.1f, 100.0);
 	view.SetViewport(GFX::Viewport(0, 0, deviceInfo.backBufferWidth, deviceInfo.backBufferHeight));
 	view.SetScissor(GFX::Rect(0, 0, deviceInfo.backBufferWidth, deviceInfo.backBufferHeight));
-	view.SetPosition(glm::vec3(0.0f, 2.0f, 10.0f));
+	view.SetPosition(glm::vec3(0.0f, 2.0f, 2.0f));
 	view.LookAt(glm::vec3(0.0f, 0.0f, 0.1f), glm::vec3(0, 1, 0));
 
 	GFX::VertexBufferHandle vertexBuffer;
@@ -175,14 +166,14 @@ int main()
 		}
 
 		glm::vec3 posOffset = glm::vec3(sinf(elapsed * 0.001f), 0.0f, 0.0f);
-		meshInstance.transform.SetPosition(posOffset * 5.0f);
-		meshInstance.transform.Rotate(glm::vec3(0.0f, 1.0f, 0.0f), 0.005f);
+		meshInstance.transform.SetPosition(posOffset * 2.0f);
+		//meshInstance.transform.Rotate(glm::vec3(0.0f, 1.0f, 0.0f), 0.005f);
 		meshInstance.transform.UpdateTransform();
 
-		glm::vec3 pos1 = -posOffset * 5.0f;
+		glm::vec3 pos1 = -posOffset * 2.0f;
 		pos1.z -= 5.0f;
 		meshInstance1.transform.SetPosition(pos1);
-		meshInstance1.transform.Rotate(glm::vec3(0.0f, 1.0f, 0.0f), 0.005f);
+		//meshInstance1.transform.Rotate(glm::vec3(0.0f, 1.0f, 0.0f), 0.005f);
 		meshInstance1.transform.UpdateTransform();
 
 		deviceManager->BeginFrame();

@@ -26,7 +26,7 @@ struct VertexOutput
     float4 position : SV_Position;
 };
 
-VertexOutput main(VertexInput vertexInput)
+VertexOutput VSmain(VertexInput vertexInput)
 {
     VertexOutput output;
     output.position = mul(float4(vertexInput.inPos, 1.0f), mul(modelMatrix, mul(viewMatrix, projectionMatrix)));
@@ -37,5 +37,36 @@ VertexOutput main(VertexInput vertexInput)
     // output.normal = Normal;
 
     output.uv = vertexInput.inuv;
+    return output;
+}
+
+
+struct PixelInput
+{
+    float3 normal : COLOR;
+    float2 uv : TEXCOORD;
+};
+
+struct PixelOutput
+{
+    float4 attachment0 : SV_Target0;
+};
+
+Texture2D g_texture : register(t0);
+SamplerState samp : register(s0);
+
+PixelOutput PSmain(PixelInput pixelInput)
+{
+    float3 diffuse = g_texture.Sample(samp, pixelInput.uv).rgb;
+    float3 normal = normalize(pixelInput.normal).xyz;
+    //float3 dir = normalize(lightDir).xyz;
+
+    float3 finalColor;
+
+    finalColor = diffuse * ambientColor.rgb;
+    finalColor += saturate(dot(lightDir.xyz, normal) * lightColor.rgb * diffuse);
+
+    PixelOutput output;
+    output.attachment0 = float4(finalColor, 1.0);
     return output;
 }

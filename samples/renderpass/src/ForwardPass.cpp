@@ -90,11 +90,13 @@ void ForwardPass::CreatePipeline(GFX::IDevice* device, IFramebuffer* fb)
 	GFX::ShaderDesc vertexShaderDesc;
 	vertexShaderDesc.shaderType = GFX::ShaderType::Vertex;
 	vertexShaderDesc.shaderPath = "data/shaders/forwardPass.vert.dxil";
+	vertexShaderDesc.entryName = "VSmain";
 	GFX::ShaderHandle vertexShader = device->CreateShader(vertexShaderDesc);
 
 	GFX::ShaderDesc pixelShaderDesc;
 	pixelShaderDesc.shaderType = GFX::ShaderType::Pixel;
 	pixelShaderDesc.shaderPath = "data/shaders/forwardPass.pixel.dxil";
+	vertexShaderDesc.entryName = "PSmain";
 	GFX::ShaderHandle pixelShader = device->CreateShader(pixelShaderDesc);
 
 

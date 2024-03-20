@@ -21,6 +21,7 @@ namespace Inferno.Samples
         {
             SampleRootDir = $"{INFERNO_SAMPLES}/{projectName}";
             SourceRootPath = $"{SampleRootDir}/src";
+            SourceFilesExtensions.Add(".hlsl");
         }
 
         public override void ConfigureAll(Project.Configuration conf, Target target)

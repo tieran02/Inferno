@@ -1,7 +1,7 @@
 cbuffer viewCB : register(b0)
 {
-    row_major float4x4 viewMatrix : packoffset(c0);
-    row_major float4x4 projectionMatrix : packoffset(c4);
+    float4x4 viewMatrix;
+    float4x4 projectionMatrix;
     float4 ambientColor;
     float4 lightColor;
     float4 lightDir;
@@ -9,7 +9,7 @@ cbuffer viewCB : register(b0)
 
 cbuffer transformCB : register(b1)
 {
-    row_major float4x4 modelMatrix;
+    float4x4 modelMatrix;
 };
 
 struct VertexInput
@@ -29,12 +29,8 @@ struct VertexOutput
 VertexOutput VSmain(VertexInput vertexInput)
 {
     VertexOutput output;
-    output.position = mul(float4(vertexInput.inPos, 1.0f), mul(modelMatrix, mul(viewMatrix, projectionMatrix)));
-    output.normal = mul(float4(vertexInput.inNormal, 1.0f), transpose(modelMatrix)).xyz;
-
-    // float3x3 normalMatrix = transpose((float3x3)modelMatrix);
-    // float3 Normal = mul(vertexInput.inNormal, normalMatrix);
-    // output.normal = Normal;
+    output.position = mul(mul(projectionMatrix, mul(viewMatrix, modelMatrix)), float4(vertexInput.inPos, 1.0f));
+    output.normal = mul(transpose(modelMatrix), float4(vertexInput.inNormal, 1.0f)).xyz;
 
     output.uv = vertexInput.inuv;
     return output;

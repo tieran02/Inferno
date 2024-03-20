@@ -1,6 +1,5 @@
 #pragma once
 #include "graphicDefines.h"
-#include "glm/glm.hpp"
 
 namespace INF::GFX
 {

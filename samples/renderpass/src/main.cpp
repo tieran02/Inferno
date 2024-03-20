@@ -1,4 +1,5 @@
 #include "infPCH.h"
+
 #include "Core.h"
 #include "graphics/Graphics.h"
 #include "ForwardPass.h"
@@ -7,19 +8,19 @@
 struct vertex
 {
 	glm::vec3 pos;
-	glm::vec3 color;
+	glm::vec3 normal;
 	glm::vec2 uv;
 };
 
 using namespace INF;
 
 void CreateVertexBuffer(GFX::IDevice* device, GFX::VertexBufferHandle& vertexBuffer, GFX::IndexBufferHandle& indexBuffer)
-{
+{ 
 
-	MeshData triangleMeshData = GFX::MeshGenerator::UVSphere(36,18);
+	MeshData triangleMeshData = GFX::MeshGenerator::UVSphere();
 	MeshDataBuffer packedVertexData;
 	MeshDataBuffer packedIndexData;
-	GFX::MeshGenerator::PackMesh(triangleMeshData, packedVertexData, packedIndexData, false, true, true);
+	GFX::MeshGenerator::PackMesh(triangleMeshData, packedVertexData, packedIndexData, true, true, false);
 
 	//staging buffer
 	GFX::BufferDesc indexStagingBufferDesc;
@@ -171,7 +172,7 @@ int main()
 		meshInstance.transform.UpdateTransform();
 
 		glm::vec3 pos1 = -posOffset * 2.0f;
-		pos1.z -= 5.0f;
+		pos1.z -= 2.0f;
 		meshInstance1.transform.SetPosition(pos1);
 		//meshInstance1.transform.Rotate(glm::vec3(0.0f, 1.0f, 0.0f), 0.005f);
 		meshInstance1.transform.UpdateTransform();

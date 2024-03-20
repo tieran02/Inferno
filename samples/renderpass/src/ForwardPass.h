@@ -5,10 +5,13 @@
 using namespace INF;
 using namespace INF::GFX;
 
-struct ViewBufferStruct
+struct SceneBufferStruct
 {
-	glm::mat4 view{ 1 };;
-	glm::mat4 projection{ 1 };;
+	glm::mat4 view{ 1 };
+	glm::mat4 projection{ 1 };
+	glm::vec4 ambientColor{ 0.2f, 0.2f, 0.2f, 1.0f };
+	glm::vec4 lightColor{ 1.0f, 1.0f, 1.0f, 1.0f };
+	glm::vec4 lightDir{ 0.25f, 0.5f, 0.6f, 1.0f };
 };
 
 struct ConstantBufferStruct

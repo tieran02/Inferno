@@ -6,7 +6,7 @@ using namespace INF::GFX;
 
 namespace
 {
-	void CalculatePlane(std::vector<glm::vec3>& vertices, std::vector<glm::vec2>& uvs, std::vector<glm::vec3>& colours, std::vector<IndexFormat>& indices,
+	void CalculatePlane(std::vector<glm::vec3>& vertices, std::vector<glm::vec3>& normals, std::vector<glm::vec2>& uvs, std::vector<glm::vec3>& colours, std::vector<IndexFormat>& indices,
 		const glm::vec3& origin, const glm::vec3& right, const glm::vec3& up, int rSegments = 2, int uSegments = 2)
 	{
 		float rInv = 1.0f / (rSegments - 1);
@@ -21,6 +21,7 @@ namespace
 				vertices.push_back(origin + right * (rr - 0.5f) + up * (ru - 0.5f));
 				colours.push_back(right * (rr - 0.5f) + up * (ru - 0.5f));
 				uvs.push_back(glm::vec2(1.0f - rr, 1.0f - ru));
+				normals.push_back(glm::normalize(origin));
 			}
 
 			if (y < uSegments - 1) {
@@ -169,37 +170,37 @@ MeshData MeshGenerator::CubePrimative()
 
 	// front
 	CalculatePlane(
-		meshData.Positions, meshData.TexCoords, meshData.Colours, meshData.Indices,
+		meshData.Positions, meshData.Normals, meshData.TexCoords, meshData.Colours, meshData.Indices,
 		forward * -hd, right * width, up * height, widthSegments, heightSegments
 	);
 
 	// right
 	CalculatePlane(
-		meshData.Positions, meshData.TexCoords, meshData.Colours, meshData.Indices,
+		meshData.Positions, meshData.Normals, meshData.TexCoords, meshData.Colours, meshData.Indices,
 		right * hw, forward * depth, up * height, depthSegments, heightSegments
 	);
 
 	// back
 	CalculatePlane(
-		meshData.Positions, meshData.TexCoords, meshData.Colours, meshData.Indices,
+		meshData.Positions, meshData.Normals, meshData.TexCoords, meshData.Colours, meshData.Indices,
 		forward * hd, left * width, up * height, widthSegments, heightSegments
 	);
 
 	// left
 	CalculatePlane(
-		meshData.Positions, meshData.TexCoords, meshData.Colours, meshData.Indices,
+		meshData.Positions, meshData.Normals, meshData.TexCoords, meshData.Colours, meshData.Indices,
 		right * -hw, back * depth, up * height, depthSegments, heightSegments
 	);
 
 	// top
 	CalculatePlane(
-		meshData.Positions, meshData.TexCoords, meshData.Colours, meshData.Indices,
+		meshData.Positions, meshData.Normals, meshData.TexCoords, meshData.Colours, meshData.Indices,
 		up * hh, right * width, forward * depth, widthSegments, depthSegments
 	);
 
 	// bottom
 	CalculatePlane(
-		meshData.Positions, meshData.TexCoords, meshData.Colours, meshData.Indices,
+		meshData.Positions, meshData.Normals, meshData.TexCoords, meshData.Colours, meshData.Indices,
 		up * -hh, right * width, back * depth, widthSegments, depthSegments
 	);
 

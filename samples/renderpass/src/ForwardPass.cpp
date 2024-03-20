@@ -5,7 +5,7 @@
 #include "graphics/Bitmap.h"
 
 ConstantBufferStruct cbVS;
-ViewBufferStruct cbView;
+SceneBufferStruct cbScene;
 
 ForwardPass::ForwardPass()
 {
@@ -69,6 +69,9 @@ void ForwardPass::CreatePipeline(GFX::IDevice* device, IFramebuffer* fb)
 	viewDescriptorDesc.VS[0].registerSpace = 0;
 	viewDescriptorDesc.VS[0].slot = 0;
 	viewDescriptorDesc.VS[0].type = GFX::ResourceType::CONSTANTBUFFER; //ViewProjecton buffer
+	viewDescriptorDesc.PS[0].registerSpace = 0;
+	viewDescriptorDesc.PS[0].slot = 0;
+	viewDescriptorDesc.PS[0].type = GFX::ResourceType::CONSTANTBUFFER; //ViewProjecton buffer
 	m_viewDescriptorLayoutHandle = device->CreateDescriptorLayout(viewDescriptorDesc);
 
 	GFX::DescriptorLayoutDesc meshDescriptorDesc;
@@ -86,12 +89,12 @@ void ForwardPass::CreatePipeline(GFX::IDevice* device, IFramebuffer* fb)
 
 	GFX::ShaderDesc vertexShaderDesc;
 	vertexShaderDesc.shaderType = GFX::ShaderType::Vertex;
-	vertexShaderDesc.shaderPath = "data/shaders/constantBuffer.vert.dxil";
+	vertexShaderDesc.shaderPath = "data/shaders/forwardPass.vert.dxil";
 	GFX::ShaderHandle vertexShader = device->CreateShader(vertexShaderDesc);
 
 	GFX::ShaderDesc pixelShaderDesc;
 	pixelShaderDesc.shaderType = GFX::ShaderType::Pixel;
-	pixelShaderDesc.shaderPath = "data/shaders/constantBuffer.pixel.dxil";
+	pixelShaderDesc.shaderPath = "data/shaders/forwardPass.pixel.dxil";
 	GFX::ShaderHandle pixelShader = device->CreateShader(pixelShaderDesc);
 
 
@@ -106,7 +109,7 @@ void ForwardPass::CreatePipeline(GFX::IDevice* device, IFramebuffer* fb)
 	pipelineDesc.descriptorLayoutSet = { m_viewDescriptorLayoutHandle, m_meshDescriptorHandle};
 
 	pipelineDesc.inputLayoutDesc.emplace_back("POSITION", GFX::Format::RGB32_FLOAT);
-	pipelineDesc.inputLayoutDesc.emplace_back("COLOR", GFX::Format::RGB32_FLOAT);
+	pipelineDesc.inputLayoutDesc.emplace_back("NORMAL", GFX::Format::RGB32_FLOAT);
 	pipelineDesc.inputLayoutDesc.emplace_back("TEXCOORD", GFX::Format::RG32_FLOAT);
 
 	m_pipeline = device->CreateGraphicsPipeline(pipelineDesc, fb);
@@ -123,6 +126,7 @@ void ForwardPass::CreatePipeline(GFX::IDevice* device, IFramebuffer* fb)
 	
 	GFX::DescriptorSetDesc viewDescriptorSetDesc;
 	viewDescriptorSetDesc.VS[0] = GFX::DescriptorSetItem::ConstantBuffer(0, m_viewConstantBuffer.get());
+	viewDescriptorSetDesc.PS[0] = GFX::DescriptorSetItem::ConstantBuffer(0, m_viewConstantBuffer.get());
 	m_viewDescriptorHandle = device->CreateDescriptorSet(viewDescriptorSetDesc, m_viewDescriptorLayoutHandle.get());
 
 }
@@ -133,10 +137,12 @@ void ForwardPass::Prepare(ICommandList* commandList, const View& view, MeshInsta
 	m_meshCount = meshCount;
 	m_view = view;
 
+	//cbScene.lightDir = glm::vec4(0.0f, 1.0f, 0.0f, 1.0f);
+	cbScene.ambientColor = glm::vec4(0.05f, 0.05f, 0.05f, 1.0f);
 
-	cbView.projection = m_view.GetProjectionMatrix();
-	cbView.view = m_view.GetViewMatrix();
-	commandList->WriteBuffer(m_viewConstantBuffer.get(), &cbView, sizeof(cbView));
+	cbScene.projection = m_view.GetProjectionMatrix();
+	cbScene.view = m_view.GetViewMatrix();
+	commandList->WriteBuffer(m_viewConstantBuffer.get(), &cbScene, sizeof(cbScene));
 
 	//View and projection should really be in thier own buffer as its not per mesh
 	for (int i = 0; i < meshCount; ++i)

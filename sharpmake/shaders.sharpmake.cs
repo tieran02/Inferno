@@ -21,7 +21,7 @@ namespace Inferno
                 string filename = Path.GetFileName(vertexEntry);
                 filename = Path.ChangeExtension(filename, ".dxil");
                 string dest = Path.Combine(outputDir, filename);
-                cmd += $"{DXC} -T vs_6_3 -Fo {dest} {vertexEntry}\n";
+                cmd += $"{DXC} /Zi -T vs_6_3 -Fo {dest} {vertexEntry}\n";
             }
 
             //Pixel shaders
@@ -32,7 +32,7 @@ namespace Inferno
                 string filename = Path.GetFileName(pixelEntry);
                 filename = Path.ChangeExtension(filename, ".dxil");
                 string dest = Path.Combine(outputDir, filename);
-                cmd += $"{DXC} -T ps_6_3 -Fo {dest} {pixelEntry}\n";
+                cmd += $"{DXC} /Zi -T ps_6_3 -Fo {dest} {pixelEntry}\n";
             }
             return cmd;
         }

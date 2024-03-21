@@ -28,6 +28,7 @@ namespace INF
 		void SetInputMouseCursorRegisterCallback(InputRegisterMouseCursorFn inputRegisterMouseCursorFn) override;
 
 		void* GetNativeHandle() override;
+		GLFWwindow* GLFWWindow() { return m_window; }
 
 	private:
 		std::string m_title;

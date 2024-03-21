@@ -32,6 +32,8 @@ D3D12DeviceManager::~D3D12DeviceManager()
 	//m_FrameFence->Release();
 	m_frameFence = nullptr;
 
+	m_imgui.Shutdown();
+
 	m_frameBufferMemory.clear();
 	m_swapchainTextures.clear();
 
@@ -142,6 +144,9 @@ bool D3D12DeviceManager::CreateDeviceAndSwapChain(IWindow* window, const DeviceC
 		m_frameBufferMemory[bufferIndex]->SetName(std::format(L"FrameMemory_{0}", bufferIndex).c_str());
 	}
 
+	//create imgui context
+	m_imgui.CreateContext(window, this);
+
 	return true;
 }
 
@@ -171,5 +176,15 @@ void D3D12DeviceManager::Present()
 FrameBufferMemory* D3D12DeviceManager::GetFrameBufferMemory()
 {
 	return m_frameBufferMemory[m_currentSwapchainBuffer].get();
+}
+
+void D3D12DeviceManager::RenderImgui(ICommandList* commandList)
+{
+	m_imgui.Render(commandList);
+}
+
+void D3D12DeviceManager::ImguiNewFrame()
+{
+	m_imgui.NewFrame();
 }
 

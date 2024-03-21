@@ -6,6 +6,7 @@
 #include "graphics/d3d12/D3D12CommandList.h"
 #include "graphics/interface/Texture.h"
 #include "graphics/d3d12/D3D12Device.h"
+#include "D3D12Imgui.h"
 
 namespace INF::GFX
 {
@@ -28,6 +29,9 @@ namespace INF::GFX
 		ITexture* GetBackBufferTexture(uint32_t backbufferIndex) override;
 
 		FrameBufferMemory* GetFrameBufferMemory();
+
+		void ImguiNewFrame() override;
+		void RenderImgui(ICommandList* commandList) override;
 	private:
 		DeviceCreationParameters m_createInfo;
 
@@ -44,5 +48,7 @@ namespace INF::GFX
 		std::vector<std::shared_ptr<FrameBufferMemory>> m_frameBufferMemory;
 
 		uint32_t m_currentSwapchainBuffer;
+
+		D3D12Imgui m_imgui;
 	};
 }

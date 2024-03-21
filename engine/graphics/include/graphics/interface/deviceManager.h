@@ -42,6 +42,9 @@ namespace INF::GFX
 
 		virtual void BeginFrame() = 0;
 		virtual void Present() = 0;
+
+		virtual void ImguiNewFrame() = 0;
+		virtual void RenderImgui(ICommandList* commandList) = 0;
 	};
 
 }

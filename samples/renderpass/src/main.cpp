@@ -4,6 +4,7 @@
 #include "graphics/Graphics.h"
 #include "ForwardPass.h"
 #include "graphics/MeshGenerator.h"
+#include "imgui.h"
 
 struct vertex
 {
@@ -66,11 +67,22 @@ int main()
 	GFX::DeviceCreationParameters deviceInfo;
 	deviceInfo.enableDebugValidation = true;
 	deviceInfo.vsync = false;
-	deviceInfo.backBufferWidth = 1280;
-	deviceInfo.backBufferHeight = 720;
+	deviceInfo.backBufferWidth = 1920;
+	deviceInfo.backBufferHeight = 1080;
 
 	Log::Info("Starting editor");
 	std::unique_ptr<IWindow> window = IWindow::Create("Render Pass", deviceInfo.backBufferWidth, deviceInfo.backBufferHeight);
+	Input input;
+	window->SetInputKeyRegisterCallback(input.GetRegisterKeyFn());
+	window->SetInputMouseButtonRegisterCallback(input.GetRegisterMouseButtonFn());
+	window->SetInputMouseCursorRegisterCallback(input.GetRegisterMouseCursorFn());
+
+	int shouldClose = false;
+	window->SetCloseCallBack([&shouldClose]
+		{
+			shouldClose = true;
+		});
+
 
 	GFX::DeviceManagerHandle deviceManager = GFX::IDeviceManager::Create(GFX::API::D3D12, deviceInfo);
 	deviceManager->CreateDeviceAndSwapChain(window.get(), deviceInfo);
@@ -99,17 +111,6 @@ int main()
 
 	ForwardPass forwardPass;
 	forwardPass.Init(device, framebuffers[0].get());
-
-	Input input;
-	window->SetInputKeyRegisterCallback(input.GetRegisterKeyFn());
-	window->SetInputMouseButtonRegisterCallback(input.GetRegisterMouseButtonFn());
-	window->SetInputMouseCursorRegisterCallback(input.GetRegisterMouseCursorFn());
-
-	int shouldClose = false;
-	window->SetCloseCallBack([&shouldClose]
-		{
-			shouldClose = true;
-		});
 
 	GFX::View view(70.0f, (float)deviceInfo.backBufferWidth / (float)deviceInfo.backBufferHeight, 0.1f, 100.0);
 	view.SetViewport(GFX::Viewport(0, 0, deviceInfo.backBufferWidth, deviceInfo.backBufferHeight));
@@ -178,6 +179,9 @@ int main()
 		meshInstance1.transform.UpdateTransform();
 
 		deviceManager->BeginFrame();
+		deviceManager->ImguiNewFrame();
+
+		ImGui::ShowDemoWindow(); // Show demo window! :)
 
 		cmd->Open();
 
@@ -192,6 +196,9 @@ int main()
 		auto frame = deviceManager->GetCurrentBackBufferIndex();
 		IFramebuffer* backBuffer = framebuffers[frame].get();
 		forwardPass.Render(cmd.get(), backBuffer);
+
+		//add imgui to commandlist
+		deviceManager->RenderImgui(cmd.get());
 
 		//transition to present for swapchain
 		cmd->Close();

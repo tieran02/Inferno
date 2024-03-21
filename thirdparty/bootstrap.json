@@ -45,5 +45,13 @@
 			"url": "https://github.com/syoyo/tinygltf.git",
 			"revision": "v2.8.21"
 		}
+	},
+		{
+		"name": "imgui",
+		"source": {
+			"type": "git",
+			"url": "https://github.com/ocornut/imgui.git",
+			"revision": "085781f5ca5372d5fc804d7e44b5bf27a8994af7"
+		}
 	}
 ]

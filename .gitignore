@@ -5,3 +5,4 @@ thirdparty/.bootstrap.json
 
 projects/
 *.dxil
+*.ini

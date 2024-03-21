@@ -23,7 +23,9 @@ namespace Inferno
             conf.AddPublicDependency<CoreLib>(target);
             conf.IncludePaths.Add(Defines.Paths.INFERNO_CORE_INC);
 
+            conf.AddPublicDependency<IMGUILib>(target);
             conf.AddPublicDependency<GraphicsD3D12Lib>(target);
+
             conf.IncludePaths.Add(GraphicsD3D12Lib.INFERNO_GRAPHICS_D3D12_INC);
             conf.IncludePaths.Add(Path.Combine(Defines.Paths.INFERNO_THIRD_PARTY, @"directxheaders/include"));
             conf.IncludePaths.Add(Path.Combine(Defines.Paths.INFERNO_THIRD_PARTY, @"stb"));
@@ -50,6 +52,7 @@ namespace Inferno
             conf.IncludePaths.Add(INFERNO_GRAPHICS_D3D12_INC);
 
             conf.AddPublicDependency<CoreLib>(target);
+            conf.AddPublicDependency<IMGUILib>(target);
 
             //d3d12 headers and linking
             conf.IncludePaths.Add(Path.Combine(Defines.Paths.INFERNO_THIRD_PARTY, @"directxheaders/include"));

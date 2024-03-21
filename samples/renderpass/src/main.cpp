@@ -181,8 +181,6 @@ int main()
 		deviceManager->BeginFrame();
 		deviceManager->ImguiNewFrame();
 
-		ImGui::ShowDemoWindow(); // Show demo window! :)
-
 		cmd->Open();
 
 		

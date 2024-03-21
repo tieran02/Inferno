@@ -55,12 +55,12 @@ PixelOutput PSmain(PixelInput pixelInput)
 {
     float3 diffuse = g_texture.Sample(samp, pixelInput.uv).rgb;
     float3 normal = normalize(pixelInput.normal).xyz;
-    //float3 dir = normalize(lightDir).xyz;
+    float3 dir = normalize(lightDir).xyz;
 
     float3 finalColor;
 
     finalColor = diffuse * ambientColor.rgb;
-    finalColor += saturate(dot(lightDir.xyz, normal) * lightColor.rgb * diffuse);
+    finalColor += saturate(dot(dir, normal) * lightColor.rgb * diffuse);
 
     PixelOutput output;
     output.attachment0 = float4(finalColor, 1.0);

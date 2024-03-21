@@ -3,6 +3,7 @@
 #include "core.h"
 #include "graphics/Graphics.h"
 #include "graphics/Bitmap.h"
+#include "imgui.h"
 
 ConstantBufferStruct cbVS;
 SceneBufferStruct cbScene;
@@ -140,7 +141,13 @@ void ForwardPass::Prepare(ICommandList* commandList, const View& view, MeshInsta
 	m_view = view;
 
 	//cbScene.lightDir = glm::vec4(0.0f, 1.0f, 0.0f, 1.0f);
-	cbScene.ambientColor = glm::vec4(0.05f, 0.05f, 0.05f, 1.0f);
+	//cbScene.ambientColor = glm::vec4(0.05f, 0.05f, 0.05f, 1.0f);
+
+	ImGui::Begin("Light");
+	ImGui::DragFloat4("Direction", &cbScene.lightDir.r, 0.05, -1.0f, 1.0f);
+	ImGui::ColorEdit4("Light Color", &cbScene.lightColor.r);
+	ImGui::ColorEdit4("Ambient Color", &cbScene.ambientColor.r);
+	ImGui::End();
 
 	cbScene.projection = m_view.GetProjectionMatrix();
 	cbScene.view = m_view.GetViewMatrix();

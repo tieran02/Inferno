@@ -46,3 +46,18 @@ void View::SetProjectionMatrix(float fov, float aspect, float near, float far)
 
 	m_perspective = glm::perspective(fov, aspect, near, far);
 }
+
+const glm::vec3& View::Front() const
+{
+	return m_view[2];
+}
+
+const glm::vec3& View::Up() const
+{
+	return m_view[1];
+}
+
+const glm::vec3& View::Right() const
+{
+	return m_view[0];
+}

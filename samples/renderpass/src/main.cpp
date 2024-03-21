@@ -97,32 +97,43 @@ int main()
 		float elapsed = (duration(clock::now() - start)).count();
 
 		//move camera with WASD
+		glm::vec3 front = view.Front();
+		glm::vec3 up = view.Up();
+		glm::vec3 right = view.Right();
 		if (input.IsKeyDown(KeyCode::A))
 		{
-			view.Translate(-VectorRight * 0.01f);
+			view.Translate(right * 0.01f);
 		}
 		if (input.IsKeyDown(KeyCode::D))
 		{
-			view.Translate(VectorRight * 0.01f);
+			view.Translate(-right * 0.01f);
 		}
 		if (input.IsKeyDown(KeyCode::W))
 		{
-			view.Translate(VectorUp * 0.01f);
+			view.Translate(front * 0.01f);
 		}
 		if (input.IsKeyDown(KeyCode::S))
 		{
-			view.Translate(-VectorUp * 0.01f);
+			view.Translate(-front * 0.01f);
+		}
+		if (input.IsKeyDown(KeyCode::Space))
+		{
+			view.Translate(-up * 0.01f);
+		}
+		if (input.IsKeyDown(KeyCode::LeftControl))
+		{
+			view.Translate(up * 0.01f);
 		}
 
 		glm::vec3 posOffset = glm::vec3(sinf(elapsed * 0.001f), 0.0f, 0.0f);
-		meshInstance.transform.SetPosition(posOffset * 2.0f);
-		//meshInstance.transform.Rotate(glm::vec3(0.0f, 1.0f, 0.0f), 0.005f);
+		//meshInstance.transform.SetPosition(posOffset * 2.0f);
+		meshInstance.transform.Rotate(glm::vec3(0.0f, 1.0f, 0.0f), 0.005f);
 		meshInstance.transform.UpdateTransform();
 
 		glm::vec3 pos1 = -posOffset * 2.0f;
 		pos1.z -= 2.0f;
 		meshInstance1.transform.SetPosition(pos1);
-		//meshInstance1.transform.Rotate(glm::vec3(0.0f, 1.0f, 0.0f), 0.005f);
+		meshInstance1.transform.Rotate(glm::vec3(0.0f, 1.0f, 0.0f), 0.005f);
 		meshInstance1.transform.UpdateTransform();
 
 		deviceManager->BeginFrame();

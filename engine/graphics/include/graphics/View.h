@@ -25,6 +25,10 @@ namespace INF::GFX
 		const glm::mat4& GetProjectionMatrix() const { return m_perspective; }
 		const Viewport& GetViewport() const { return m_viewport; }
 		const Rect& GetScissor() const { return m_scissor; }
+
+		const glm::vec3& Front() const;
+		const glm::vec3& Up() const;
+		const glm::vec3& Right() const;
 	private:
 		glm::mat4 m_view{ 1 };
 		glm::mat4 m_perspective{ 1 };

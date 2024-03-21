@@ -30,7 +30,7 @@ VertexOutput VSmain(VertexInput vertexInput)
 {
     VertexOutput output;
     output.position = mul(mul(projectionMatrix, mul(viewMatrix, modelMatrix)), float4(vertexInput.inPos, 1.0f));
-    output.normal = mul(transpose(modelMatrix), float4(vertexInput.inNormal, 1.0f)).xyz;
+    output.normal = mul((float3x3)modelMatrix, vertexInput.inNormal);
 
     output.uv = vertexInput.inuv;
     return output;

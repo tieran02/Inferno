@@ -38,11 +38,13 @@ void Transform::Rotate(const glm::quat& quaternion)
 void Transform::Rotate(const glm::vec3& eulerAxis, float angle)
 {
 	m_rotation = glm::rotate(m_rotation, angle, eulerAxis);
+	SetDirty();
 }
 
 void Transform::SetScale(const glm::vec3& scale)
 {
 	m_scale = scale;
+	SetDirty();
 }
 
 const glm::vec3& Transform::GetPosition() const

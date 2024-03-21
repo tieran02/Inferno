@@ -3,6 +3,7 @@
 #include "graphics/interface/comandlist.h"
 #include "graphics/interface/Texture.h"
 
+
 using namespace INF::GFX;
 
 void IGeometryPass::Render(ICommandList* commandList, IFramebuffer* framebuffer)

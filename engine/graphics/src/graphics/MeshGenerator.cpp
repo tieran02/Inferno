@@ -1,6 +1,7 @@
 #include "infPCH.h"
 #include "graphics/MeshGenerator.h"
 #include <math.h>
+#include "graphics/interface/device.h"
 
 using namespace INF::GFX;
 
@@ -42,21 +43,36 @@ namespace
 	}
 }
 
-void MeshGenerator::PackMesh(const MeshData& mesh, MeshDataBuffer& outVertexData, MeshDataBuffer& outIndexData, bool useNormals, bool useTexCoords, bool useColours)
+
+void MeshGenerator::PackMesh(const MeshData& mesh, IDevice* device, MeshBuffer& outMeshBuffer, bool useNormals, bool useTexCoords, bool useColours)
 {
 	const size_t vertexCount = mesh.Positions.size();
 	const size_t indexSize = mesh.Indices.size() * sizeof(IndexFormat);
-	size_t vertexDataSize = vertexCount * sizeof(glm::vec3);
+	size_t vertexDataStride = sizeof(glm::vec3);
 
 	if (useNormals)
-		vertexDataSize += vertexCount * sizeof(glm::vec3);
+		vertexDataStride += sizeof(glm::vec3);
 	if (useColours)
-		vertexDataSize += vertexCount * sizeof(glm::vec3);
+		vertexDataStride += sizeof(glm::vec3);
 	if (useTexCoords)
-		vertexDataSize += vertexCount * sizeof(glm::vec2);
+		vertexDataStride += sizeof(glm::vec2);
 
-	outVertexData.resize(vertexDataSize);
-	outIndexData.resize(indexSize);
+	size_t vertexDataSize = vertexCount * vertexDataStride;
+
+	GFX::VertexBufferDesc vertexBufferDesc;
+	vertexBufferDesc.access = GFX::CpuVisible::WRITE;
+	vertexBufferDesc.byteSize = static_cast<uint32_t>(vertexDataSize);
+	vertexBufferDesc.strideInBytes = static_cast<uint32_t>(vertexDataStride);
+	outMeshBuffer.vertexBuffer = device->CreateVertexBuffer(vertexBufferDesc);
+
+	GFX::IndexBufferDesc indexBufferDesc;
+	indexBufferDesc.access = GFX::CpuVisible::WRITE;
+	indexBufferDesc.format = GFX::Format::R16_UINT;
+	indexBufferDesc.byteSize = static_cast<uint32_t>(indexSize);
+	outMeshBuffer.indexBuffer = device->CreateIndexBuffer(indexBufferDesc);
+
+	uint8_t* outVertexData = (uint8_t*)device->MapBuffer(outMeshBuffer.vertexBuffer->GetBuffer());
+	uint8_t* outIndexData = (uint8_t*)device->MapBuffer(outMeshBuffer.indexBuffer->GetBuffer());
 
 	size_t offset = 0;
 	for (int i = 0; i < vertexCount; i++)
@@ -84,7 +100,10 @@ void MeshGenerator::PackMesh(const MeshData& mesh, MeshDataBuffer& outVertexData
 	}
 
 	offset = 0;
-	memcpy(outIndexData.data(), mesh.Indices.data(), indexSize);
+	memcpy(outIndexData, mesh.Indices.data(), indexSize);
+
+	device->UnmapBuffer(outMeshBuffer.vertexBuffer->GetBuffer());
+	device->UnmapBuffer(outMeshBuffer.indexBuffer->GetBuffer());
 }
 
 MeshData MeshGenerator::TrianglePrimative()

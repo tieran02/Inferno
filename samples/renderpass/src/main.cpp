@@ -6,61 +6,7 @@
 #include "graphics/MeshGenerator.h"
 #include "imgui.h"
 
-struct vertex
-{
-	glm::vec3 pos;
-	glm::vec3 normal;
-	glm::vec2 uv;
-};
-
 using namespace INF;
-
-void CreateVertexBuffer(GFX::IDevice* device, GFX::VertexBufferHandle& vertexBuffer, GFX::IndexBufferHandle& indexBuffer)
-{ 
-
-	MeshData triangleMeshData = GFX::MeshGenerator::UVSphere();
-	MeshDataBuffer packedVertexData;
-	MeshDataBuffer packedIndexData;
-	GFX::MeshGenerator::PackMesh(triangleMeshData, packedVertexData, packedIndexData, true, true, false);
-
-	//staging buffer
-	GFX::BufferDesc indexStagingBufferDesc;
-	indexStagingBufferDesc.access = GFX::CpuVisible::WRITE;
-	indexStagingBufferDesc.byteSize = static_cast<uint32_t>(packedIndexData.size());
-	indexStagingBufferDesc.usage = GFX::BufferUsage::GENERIC;
-	GFX::BufferHandle indexStagingBuffer = device->CreateBuffer(indexStagingBufferDesc);
-	void* dest = device->MapBuffer(indexStagingBuffer.get());
-	memcpy(dest, packedIndexData.data(), indexStagingBufferDesc.byteSize);
-
-	//create index buffer
-	GFX::IndexBufferDesc indexBufferDesc;
-	indexBufferDesc.access = GFX::CpuVisible::NONE;
-	indexBufferDesc.format = GFX::Format::R16_UINT;
-	indexBufferDesc.byteSize = static_cast<uint32_t>(packedIndexData.size());
-	indexBuffer = device->CreateIndexBuffer(indexBufferDesc);
-
-	//staging buffer
-	GFX::BufferDesc vertexStagingBufferDesc;
-	vertexStagingBufferDesc.access = GFX::CpuVisible::WRITE;
-	vertexStagingBufferDesc.byteSize = static_cast<uint32_t>(packedVertexData.size());
-	vertexStagingBufferDesc.usage = GFX::BufferUsage::GENERIC;
-	GFX::BufferHandle vertexStagingBuffer = device->CreateBuffer(vertexStagingBufferDesc);
-	dest = device->MapBuffer(vertexStagingBuffer.get());
-	memcpy(dest, packedVertexData.data(), vertexStagingBufferDesc.byteSize);
-
-	//create vertex buffer
-	GFX::VertexBufferDesc vertexBufferDesc;
-	vertexBufferDesc.access = GFX::CpuVisible::NONE;
-	vertexBufferDesc.byteSize = static_cast<uint32_t>(packedVertexData.size());
-	vertexBufferDesc.strideInBytes = sizeof(vertex);
-	vertexBuffer = device->CreateVertexBuffer(vertexBufferDesc);
-
-	device->ImmediateSubmit([=](GFX::ICommandList* cmd)
-		{
-			cmd->CopyBuffer(vertexBuffer->GetBuffer(), 0, vertexStagingBuffer.get(), 0, vertexStagingBufferDesc.byteSize);
-			cmd->CopyBuffer(indexBuffer->GetBuffer(), 0, indexStagingBuffer.get(), 0, indexStagingBufferDesc.byteSize);
-		});
-}
 
 int main()
 {
@@ -118,23 +64,24 @@ int main()
 	view.SetPosition(glm::vec3(0.0f, 2.0f, 2.0f));
 	view.LookAt(glm::vec3(0.0f, 0.0f, 0.1f), glm::vec3(0, 1, 0));
 
-	GFX::VertexBufferHandle vertexBuffer;
-	GFX::IndexBufferHandle indexBuffer;
-	CreateVertexBuffer(device, vertexBuffer, indexBuffer);
+	MeshInfo sphereMeshInfo;
+	GFX::MeshGenerator::PackMesh(GFX::MeshGenerator::UVSphere(), device, sphereMeshInfo.buffer, true, true, false);
+	sphereMeshInfo.indexOffset = 0;
+	sphereMeshInfo.numVertices = sphereMeshInfo.buffer.vertexBuffer->GetDesc().VertexCount();
+	sphereMeshInfo.numIndices = sphereMeshInfo.buffer.indexBuffer->GetDesc().IndexCount();
 
-	MeshInfo meshInfo;
-	meshInfo.buffer.vertexBuffer = vertexBuffer;
-	meshInfo.buffer.indexBuffer = indexBuffer;
-	meshInfo.indexOffset = 0;
-	meshInfo.numVertices = vertexBuffer->GetDesc().VertexCount();
-	meshInfo.numIndices = indexBuffer->GetDesc().IndexCount();
+	MeshInfo cubeMeshInfo;
+	GFX::MeshGenerator::PackMesh(GFX::MeshGenerator::CubePrimative(), device, cubeMeshInfo.buffer, true, true, false);
+	cubeMeshInfo.indexOffset = 0;
+	cubeMeshInfo.numVertices = sphereMeshInfo.buffer.vertexBuffer->GetDesc().VertexCount();
+	cubeMeshInfo.numIndices = sphereMeshInfo.buffer.indexBuffer->GetDesc().IndexCount();
 
 	MeshInstance meshInstance;
-	meshInstance.mesh = &meshInfo;
+	meshInstance.mesh = &sphereMeshInfo;
 	meshInstance.instanceOffset = 0;
 
 	MeshInstance meshInstance1;
-	meshInstance1.mesh = &meshInfo;
+	meshInstance1.mesh = &cubeMeshInfo;
 	meshInstance1.instanceOffset = 0;
 
 	

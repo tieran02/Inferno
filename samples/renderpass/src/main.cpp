@@ -73,8 +73,8 @@ int main()
 	MeshInfo cubeMeshInfo;
 	GFX::MeshGenerator::PackMesh(GFX::MeshGenerator::CubePrimative(), device, cubeMeshInfo.buffer, true, true, false);
 	cubeMeshInfo.indexOffset = 0;
-	cubeMeshInfo.numVertices = sphereMeshInfo.buffer.vertexBuffer->GetDesc().VertexCount();
-	cubeMeshInfo.numIndices = sphereMeshInfo.buffer.indexBuffer->GetDesc().IndexCount();
+	cubeMeshInfo.numVertices = cubeMeshInfo.buffer.vertexBuffer->GetDesc().VertexCount();
+	cubeMeshInfo.numIndices = cubeMeshInfo.buffer.indexBuffer->GetDesc().IndexCount();
 
 	MeshInstance meshInstance;
 	meshInstance.mesh = &sphereMeshInfo;
@@ -86,54 +86,63 @@ int main()
 
 	
 	std::array<MeshInstance*, 2> meshes{&meshInstance, &meshInstance1};
+
+	typedef std::chrono::steady_clock clock;
+	typedef std::chrono::duration<float, std::milli> duration;
+	auto previousTime = clock::now();
+
+	float elapsedTime = 0;
 	while (!shouldClose)
 	{
 		window->PollEvents();
 		input.Update();
 
-		typedef std::chrono::high_resolution_clock clock;
-		typedef std::chrono::duration<float, std::milli> duration;
-		static clock::time_point start = clock::now();
-		float elapsed = (duration(clock::now() - start)).count();
+		auto now = clock::now();
+		float deltaTime = std::chrono::duration_cast<duration>(now - previousTime).count() / 1000.0f;
+		previousTime = now;
+		elapsedTime += deltaTime;
+
+		INF::Log::Info(std::format("DeltaTime={0}", deltaTime));
 
 		//move camera with WASD
 		glm::vec3 front = view.Front();
 		glm::vec3 up = view.Up();
 		glm::vec3 right = view.Right();
+		static float moveSpeed = 3.0f;
 		if (input.IsKeyDown(KeyCode::A))
 		{
-			view.Translate(right * 0.01f);
+			view.Translate(right * moveSpeed * deltaTime);
 		}
 		if (input.IsKeyDown(KeyCode::D))
 		{
-			view.Translate(-right * 0.01f);
+			view.Translate(-right * moveSpeed * deltaTime);
 		}
 		if (input.IsKeyDown(KeyCode::W))
 		{
-			view.Translate(front * 0.01f);
+			view.Translate(front * moveSpeed * deltaTime);
 		}
 		if (input.IsKeyDown(KeyCode::S))
 		{
-			view.Translate(-front * 0.01f);
+			view.Translate(-front * moveSpeed * deltaTime);
 		}
 		if (input.IsKeyDown(KeyCode::Space))
 		{
-			view.Translate(-up * 0.01f);
+			view.Translate(-up * moveSpeed * deltaTime);
 		}
 		if (input.IsKeyDown(KeyCode::LeftControl))
 		{
-			view.Translate(up * 0.01f);
+			view.Translate(up * moveSpeed * deltaTime);
 		}
 
-		glm::vec3 posOffset = glm::vec3(sinf(elapsed * 0.001f), 0.0f, 0.0f);
+		glm::vec3 posOffset = glm::vec3(sinf(elapsedTime), 0.0f, 0.0f);
 		//meshInstance.transform.SetPosition(posOffset * 2.0f);
-		meshInstance.transform.Rotate(glm::vec3(0.0f, 1.0f, 0.0f), 0.005f);
+		meshInstance.transform.Rotate(glm::vec3(0.0f, 1.0f, 0.0f), moveSpeed * deltaTime);
 		meshInstance.transform.UpdateTransform();
 
 		glm::vec3 pos1 = -posOffset * 2.0f;
 		pos1.z -= 2.0f;
 		meshInstance1.transform.SetPosition(pos1);
-		meshInstance1.transform.Rotate(glm::vec3(0.0f, 1.0f, 0.0f), 0.005f);
+		meshInstance1.transform.Rotate(glm::vec3(0.0f, 1.0f, 0.0f), moveSpeed * deltaTime);
 		meshInstance1.transform.UpdateTransform();
 
 		deviceManager->BeginFrame();

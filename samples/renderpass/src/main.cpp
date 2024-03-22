@@ -75,12 +75,13 @@ int main()
 	SamplerHandle sampler;
 	TextureHandle texture;
 	TextureHandle texture1;
+	TextureHandle whiteTexture;
 	GFX::SamplerDesc samplerDesc;
 	sampler = device->CreateSampler(samplerDesc);
 
 	//Texture is temp till we pass in materials to MeshSet
 	GFX::Bitmap bitmap;
-	bitmap.Load("data/textures/uvTest.png");
+	bitmap.Load("data/textures/uvTest.png"); 
 
 	GFX::TextureDesc textureDesc;
 	textureDesc.width = bitmap.Width();
@@ -105,6 +106,17 @@ int main()
 			cmd->WriteTexture(texture1.get(), bitmap);
 		});
 
+	bitmap.Create(1, 1, Color(1.0f));
+	textureDesc.width = bitmap.Width();
+	textureDesc.height = bitmap.Height();
+	textureDesc.format = bitmap.GetFormat();
+	textureDesc.name = L"White texture";
+	whiteTexture = device->CreateTexture(textureDesc);
+	device->ImmediateSubmit([=](GFX::ICommandList* cmd)
+		{
+			cmd->WriteTexture(whiteTexture.get(), bitmap);
+		});
+
 	GFX::MaterialLibrary materialLib(device);
 
 	GFX::MaterialHandle sphereMaterial = materialLib.CreateMaterial<MaterialData>("SphereMaterial");
@@ -122,6 +134,13 @@ int main()
 	cubeMaterial->SetData("diffuseTexture", texture1, sampler);
 	cubeMaterial->UpdateDescriptorSet(device);
 
+	GFX::MaterialHandle whiteMaterial = materialLib.CreateMaterial<MaterialData>("WhiteMaterial");
+	whiteMaterial->SetObject<MaterialData>(device);
+	whiteMaterial->RegisterData("diffuseColour", &MaterialData::diffuseColour);
+	whiteMaterial->RegisterTexture("diffuseTexture", 0);
+	whiteMaterial->SetData("diffuseTexture", whiteTexture, sampler);
+	whiteMaterial->UpdateDescriptorSet(device);
+
 	const MaterialData& test = sphereMaterial->As<MaterialData>();
 
 	MeshInfo sphereMeshInfo;
@@ -138,17 +157,33 @@ int main()
 	cubeMeshInfo.numVertices = cubeMeshInfo.buffer.vertexBuffer->GetDesc().VertexCount();
 	cubeMeshInfo.numIndices = cubeMeshInfo.buffer.indexBuffer->GetDesc().IndexCount();
 
-	MeshInstance meshInstance;
-	meshInstance.mesh = &sphereMeshInfo;
-	meshInstance.instanceOffset = 0;
-	meshInstance.material = sphereMaterial.get();
+	MeshInfo quadMeshInfo;
+	quadMeshInfo.name = L"quad";
+	GFX::MeshGenerator::PackMesh(GFX::MeshGenerator::QuadPrimative(), device, quadMeshInfo, true, true, false);
+	quadMeshInfo.indexOffset = 0;
+	quadMeshInfo.numVertices = quadMeshInfo.buffer.vertexBuffer->GetDesc().VertexCount();
+	quadMeshInfo.numIndices = quadMeshInfo.buffer.indexBuffer->GetDesc().IndexCount();
 
-	MeshInstance meshInstance1;
-	meshInstance1.mesh = &cubeMeshInfo;
-	meshInstance1.instanceOffset = 0;
-	meshInstance1.material = cubeMaterial.get();
+	MeshInstance sphereMesh;
+	sphereMesh.mesh = &sphereMeshInfo;
+	sphereMesh.instanceOffset = 0;
+	sphereMesh.material = sphereMaterial.get();
 
-	std::array<MeshInstance*, 2> meshes{&meshInstance, &meshInstance1};
+	MeshInstance cubeMesh;
+	cubeMesh.mesh = &cubeMeshInfo;
+	cubeMesh.instanceOffset = 0;
+	cubeMesh.material = cubeMaterial.get();
+
+	MeshInstance planeMesh;
+	planeMesh.mesh = &quadMeshInfo;
+	planeMesh.instanceOffset = 0;
+	planeMesh.material = whiteMaterial.get();
+	planeMesh.transform.SetScale(glm::vec3(100, 100, 100));
+	planeMesh.transform.SetPosition(glm::vec3(0, -1, 0));
+	planeMesh.transform.Rotate(glm::vec3(1, 0, 0), glm::radians(-90.0f));
+	planeMesh.transform.UpdateTransform();
+
+	std::array<MeshInstance*, 3> meshes{&sphereMesh, &cubeMesh, &planeMesh};
 
 	typedef std::chrono::steady_clock clock;
 	typedef std::chrono::duration<float, std::milli> duration;
@@ -199,14 +234,14 @@ int main()
 
 		glm::vec3 posOffset = glm::vec3(sinf(elapsedTime), 0.0f, 0.0f);
 		//meshInstance.transform.SetPosition(posOffset * 2.0f);
-		meshInstance.transform.Rotate(glm::vec3(0.0f, 1.0f, 0.0f), moveSpeed * deltaTime);
-		meshInstance.transform.UpdateTransform();
+		sphereMesh.transform.Rotate(glm::vec3(0.0f, 1.0f, 0.0f), moveSpeed * deltaTime);
+		sphereMesh.transform.UpdateTransform();
 
 		glm::vec3 pos1 = -posOffset * 2.0f;
 		pos1.z -= 2.0f;
-		meshInstance1.transform.SetPosition(pos1);
-		meshInstance1.transform.Rotate(glm::vec3(0.0f, 1.0f, 0.0f), moveSpeed * deltaTime);
-		meshInstance1.transform.UpdateTransform();
+		cubeMesh.transform.SetPosition(pos1);
+		cubeMesh.transform.Rotate(glm::vec3(0.0f, 1.0f, 0.0f), moveSpeed * deltaTime);
+		cubeMesh.transform.UpdateTransform();
 
 		deviceManager->BeginFrame();
 		deviceManager->ImguiNewFrame();

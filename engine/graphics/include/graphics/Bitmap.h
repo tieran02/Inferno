@@ -8,6 +8,8 @@ namespace INF::GFX
 	public:
 		Bitmap() = default;
 		void Load(std::string_view filename);
+		void Create(uint32_t width, uint32_t height, const Color& fill);
+
 		const uint8_t* Data() const { return m_data.data(); }
 		size_t Size() const { return m_data.size(); }
 		uint32_t Width() const { return m_width; }

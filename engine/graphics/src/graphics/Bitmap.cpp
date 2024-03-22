@@ -30,6 +30,26 @@ void Bitmap::Load(std::string_view filename)
 	m_format = Format::RGBA8_UNORM;
 }
 
+
+void Bitmap::Create(uint32_t width, uint32_t height, const Color& fill)
+{
+	m_width = width;
+	m_height = height;
+
+	size_t bitmapSize = width * height * 4;
+	m_data.resize(bitmapSize);
+
+	uint8_t color[4];
+	color[0] = (uint8_t)std::clamp((fill.R * 256.0f), 0.0f, 255.0f);
+	color[1] = (uint8_t)std::clamp((fill.G * 256.0f), 0.0f, 255.0f);
+	color[2] = (uint8_t)std::clamp((fill.B * 256.0f), 0.0f, 255.0f);
+	color[3] = (uint8_t)std::clamp((fill.A * 256.0f), 0.0f, 255.0f);
+
+	uint8_t* dest = (uint8_t*)m_data.data();
+	std::fill_n(dest, bitmapSize, *color);
+}
+
+
 uint32_t Bitmap::ComponentCount() const
 {
 	//for now only 4 components are supported

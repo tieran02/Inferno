@@ -153,6 +153,14 @@ MeshData MeshGenerator::QuadPrimative()
 		{1.0f, 1.0f, 0.0f}
 	};
 
+	meshData.Normals =
+	{
+		{0.0f, 0.0f, 1.0f},
+		{0.0f, 0.0f, 1.0f},
+		{0.0f, 0.0f, 1.0f},
+		{0.0f, 0.0f, 1.0f}
+	};
+
 	meshData.TexCoords =
 	{
 		{0.0f, 0.0f},
@@ -183,8 +191,8 @@ MeshData MeshGenerator::CubePrimative()
 	const auto hh = height * 0.5f;
 	const auto hd = depth * 0.5f;
 
-	glm::vec3 forward(0, 0, 1);
-	glm::vec3 back(0, 0, -1);
+	glm::vec3 forward(0, 0, -1);
+	glm::vec3 back(0, 0, 1);
 	glm::vec3 up(0, 1, 0);
 	glm::vec3 right(1, 0, 0);
 	glm::vec3 left(-1, 0, 0);

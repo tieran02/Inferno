@@ -39,33 +39,13 @@ void ForwardPass::Init(GFX::IDevice* device, IFramebuffer* fb)
 	viewConstantBufferDesc.onlyValidDuringCommandList = true;
 	m_viewConstantBuffer = device->CreateBuffer(viewConstantBufferDesc);
 
-
-	GFX::SamplerDesc samplerDesc;
-	m_sampler = device->CreateSampler(samplerDesc);
-
-	//Texture is temp till we pass in materials to MeshSet
-	GFX::Bitmap bitmap;
-	bitmap.Load("data/textures/uvTest.png");
-
-	GFX::TextureDesc textureDesc;
-	textureDesc.width = bitmap.Width();
-	textureDesc.height = bitmap.Height();
-	textureDesc.format = bitmap.GetFormat();
-	textureDesc.name = L"Test texture";
-	textureDesc.initialState = (GFX::TRANSITION_STATES_FLAGS)GFX::TRANSITION_STATES::PIXEL_SHADER_RESOURCE;
-	m_texture = device->CreateTexture(textureDesc);
-	device->ImmediateSubmit([=](GFX::ICommandList* cmd)
-		{
-			cmd->WriteTexture(m_texture.get(), bitmap);
-		});
-
 	CreatePipeline(device, fb);
 }
 
 
 void ForwardPass::CreatePipeline(GFX::IDevice* device, IFramebuffer* fb)
 {
-	//descriptos
+	//descriptors
 	GFX::DescriptorLayoutDesc viewDescriptorDesc;
 	viewDescriptorDesc.VS[0].registerSpace = 0;
 	viewDescriptorDesc.VS[0].slot = 0;
@@ -107,7 +87,7 @@ void ForwardPass::CreatePipeline(GFX::IDevice* device, IFramebuffer* fb)
 	pipelineDesc.depthStencilState.depthTestEnable = true;
 	pipelineDesc.depthStencilState.depthWriteEnable = true;
 	pipelineDesc.depthStencilState.depthFunc = ComparisonFunc::LESS_OR_EQUAL;
-	pipelineDesc.rasterState.cullMode = GFX::RasterCullMode::NONE;
+	pipelineDesc.rasterState.cullMode = GFX::RasterCullMode::BACK;
 	pipelineDesc.descriptorLayoutSet = { m_viewDescriptorLayoutHandle, m_meshDescriptorHandle, m_materialDescriptorHandle};
 
 	pipelineDesc.inputLayoutDesc.emplace_back("POSITION", GFX::Format::RGB32_FLOAT);

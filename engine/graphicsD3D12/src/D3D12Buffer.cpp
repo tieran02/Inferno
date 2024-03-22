@@ -81,6 +81,8 @@ D3D12Buffer::D3D12Buffer(D3D12Device* device, const BufferDesc& desc) : m_desc(d
 		D3D12_CONSTANT_BUFFER_VIEW_DESC viewDesc = { m_resource->GetGPUVirtualAddress(), (UINT)bufferDesc.Width };
 		m_device->Device()->CreateConstantBufferView(&viewDesc, m_view.CPU);
 	}
+
+	m_resource->SetName(desc.name.c_str());
 }
 
 BufferDesc D3D12Buffer::GetDesc()

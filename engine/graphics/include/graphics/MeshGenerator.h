@@ -18,7 +18,7 @@ namespace INF::GFX
 
 	struct MeshInfo
 	{
-		std::string name;
+		std::wstring name;
 		MeshBuffer buffer;
 		uint32_t indexOffset{ 0 };
 		uint32_t vertexOffset{ 0 };
@@ -48,7 +48,7 @@ namespace INF::GFX
 	class MeshGenerator
 	{
 	public:
-		static void PackMesh(const MeshData& mesh, IDevice* device, MeshBuffer& outMeshBuffer, bool useNormals, bool useTexCoords, bool useColours);
+		static void PackMesh(const MeshData& mesh, IDevice* device, MeshInfo& meshInfo, bool useNormals, bool useTexCoords, bool useColours);
 		static MeshData TrianglePrimative();
 		static MeshData QuadPrimative();
 		static MeshData CubePrimative();

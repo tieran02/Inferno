@@ -44,7 +44,7 @@ namespace
 }
 
 
-void MeshGenerator::PackMesh(const MeshData& mesh, IDevice* device, MeshBuffer& outMeshBuffer, bool useNormals, bool useTexCoords, bool useColours)
+void MeshGenerator::PackMesh(const MeshData& mesh, IDevice* device, MeshInfo& meshInfo, bool useNormals, bool useTexCoords, bool useColours)
 {
 	const size_t vertexCount = mesh.Positions.size();
 	const size_t indexSize = mesh.Indices.size() * sizeof(IndexFormat);
@@ -63,16 +63,18 @@ void MeshGenerator::PackMesh(const MeshData& mesh, IDevice* device, MeshBuffer& 
 	vertexBufferDesc.access = GFX::CpuVisible::WRITE;
 	vertexBufferDesc.byteSize = static_cast<uint32_t>(vertexDataSize);
 	vertexBufferDesc.strideInBytes = static_cast<uint32_t>(vertexDataStride);
-	outMeshBuffer.vertexBuffer = device->CreateVertexBuffer(vertexBufferDesc);
+	vertexBufferDesc.name = std::format(L"{0}_VertexData", meshInfo.name);
+	meshInfo.buffer.vertexBuffer = device->CreateVertexBuffer(vertexBufferDesc);
 
 	GFX::IndexBufferDesc indexBufferDesc;
 	indexBufferDesc.access = GFX::CpuVisible::WRITE;
 	indexBufferDesc.format = GFX::Format::R16_UINT;
 	indexBufferDesc.byteSize = static_cast<uint32_t>(indexSize);
-	outMeshBuffer.indexBuffer = device->CreateIndexBuffer(indexBufferDesc);
+	indexBufferDesc.name = std::format(L"{0}_IndexData", meshInfo.name);
+	meshInfo.buffer.indexBuffer = device->CreateIndexBuffer(indexBufferDesc);
 
-	uint8_t* outVertexData = (uint8_t*)device->MapBuffer(outMeshBuffer.vertexBuffer->GetBuffer());
-	uint8_t* outIndexData = (uint8_t*)device->MapBuffer(outMeshBuffer.indexBuffer->GetBuffer());
+	uint8_t* outVertexData = (uint8_t*)device->MapBuffer(meshInfo.buffer.vertexBuffer->GetBuffer());
+	uint8_t* outIndexData = (uint8_t*)device->MapBuffer(meshInfo.buffer.indexBuffer->GetBuffer());
 
 	size_t offset = 0;
 	for (int i = 0; i < vertexCount; i++)
@@ -102,8 +104,8 @@ void MeshGenerator::PackMesh(const MeshData& mesh, IDevice* device, MeshBuffer& 
 	offset = 0;
 	memcpy(outIndexData, mesh.Indices.data(), indexSize);
 
-	device->UnmapBuffer(outMeshBuffer.vertexBuffer->GetBuffer());
-	device->UnmapBuffer(outMeshBuffer.indexBuffer->GetBuffer());
+	device->UnmapBuffer(meshInfo.buffer.vertexBuffer->GetBuffer());
+	device->UnmapBuffer(meshInfo.buffer.indexBuffer->GetBuffer());
 }
 
 MeshData MeshGenerator::TrianglePrimative()

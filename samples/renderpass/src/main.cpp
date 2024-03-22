@@ -123,13 +123,15 @@ int main()
 	const TestMat& test = sphereMaterial.As<TestMat>();
 
 	MeshInfo sphereMeshInfo;
-	GFX::MeshGenerator::PackMesh(GFX::MeshGenerator::UVSphere(), device, sphereMeshInfo.buffer, true, true, false);
+	sphereMeshInfo.name = L"SphereMesh";
+	GFX::MeshGenerator::PackMesh(GFX::MeshGenerator::UVSphere(), device, sphereMeshInfo, true, true, false);
 	sphereMeshInfo.indexOffset = 0;
 	sphereMeshInfo.numVertices = sphereMeshInfo.buffer.vertexBuffer->GetDesc().VertexCount();
 	sphereMeshInfo.numIndices = sphereMeshInfo.buffer.indexBuffer->GetDesc().IndexCount();
 
 	MeshInfo cubeMeshInfo;
-	GFX::MeshGenerator::PackMesh(GFX::MeshGenerator::CubePrimative(), device, cubeMeshInfo.buffer, true, true, false);
+	cubeMeshInfo.name = L"CubeMesh";
+	GFX::MeshGenerator::PackMesh(GFX::MeshGenerator::CubePrimative(), device, cubeMeshInfo, true, true, false);
 	cubeMeshInfo.indexOffset = 0;
 	cubeMeshInfo.numVertices = cubeMeshInfo.buffer.vertexBuffer->GetDesc().VertexCount();
 	cubeMeshInfo.numIndices = cubeMeshInfo.buffer.indexBuffer->GetDesc().IndexCount();

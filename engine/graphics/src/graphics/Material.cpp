@@ -69,7 +69,7 @@ void INF::GFX::Material::CreateBuffer(IDevice* device, size_t size)
 	constantBufferDesc.usage = GFX::BufferUsage::CONSTANT;
 	constantBufferDesc.access = GFX::CpuVisible::WRITE;
 	constantBufferDesc.byteSize = size;
-	constantBufferDesc.name = std::format("MaterialConstantBuffer_{0}", m_name);
+	constantBufferDesc.name = std::format(L"MaterialConstantBuffer_{0}", std::wstring(m_name.begin(), m_name.end()));
 	constantBufferDesc.onlyValidDuringCommandList = false;
 
 	m_constantBuffer = device->CreateBuffer(constantBufferDesc);

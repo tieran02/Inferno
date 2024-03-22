@@ -170,7 +170,7 @@ int main()
 	constantBufferDesc.usage = GFX::BufferUsage::CONSTANT;
 	constantBufferDesc.access = GFX::CpuVisible::WRITE;
 	constantBufferDesc.byteSize = sizeof(ConstantBufferStruct);
-	constantBufferDesc.name = "Constant Buffer";
+	constantBufferDesc.name = L"Constant Buffer";
 	constantBufferDesc.onlyValidDuringCommandList = true;
 	GFX::BufferHandle constantBuffer = device->CreateBuffer(constantBufferDesc);
 

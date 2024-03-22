@@ -535,7 +535,7 @@ namespace INF::GFX
 		BufferDesc uploadBufferDesc;
 		uploadBufferDesc.access = CpuVisible::WRITE;
 		uploadBufferDesc.byteSize = uploadBufferSize;
-		uploadBufferDesc.name = "upload buffer";
+		uploadBufferDesc.name = L"upload buffer";
 		BufferHandle uploadBuffer = m_device->CreateBuffer(uploadBufferDesc);
 
 		D3D12_SUBRESOURCE_DATA textureData = {};

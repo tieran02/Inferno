@@ -25,7 +25,7 @@ void ForwardPass::Init(GFX::IDevice* device, IFramebuffer* fb)
 		constantBufferDesc.usage = GFX::BufferUsage::CONSTANT;
 		constantBufferDesc.access = GFX::CpuVisible::WRITE;
 		constantBufferDesc.byteSize = sizeof(ConstantBufferStruct);
-		constantBufferDesc.name = std::format("MatrixConstantBuffer_{0}", i);
+		constantBufferDesc.name = std::format(L"MatrixConstantBuffer_{0}", i);
 		constantBufferDesc.onlyValidDuringCommandList = true;
 
 		m_matrixBuffers[i].m_constantBuffer = device->CreateBuffer(constantBufferDesc);
@@ -35,7 +35,7 @@ void ForwardPass::Init(GFX::IDevice* device, IFramebuffer* fb)
 	viewConstantBufferDesc.usage = GFX::BufferUsage::CONSTANT;
 	viewConstantBufferDesc.access = GFX::CpuVisible::WRITE;
 	viewConstantBufferDesc.byteSize = sizeof(ConstantBufferStruct);
-	viewConstantBufferDesc.name = "ViewConstantBuffer";
+	viewConstantBufferDesc.name = L"ViewConstantBuffer";
 	viewConstantBufferDesc.onlyValidDuringCommandList = true;
 	m_viewConstantBuffer = device->CreateBuffer(viewConstantBufferDesc);
 

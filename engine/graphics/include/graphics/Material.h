@@ -86,4 +86,5 @@ namespace INF::GFX
 		DescriptorSetDesc m_descriptorSetDesc;
 		DescriptorSetHandle m_descriptorHandle;
 	};
+	using MaterialHandle = std::shared_ptr<Material>;
 }

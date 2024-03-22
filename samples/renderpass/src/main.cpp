@@ -6,11 +6,12 @@
 #include "graphics/MeshGenerator.h"
 #include "imgui.h"
 #include "graphics/Bitmap.h"
+#include "graphics/MaterialLibrary.h"
 
 
 using namespace INF;
 
-struct TestMat
+struct MaterialData
 {
 	glm::vec4 diffuseColour = glm::vec4(1,1,1,1);
 };
@@ -104,23 +105,24 @@ int main()
 			cmd->WriteTexture(texture1.get(), bitmap);
 		});
 
-	GFX::Material sphereMaterial("SphereMaterial");
-	sphereMaterial.SetObject<TestMat>(device);
-	sphereMaterial.RegisterData("diffuseColour", &TestMat::diffuseColour);
-	sphereMaterial.RegisterTexture("diffuseTexture", 0);
-	sphereMaterial.SetData("diffuseColour", glm::vec4(1.0f, 1.0f, 1.0f, 1.0f));
-	sphereMaterial.SetData("diffuseTexture", texture, sampler);
-	sphereMaterial.UpdateDescriptorSet(device); 
+	GFX::MaterialLibrary materialLib(device);
 
-	GFX::Material cubeMaterial("CubeMaterial");
-	cubeMaterial.SetObject<TestMat>(device);
-	cubeMaterial.RegisterData("diffuseColour", &TestMat::diffuseColour);
-	cubeMaterial.RegisterTexture("diffuseTexture", 0);
-	cubeMaterial.SetData("diffuseColour", glm::vec4(1.0f, 0.23f, 0.03f, 1.0f));
-	cubeMaterial.SetData("diffuseTexture", texture1, sampler);
-	cubeMaterial.UpdateDescriptorSet(device);
+	GFX::MaterialHandle sphereMaterial = materialLib.CreateMaterial<MaterialData>("SphereMaterial");
+	sphereMaterial->RegisterData("diffuseColour", &MaterialData::diffuseColour);
+	sphereMaterial->RegisterTexture("diffuseTexture", 0);
+	sphereMaterial->SetData("diffuseColour", glm::vec4(1.0f, 1.0f, 1.0f, 1.0f));
+	sphereMaterial->SetData("diffuseTexture", texture, sampler);
+	sphereMaterial->UpdateDescriptorSet(device); 
 
-	const TestMat& test = sphereMaterial.As<TestMat>();
+	GFX::MaterialHandle cubeMaterial = materialLib.CreateMaterial<MaterialData>("CubeMaterial");
+	cubeMaterial->SetObject<MaterialData>(device);
+	cubeMaterial->RegisterData("diffuseColour", &MaterialData::diffuseColour);
+	cubeMaterial->RegisterTexture("diffuseTexture", 0);
+	cubeMaterial->SetData("diffuseColour", glm::vec4(1.0f, 0.23f, 0.03f, 1.0f));
+	cubeMaterial->SetData("diffuseTexture", texture1, sampler);
+	cubeMaterial->UpdateDescriptorSet(device);
+
+	const MaterialData& test = sphereMaterial->As<MaterialData>();
 
 	MeshInfo sphereMeshInfo;
 	sphereMeshInfo.name = L"SphereMesh";
@@ -139,12 +141,12 @@ int main()
 	MeshInstance meshInstance;
 	meshInstance.mesh = &sphereMeshInfo;
 	meshInstance.instanceOffset = 0;
-	meshInstance.material = &sphereMaterial;
+	meshInstance.material = sphereMaterial.get();
 
 	MeshInstance meshInstance1;
 	meshInstance1.mesh = &cubeMeshInfo;
 	meshInstance1.instanceOffset = 0;
-	meshInstance1.material = &cubeMaterial;
+	meshInstance1.material = cubeMaterial.get();
 
 	std::array<MeshInstance*, 2> meshes{&meshInstance, &meshInstance1};
 

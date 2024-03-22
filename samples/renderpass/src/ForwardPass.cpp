@@ -79,13 +79,12 @@ void ForwardPass::CreatePipeline(GFX::IDevice* device, IFramebuffer* fb)
 	meshDescriptorDesc.VS[0].registerSpace = 0;
 	meshDescriptorDesc.VS[0].slot = 1;
 	meshDescriptorDesc.VS[0].type = GFX::ResourceType::CONSTANTBUFFER; //Model Buffer
-	meshDescriptorDesc.PS[0].registerSpace = 0;
-	meshDescriptorDesc.PS[0].slot = 0;
-	meshDescriptorDesc.PS[0].type = GFX::ResourceType::TEXTURE_SRV; //Texture
-	meshDescriptorDesc.PS[1].registerSpace = 0;
-	meshDescriptorDesc.PS[1].slot = 0;
-	meshDescriptorDesc.PS[1].type = GFX::ResourceType::SAMPLER;  //Texture sampler
 	m_meshDescriptorHandle = device->CreateDescriptorLayout(meshDescriptorDesc);
+
+	//The material descriptor consists of one constant buffer and 8 slots for textures and 8 slots for samplers
+	//This totals 17 root parameters for a material, we can optimise this for not including empty texture slots but for now this will do
+	GFX::DescriptorLayoutDesc materialDescriptorDesc = Material::DescriptorLayout();
+	m_materialDescriptorHandle = device->CreateDescriptorLayout(materialDescriptorDesc);
 
 
 	GFX::ShaderDesc vertexShaderDesc;
@@ -109,7 +108,7 @@ void ForwardPass::CreatePipeline(GFX::IDevice* device, IFramebuffer* fb)
 	pipelineDesc.depthStencilState.depthWriteEnable = true;
 	pipelineDesc.depthStencilState.depthFunc = ComparisonFunc::LESS_OR_EQUAL;
 	pipelineDesc.rasterState.cullMode = GFX::RasterCullMode::NONE;
-	pipelineDesc.descriptorLayoutSet = { m_viewDescriptorLayoutHandle, m_meshDescriptorHandle};
+	pipelineDesc.descriptorLayoutSet = { m_viewDescriptorLayoutHandle, m_meshDescriptorHandle, m_materialDescriptorHandle};
 
 	pipelineDesc.inputLayoutDesc.emplace_back("POSITION", GFX::Format::RGB32_FLOAT);
 	pipelineDesc.inputLayoutDesc.emplace_back("NORMAL", GFX::Format::RGB32_FLOAT);
@@ -122,8 +121,6 @@ void ForwardPass::CreatePipeline(GFX::IDevice* device, IFramebuffer* fb)
 	{
 		GFX::DescriptorSetDesc descriptorSetDesc;
 		descriptorSetDesc.VS[0] = GFX::DescriptorSetItem::ConstantBuffer(0, m_matrixBuffers[i].m_constantBuffer.get());
-		descriptorSetDesc.PS[0] = GFX::DescriptorSetItem::SRV(0, m_texture.get());
-		descriptorSetDesc.PS[1] = GFX::DescriptorSetItem::Sampler(0, m_sampler.get());
 		m_matrixBuffers[i].m_descriptorHandle = device->CreateDescriptorSet(descriptorSetDesc, m_meshDescriptorHandle.get());
 	}
 	
@@ -183,4 +180,5 @@ void ForwardPass::OnMeshInstanceRender(uint32_t meshInstanceIndex, GraphicsState
 {
 	INF_ASSERT(meshInstanceIndex < m_matrixBuffers.size(), "Exceeded MAX_OBJECT_COUNT");
 	state.descriptorSetGroup[1] = m_matrixBuffers[meshInstanceIndex].m_descriptorHandle;
+	state.descriptorSetGroup[2] = m_meshInstances[meshInstanceIndex]->material->GetDescriptorSet();
 }

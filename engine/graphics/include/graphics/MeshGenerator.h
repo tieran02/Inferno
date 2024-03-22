@@ -6,6 +6,7 @@
 namespace INF::GFX
 {
 	class IDevice;
+	class Material;
 
 	typedef uint16_t IndexFormat;
 
@@ -28,6 +29,7 @@ namespace INF::GFX
 	struct MeshInstance
 	{
 		MeshInfo* mesh;
+		Material* material;
 		Transform transform;
 		uint32_t instanceOffset;
 	};

@@ -5,8 +5,15 @@
 #include "ForwardPass.h"
 #include "graphics/MeshGenerator.h"
 #include "imgui.h"
+#include "graphics/Bitmap.h"
+
 
 using namespace INF;
+
+struct TestMat
+{
+	glm::vec4 diffuseColour = glm::vec4(1,1,1,1);
+};
 
 int main()
 {
@@ -64,6 +71,57 @@ int main()
 	view.SetPosition(glm::vec3(0.0f, 2.0f, 2.0f));
 	view.LookAt(glm::vec3(0.0f, 0.0f, 0.1f), glm::vec3(0, 1, 0));
 
+	SamplerHandle sampler;
+	TextureHandle texture;
+	TextureHandle texture1;
+	GFX::SamplerDesc samplerDesc;
+	sampler = device->CreateSampler(samplerDesc);
+
+	//Texture is temp till we pass in materials to MeshSet
+	GFX::Bitmap bitmap;
+	bitmap.Load("data/textures/uvTest.png");
+
+	GFX::TextureDesc textureDesc;
+	textureDesc.width = bitmap.Width();
+	textureDesc.height = bitmap.Height();
+	textureDesc.format = bitmap.GetFormat();
+	textureDesc.name = L"UV Test texture";
+	textureDesc.initialState = (GFX::TRANSITION_STATES_FLAGS)GFX::TRANSITION_STATES::PIXEL_SHADER_RESOURCE;
+	texture = device->CreateTexture(textureDesc);
+	device->ImmediateSubmit([=](GFX::ICommandList* cmd)
+		{
+			cmd->WriteTexture(texture.get(), bitmap);
+		});
+
+	bitmap.Load("data/textures/container.png");
+	textureDesc.width = bitmap.Width();
+	textureDesc.height = bitmap.Height();
+	textureDesc.format = bitmap.GetFormat();
+	textureDesc.name = L"Box texture";
+	texture1 = device->CreateTexture(textureDesc);
+	device->ImmediateSubmit([=](GFX::ICommandList* cmd)
+		{
+			cmd->WriteTexture(texture1.get(), bitmap);
+		});
+
+	GFX::Material sphereMaterial("SphereMaterial");
+	sphereMaterial.SetObject<TestMat>(device);
+	sphereMaterial.RegisterData("diffuseColour", &TestMat::diffuseColour);
+	sphereMaterial.RegisterTexture("diffuseTexture", 0);
+	sphereMaterial.SetData("diffuseColour", glm::vec4(1.0f, 1.0f, 1.0f, 1.0f));
+	sphereMaterial.SetData("diffuseTexture", texture, sampler);
+	sphereMaterial.UpdateDescriptorSet(device); 
+
+	GFX::Material cubeMaterial("CubeMaterial");
+	cubeMaterial.SetObject<TestMat>(device);
+	cubeMaterial.RegisterData("diffuseColour", &TestMat::diffuseColour);
+	cubeMaterial.RegisterTexture("diffuseTexture", 0);
+	cubeMaterial.SetData("diffuseColour", glm::vec4(1.0f, 0.23f, 0.03f, 1.0f));
+	cubeMaterial.SetData("diffuseTexture", texture1, sampler);
+	cubeMaterial.UpdateDescriptorSet(device);
+
+	const TestMat& test = sphereMaterial.As<TestMat>();
+
 	MeshInfo sphereMeshInfo;
 	GFX::MeshGenerator::PackMesh(GFX::MeshGenerator::UVSphere(), device, sphereMeshInfo.buffer, true, true, false);
 	sphereMeshInfo.indexOffset = 0;
@@ -79,12 +137,13 @@ int main()
 	MeshInstance meshInstance;
 	meshInstance.mesh = &sphereMeshInfo;
 	meshInstance.instanceOffset = 0;
+	meshInstance.material = &sphereMaterial;
 
 	MeshInstance meshInstance1;
 	meshInstance1.mesh = &cubeMeshInfo;
 	meshInstance1.instanceOffset = 0;
+	meshInstance1.material = &cubeMaterial;
 
-	
 	std::array<MeshInstance*, 2> meshes{&meshInstance, &meshInstance1};
 
 	typedef std::chrono::steady_clock clock;

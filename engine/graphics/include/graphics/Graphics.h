@@ -8,6 +8,7 @@
 #include "graphics/interface/Pipeline.h"
 #include "graphics/interface/Descriptor.h"
 #include "graphics/interface/Texture.h"
+#include "graphics/Material.h"
 
 #include "graphics/View.h"
 #include "graphics/RenderPass.h"

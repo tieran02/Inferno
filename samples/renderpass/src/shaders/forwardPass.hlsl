@@ -12,6 +12,11 @@ cbuffer transformCB : register(b1)
     float4x4 modelMatrix;
 };
 
+cbuffer materialCB : register(b2)
+{
+    float4 diffuseColor;
+};
+
 struct VertexInput
 {
     float3 inPos : POSITION;
@@ -59,7 +64,7 @@ PixelOutput PSmain(PixelInput pixelInput)
 
     float3 finalColor;
 
-    finalColor = diffuse * ambientColor.rgb;
+    finalColor = diffuse * diffuseColor.rgb * ambientColor.rgb;
     finalColor += saturate(dot(dir, normal) * lightColor.rgb * diffuse);
 
     PixelOutput output;

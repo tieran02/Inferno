@@ -46,6 +46,7 @@ private:
 	GraphicsPipelineHandle m_pipeline;
 	DescriptorLayoutHandle m_viewDescriptorLayoutHandle;
 	DescriptorLayoutHandle m_meshDescriptorHandle;
+	DescriptorLayoutHandle m_materialDescriptorHandle;
 
 	BufferHandle m_viewConstantBuffer;
 	DescriptorSetHandle m_viewDescriptorHandle;

@@ -115,7 +115,7 @@ namespace INF::GFX
 
 		//Descriptor set contains the vies to the actual GPU resources such as textures/buffers
 		//Descriptor set inputs need to match the descriptor layout that was used to create the graphics pipeline
-		DescriptorSetGroup descriptorSetGroup;
+		DescriptorSetGroup descriptorSetGroup{ nullptr };
 
 		IVertexBuffer* vertexBuffer{ nullptr };
 		IIndexBuffer* indexBuffer{ nullptr };

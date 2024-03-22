@@ -370,11 +370,11 @@ namespace INF::GFX
 		ID3D12DescriptorHeap* heaps[2] = { m_device->SRVDescriptoHeap().Heap(), m_device->SamplerDescriptoHeap().Heap()};
 		m_commandList->SetDescriptorHeaps(2, heaps);
 
-		std::array<std::pair<ShaderType, const StageDescriptorSetDesc*>, 3> stages
+		std::array<std::tuple<ShaderType, const StageDescriptorSetDesc*, const StageBindingDescriptorDesc*>, 3> stages
 		{
-			std::make_pair(ShaderType::Vertex, &set->GetDesc().VS),
-			std::make_pair(ShaderType::Pixel, &set->GetDesc().PS),
-			std::make_pair(ShaderType::All, &set->GetDesc().ALL),
+			std::make_tuple(ShaderType::Vertex, &set->GetDesc().VS, &set->GetLayout()->GetDesc().VS),
+			std::make_tuple(ShaderType::Pixel, &set->GetDesc().PS, &set->GetLayout()->GetDesc().PS),
+			std::make_tuple(ShaderType::All, &set->GetDesc().ALL, &set->GetLayout()->GetDesc().ALL),
 		};
 
 
@@ -382,10 +382,18 @@ namespace INF::GFX
 		uint32_t rootIndex = rootIndexOffset;
 		for (const auto& stage : stages)
 		{
-			for (const DescriptorSetItem& setItem : *stage.second)
+			int setIndex = 0;
+			for (const DescriptorSetItem& setItem : *std::get<1>(stage))
 			{
-				if(setItem.slot == UINT_MAX)
+				if (setItem.slot == UINT_MAX)
+				{
+					const StageBindingDescriptorDesc& layout = *std::get<2>(stage);
+					if (layout[setIndex].slot != UINT_MAX) //We have a layout for this item but not resource, still increment rootIndex
+						rootIndex++;
+
+					setIndex++;
 					continue;
+				}
 
 				switch (setItem.type)
 				{
@@ -419,6 +427,7 @@ namespace INF::GFX
 					break;
 				}
 
+				setIndex++;
 				rootIndex++;
 			}
 		}

@@ -47,6 +47,8 @@ void Bitmap::Create(uint32_t width, uint32_t height, const Color& fill)
 
 	uint8_t* dest = (uint8_t*)m_data.data();
 	std::fill_n(dest, bitmapSize, *color);
+
+	m_format = Format::RGBA8_UNORM;
 }
 
 

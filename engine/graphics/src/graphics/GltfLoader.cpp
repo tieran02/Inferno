@@ -182,6 +182,27 @@ void processNode(const tinygltf::Model& model, const tinygltf::Node& node, MeshL
 		const auto& mat = model.materials[matIndex];
 		instance.material = loaderData.materialLibrary->Find(mat.name).get();
 
+		//transform
+		const std::vector<double>& t = node.translation;
+		const std::vector<double>& r = node.rotation;
+		const std::vector<double>& s = node.scale;
+
+		if (!t.empty())
+		{
+			auto translation = glm::vec3(static_cast<float>(t[0]), static_cast<float>(t[1]), static_cast<float>(t[2]));
+			instance.transform.SetPosition(translation);
+		}
+		if (!r.empty())
+		{
+			instance.transform.SetRotation(glm::make_quat(node.rotation.data()));
+		}
+		if (!s.empty())
+		{
+			auto scale = glm::vec3(static_cast<float>(s[0]), static_cast<float>(s[1]), static_cast<float>(s[2]));
+			instance.transform.SetScale(scale);
+		}
+		instance.transform.UpdateTransform();
+
 		loaderData.meshInstances->push_back(instance);
 	}
 
@@ -230,6 +251,9 @@ void ProcessScene(const tinygltf::Model& model, MeshLoaderData& loaderData)
 			});
 
 		INF::GFX::SamplerDesc samplerDesc;
+		samplerDesc.wrapMode[0] = INF::GFX::WrapMode::WRAP;
+		samplerDesc.wrapMode[1] = INF::GFX::WrapMode::WRAP;
+		samplerDesc.wrapMode[2] = INF::GFX::WrapMode::WRAP;
 		INF::GFX::SamplerHandle sampler = loaderData.device->CreateSampler(samplerDesc);
 
 		INF::GFX::MaterialHandle materialHandle = loaderData.materialLibrary->CreateMaterial<INF::GFX::MaterialData>(mat.name);

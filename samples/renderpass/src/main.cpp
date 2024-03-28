@@ -71,40 +71,14 @@ int main()
 	view.LookAt(glm::vec3(0.0f, 0.0f, 0.1f), glm::vec3(0, 1, 0));
 
 	SamplerHandle sampler;
-	TextureHandle texture;
-	TextureHandle texture1;
 	TextureHandle whiteTexture;
 	GFX::SamplerDesc samplerDesc;
 	sampler = device->CreateSampler(samplerDesc);
 
 	//Texture is temp till we pass in materials to MeshSet
 	GFX::Bitmap bitmap;
-	bitmap.Load("data/textures/uvTest.png"); 
-
-	GFX::TextureDesc textureDesc;
-	textureDesc.width = bitmap.Width();
-	textureDesc.height = bitmap.Height();
-	textureDesc.format = bitmap.GetFormat();
-	textureDesc.name = L"UV Test texture";
-	textureDesc.initialState = (GFX::TRANSITION_STATES_FLAGS)GFX::TRANSITION_STATES::PIXEL_SHADER_RESOURCE;
-	texture = device->CreateTexture(textureDesc);
-	device->ImmediateSubmit([=](GFX::ICommandList* cmd)
-		{
-			cmd->WriteTexture(texture.get(), bitmap);
-		});
-
-	bitmap.Load("data/textures/container.png");
-	textureDesc.width = bitmap.Width();
-	textureDesc.height = bitmap.Height();
-	textureDesc.format = bitmap.GetFormat();
-	textureDesc.name = L"Box texture";
-	texture1 = device->CreateTexture(textureDesc);
-	device->ImmediateSubmit([=](GFX::ICommandList* cmd)
-		{
-			cmd->WriteTexture(texture1.get(), bitmap);
-		});
-
 	bitmap.Create(1, 1, Color(1.0f));
+	GFX::TextureDesc textureDesc;
 	textureDesc.width = bitmap.Width();
 	textureDesc.height = bitmap.Height();
 	textureDesc.format = bitmap.GetFormat();
@@ -117,21 +91,6 @@ int main()
 
 	GFX::MaterialLibrary materialLib(device);
 
-	GFX::MaterialHandle sphereMaterial = materialLib.CreateMaterial<MaterialData>("SphereMaterial");
-	sphereMaterial->RegisterData("diffuseColour", &MaterialData::diffuseColour);
-	sphereMaterial->RegisterTexture("diffuseTexture", 0);
-	sphereMaterial->SetData("diffuseColour", glm::vec4(1.0f, 1.0f, 1.0f, 1.0f));
-	sphereMaterial->SetData("diffuseTexture", texture, sampler);
-	sphereMaterial->UpdateDescriptorSet(device); 
-
-	GFX::MaterialHandle cubeMaterial = materialLib.CreateMaterial<MaterialData>("CubeMaterial");
-	cubeMaterial->SetObject<MaterialData>(device);
-	cubeMaterial->RegisterData("diffuseColour", &MaterialData::diffuseColour);
-	cubeMaterial->RegisterTexture("diffuseTexture", 0);
-	cubeMaterial->SetData("diffuseColour", glm::vec4(1.0f, 0.23f, 0.03f, 1.0f));
-	cubeMaterial->SetData("diffuseTexture", texture1, sampler);
-	cubeMaterial->UpdateDescriptorSet(device);
-
 	GFX::MaterialHandle whiteMaterial = materialLib.CreateMaterial<MaterialData>("WhiteMaterial");
 	whiteMaterial->SetObject<MaterialData>(device);
 	whiteMaterial->RegisterData("diffuseColour", &MaterialData::diffuseColour);
@@ -139,41 +98,21 @@ int main()
 	whiteMaterial->SetData("diffuseTexture", whiteTexture, sampler);
 	whiteMaterial->UpdateDescriptorSet(device);
 
-	const MaterialData& test = sphereMaterial->As<MaterialData>();
-
 	GFX::GLTFLoader gltfLoader;
 	std::vector<MeshInfo> gltfMeshInfo;
 	std::vector<MeshInstance> gltfMeshInstance;
 	gltfLoader.Load("data/models/Suzanne.gltf", device, materialLib, gltfMeshInfo, gltfMeshInstance);
 
-	MeshInfo sphereMeshInfo;
-	sphereMeshInfo.name = L"SphereMesh";
-	GFX::MeshGenerator::PackMesh(GFX::MeshGenerator::UVSphere(), device, sphereMeshInfo, true, true, false);
-	sphereMeshInfo.indexOffset = 0;
-	sphereMeshInfo.numVertices = sphereMeshInfo.buffer.vertexBuffer->GetDesc().VertexCount();
-	sphereMeshInfo.numIndices = sphereMeshInfo.buffer.indexBuffer->GetDesc().IndexCount();
-
-	MeshInfo cubeMeshInfo;
-	cubeMeshInfo.name = L"CubeMesh";
-	GFX::MeshGenerator::PackMesh(GFX::MeshGenerator::CubePrimative(), device, cubeMeshInfo, true, true, false);
-	cubeMeshInfo.indexOffset = 0;
-	cubeMeshInfo.numVertices = cubeMeshInfo.buffer.vertexBuffer->GetDesc().VertexCount();
-	cubeMeshInfo.numIndices = cubeMeshInfo.buffer.indexBuffer->GetDesc().IndexCount();
+	std::vector<MeshInfo> gltfHelmetMeshInfo;
+	std::vector<MeshInstance> gltfHelmetMeshInstance;
+	gltfLoader.Load("data/models/helmet/DamagedHelmet.gltf", device, materialLib, gltfHelmetMeshInfo, gltfHelmetMeshInstance);
 
 	MeshInfo quadMeshInfo;
 	quadMeshInfo.name = L"quad";
 	GFX::MeshGenerator::PackMesh(GFX::MeshGenerator::QuadPrimative(), device, quadMeshInfo, true, true, false);
-	quadMeshInfo.indexOffset = 0;
-	quadMeshInfo.numVertices = quadMeshInfo.buffer.vertexBuffer->GetDesc().VertexCount();
-	quadMeshInfo.numIndices = quadMeshInfo.buffer.indexBuffer->GetDesc().IndexCount();
 
-	MeshInstance sphereMesh;
-	sphereMesh.mesh = &sphereMeshInfo;
-	sphereMesh.instanceOffset = 0;
-	sphereMesh.material = sphereMaterial.get();
-
+	MeshInstance helmetMesh = gltfHelmetMeshInstance[0];
 	MeshInstance monkeyMesh = gltfMeshInstance[0];
-
 	MeshInstance planeMesh;
 	planeMesh.mesh = &quadMeshInfo;
 	planeMesh.instanceOffset = 0;
@@ -183,7 +122,7 @@ int main()
 	planeMesh.transform.Rotate(glm::vec3(1, 0, 0), glm::radians(-90.0f));
 	planeMesh.transform.UpdateTransform();
 
-	std::array<MeshInstance*, 3> meshes{&sphereMesh, &monkeyMesh, &planeMesh};
+	std::array<MeshInstance*, 3> meshes{&helmetMesh, &monkeyMesh, &planeMesh};
 
 	typedef std::chrono::steady_clock clock;
 	typedef std::chrono::duration<float, std::milli> duration;
@@ -199,8 +138,6 @@ int main()
 		float deltaTime = std::chrono::duration_cast<duration>(now - previousTime).count() / 1000.0f;
 		previousTime = now;
 		elapsedTime += deltaTime;
-
-		INF::Log::Info(std::format("DeltaTime={0}", deltaTime));
 
 		//move camera with WASD
 		glm::vec3 front = view.Front();
@@ -233,9 +170,8 @@ int main()
 		}
 
 		glm::vec3 posOffset = glm::vec3(sinf(elapsedTime), 0.0f, 0.0f);
-		//meshInstance.transform.SetPosition(posOffset * 2.0f);
-		sphereMesh.transform.Rotate(glm::vec3(0.0f, 1.0f, 0.0f), moveSpeed * deltaTime);
-		sphereMesh.transform.UpdateTransform();
+		helmetMesh.transform.Rotate(glm::vec3(0.0f, 0.0f, 1.0f), moveSpeed * deltaTime);
+		helmetMesh.transform.UpdateTransform();
 
 		glm::vec3 pos1 = -posOffset * 2.0f;
 		pos1.z -= 2.0f;
@@ -268,7 +204,6 @@ int main()
 		device->ExecuteCommandLists(cmd.get());
 		deviceManager->Present();
 
-		//device->WaitForIdle();
 
 		if (input.IsKeyRelease(KeyCode::Escape))
 			shouldClose = true;

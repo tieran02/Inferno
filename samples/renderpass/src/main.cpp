@@ -7,14 +7,12 @@
 #include "imgui.h"
 #include "graphics/Bitmap.h"
 #include "graphics/MaterialLibrary.h"
+#include "graphics/GltfLoader.h"
 
 
 using namespace INF;
 
-struct MaterialData
-{
-	glm::vec4 diffuseColour = glm::vec4(1,1,1,1);
-};
+
 
 int main()
 {
@@ -143,6 +141,11 @@ int main()
 
 	const MaterialData& test = sphereMaterial->As<MaterialData>();
 
+	GFX::GLTFLoader gltfLoader;
+	std::vector<MeshInfo> gltfMeshInfo;
+	std::vector<MeshInstance> gltfMeshInstance;
+	gltfLoader.Load("data/models/Suzanne.gltf", device, materialLib, gltfMeshInfo, gltfMeshInstance);
+
 	MeshInfo sphereMeshInfo;
 	sphereMeshInfo.name = L"SphereMesh";
 	GFX::MeshGenerator::PackMesh(GFX::MeshGenerator::UVSphere(), device, sphereMeshInfo, true, true, false);
@@ -169,10 +172,7 @@ int main()
 	sphereMesh.instanceOffset = 0;
 	sphereMesh.material = sphereMaterial.get();
 
-	MeshInstance cubeMesh;
-	cubeMesh.mesh = &cubeMeshInfo;
-	cubeMesh.instanceOffset = 0;
-	cubeMesh.material = cubeMaterial.get();
+	MeshInstance monkeyMesh = gltfMeshInstance[0];
 
 	MeshInstance planeMesh;
 	planeMesh.mesh = &quadMeshInfo;
@@ -183,7 +183,7 @@ int main()
 	planeMesh.transform.Rotate(glm::vec3(1, 0, 0), glm::radians(-90.0f));
 	planeMesh.transform.UpdateTransform();
 
-	std::array<MeshInstance*, 3> meshes{&sphereMesh, &cubeMesh, &planeMesh};
+	std::array<MeshInstance*, 3> meshes{&sphereMesh, &monkeyMesh, &planeMesh};
 
 	typedef std::chrono::steady_clock clock;
 	typedef std::chrono::duration<float, std::milli> duration;
@@ -239,9 +239,9 @@ int main()
 
 		glm::vec3 pos1 = -posOffset * 2.0f;
 		pos1.z -= 2.0f;
-		cubeMesh.transform.SetPosition(pos1);
-		cubeMesh.transform.Rotate(glm::vec3(0.0f, 1.0f, 0.0f), moveSpeed * deltaTime);
-		cubeMesh.transform.UpdateTransform();
+		monkeyMesh.transform.SetPosition(pos1);
+		monkeyMesh.transform.Rotate(glm::vec3(0.0f, 1.0f, 0.0f), moveSpeed * deltaTime);
+		monkeyMesh.transform.UpdateTransform();
 
 		deviceManager->BeginFrame();
 		deviceManager->ImguiNewFrame();

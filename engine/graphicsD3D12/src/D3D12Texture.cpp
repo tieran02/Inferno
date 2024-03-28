@@ -90,7 +90,7 @@ TextureHandle D3D12Texture::CreateTexture(D3D12Device* ownerDevice, const Textur
 		supportsOptimizedClear ? &optimizedClearValue : nullptr,
 		IID_PPV_ARGS(&texture->m_resource)));
 
-	texture->m_resource->SetName(desc.name);
+	texture->m_resource->SetName(desc.name.c_str());
 
 	return handle;
 }
@@ -101,7 +101,7 @@ TextureHandle D3D12Texture::CreateTextureFromResource(D3D12Device* ownerDevice, 
 	TextureHandle handle = TextureHandle(new D3D12Texture(ownerDevice,desc));
 	static_cast<D3D12Texture*>(handle.get())->m_resource = resource;
 
-	resource->SetName(desc.name);
+	resource->SetName(desc.name.c_str());
 
 	return handle;
 }

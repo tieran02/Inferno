@@ -106,6 +106,10 @@ void MeshGenerator::PackMesh(const MeshData& mesh, IDevice* device, MeshInfo& me
 
 	device->UnmapBuffer(meshInfo.buffer.vertexBuffer->GetBuffer());
 	device->UnmapBuffer(meshInfo.buffer.indexBuffer->GetBuffer());
+
+	meshInfo.indexOffset = 0;
+	meshInfo.numVertices = meshInfo.buffer.vertexBuffer->GetDesc().VertexCount();
+	meshInfo.numIndices = meshInfo.buffer.indexBuffer->GetDesc().IndexCount();
 }
 
 MeshData MeshGenerator::TrianglePrimative()

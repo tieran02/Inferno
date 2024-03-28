@@ -9,16 +9,16 @@ namespace INF::GFX
 		MaterialLibrary(IDevice* device);
 
 		template <typename T>
-		MaterialHandle CreateMaterial(std::string_view name);
+		MaterialHandle CreateMaterial(const std::string& name);
 
-		MaterialHandle Find(std::string_view name) const;
+		MaterialHandle Find(const std::string& name) const;
 	private:
 		IDevice* m_device;
-		std::unordered_map<std::string_view, MaterialHandle> m_materials;
+		std::unordered_map<std::string, MaterialHandle> m_materials;
 	};
 
 	template <typename T>
-	MaterialHandle INF::GFX::MaterialLibrary::CreateMaterial(std::string_view name)
+	MaterialHandle INF::GFX::MaterialLibrary::CreateMaterial(const std::string& name)
 	{
 		MaterialHandle material = Find(name);
 		INF_ASSERT(!material, std::format("Material already exists with name:{0}", name));
@@ -27,6 +27,8 @@ namespace INF::GFX
 
 		material = MaterialHandle(new Material(name));
 		material->SetObject<T>(m_device);
+
+		m_materials.emplace(name, material);
 		return material;
 	}
 

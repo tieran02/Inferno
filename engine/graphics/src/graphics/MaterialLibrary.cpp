@@ -9,7 +9,7 @@ MaterialLibrary::MaterialLibrary(IDevice* device) : m_device(device)
 
 }
 
-MaterialHandle MaterialLibrary::Find(std::string_view name) const
+MaterialHandle MaterialLibrary::Find(const std::string& name) const
 {
 	auto it = m_materials.find(name);
 	if (it == m_materials.end())

@@ -7,6 +7,11 @@
 
 namespace INF::GFX
 {
+	struct MaterialData
+	{
+		glm::vec4 diffuseColour = glm::vec4(1, 1, 1, 1);
+	};
+
 	constexpr uint8_t MAX_TEXTURE_COUNT_PER_MATERIAL = 8;
 	class IDevice;
 

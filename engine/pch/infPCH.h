@@ -6,6 +6,7 @@
 #include <sstream>
 #include <functional>
 #include <unordered_map>
+#include <set>
 #include <cassert>
 #include <fstream>
 #include <limits>
